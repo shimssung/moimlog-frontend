@@ -260,7 +260,7 @@ const LoginPage = () => {
               fullWidth
               onClick={() => console.log("Kakao로 로그인")}
             >
-              <SocialIcon src="/img1.jpg" alt="Kakao" />
+              <SocialIcon src="/kakao_icon.png" alt="Kakao" />
               카카오로 로그인
             </SocialLoginButton>
             <SocialLoginButton
@@ -268,7 +268,7 @@ const LoginPage = () => {
               fullWidth
               onClick={() => console.log("Google 로그인")}
             >
-              <SocialIcon src="/img2.jpg" alt="Google" />
+              <SocialIcon src="/google_icon.png" alt="Google" />
               Google로 로그인
             </SocialLoginButton>
           </SocialLogin>
