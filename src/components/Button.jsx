@@ -1,7 +1,9 @@
 import React from "react";
 import styled, { css } from "styled-components";
 
-const ButtonBase = styled.button`
+const ButtonBase = styled.button.withConfig({
+  shouldForwardProp: (prop) => prop !== "fullWidth",
+})`
   padding: 0.75rem 1rem;
   font-weight: 600;
   border-radius: 0.5rem;
