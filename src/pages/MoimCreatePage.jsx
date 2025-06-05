@@ -1,0 +1,392 @@
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import styled from "styled-components";
+import Header from "../components/Header";
+import Button from "../components/Button";
+import Footer from "../components/Footer";
+
+const Container = styled.div`
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+`;
+
+const MainContent = styled.main`
+  flex: 1;
+  background-color: #f8fafc;
+  padding: 40px 0;
+`;
+
+const FormContainer = styled.div`
+  max-width: 768px;
+  margin: 0 auto;
+  padding: 32px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+`;
+
+const Title = styled.h1`
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 24px;
+`;
+
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+`;
+
+const FormGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const Label = styled.label`
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+`;
+
+const Input = styled.input`
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #111827;
+  transition: border-color 0.15s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+`;
+
+const TextArea = styled.textarea`
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #111827;
+  min-height: 120px;
+  resize: vertical;
+  transition: border-color 0.15s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+`;
+
+const Select = styled.select`
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #111827;
+  background-color: white;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+`;
+
+const TagInput = styled.input`
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #111827;
+  transition: border-color 0.15s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+`;
+
+const TagList = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+`;
+
+const Tag = styled.span`
+  background-color: #e5e7eb;
+  color: #374151;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  button {
+    background: none;
+    border: none;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 0;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+
+    &:hover {
+      color: #ef4444;
+    }
+  }
+`;
+
+const ButtonContainer = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px;
+`;
+
+const ErrorMessage = styled.span`
+  color: #ef4444;
+  font-size: 12px;
+  margin-top: 4px;
+`;
+
+const MoimCreatePage = () => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    category: "",
+    maxMembers: "",
+    startDate: "",
+    endDate: "",
+  });
+  const [tags, setTags] = useState([]);
+  const [tagInput, setTagInput] = useState("");
+  const [errors, setErrors] = useState({});
+
+  const categories = [
+    "스터디",
+    "취미",
+    "운동",
+    "독서",
+    "언어",
+    "프로그래밍",
+    "음악",
+    "요리",
+    "여행",
+    "기타",
+  ];
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+    // 에러 메시지 초기화
+    if (errors[name]) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: "",
+      }));
+    }
+  };
+
+  const handleTagInputKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (tagInput.trim() && !tags.includes(tagInput.trim())) {
+        setTags((prev) => [...prev, tagInput.trim()]);
+        setTagInput("");
+      }
+    }
+  };
+
+  const removeTag = (tagToRemove) => {
+    setTags((prev) => prev.filter((tag) => tag !== tagToRemove));
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.title.trim()) {
+      newErrors.title = "모임 제목을 입력해주세요.";
+    }
+    if (!formData.description.trim()) {
+      newErrors.description = "모임 설명을 입력해주세요.";
+    }
+    if (!formData.category) {
+      newErrors.category = "카테고리를 선택해주세요.";
+    }
+    if (!formData.maxMembers || formData.maxMembers < 2) {
+      newErrors.maxMembers = "최소 2명 이상의 인원을 입력해주세요.";
+    }
+    if (!formData.startDate) {
+      newErrors.startDate = "시작 날짜를 선택해주세요.";
+    }
+    if (!formData.endDate) {
+      newErrors.endDate = "종료 날짜를 선택해주세요.";
+    }
+    if (formData.startDate && formData.endDate && formData.startDate > formData.endDate) {
+      newErrors.endDate = "종료 날짜는 시작 날짜보다 늦어야 합니다.";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
+    try {
+      // TODO: API 연동
+      console.log("Form submitted:", { ...formData, tags });
+      navigate("/moims"); // 성공 시 모임 목록 페이지로 이동
+    } catch (error) {
+      console.error("Error creating moim:", error);
+      // TODO: 에러 처리
+    }
+  };
+
+  return (
+    <Container>
+      <Header />
+      <MainContent>
+        <FormContainer>
+          <Title>새로운 모임 만들기</Title>
+          <Form onSubmit={handleSubmit}>
+            <FormGroup>
+              <Label htmlFor="title">모임 제목</Label>
+              <Input
+                id="title"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                placeholder="모임 제목을 입력하세요"
+              />
+              {errors.title && <ErrorMessage>{errors.title}</ErrorMessage>}
+            </FormGroup>
+
+            <FormGroup>
+              <Label htmlFor="description">모임 설명</Label>
+              <TextArea
+                id="description"
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                placeholder="모임에 대해 자세히 설명해주세요"
+              />
+              {errors.description && <ErrorMessage>{errors.description}</ErrorMessage>}
+            </FormGroup>
+
+            <FormGroup>
+              <Label htmlFor="category">카테고리</Label>
+              <Select
+                id="category"
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+              >
+                <option value="">카테고리 선택</option>
+                {categories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </Select>
+              {errors.category && <ErrorMessage>{errors.category}</ErrorMessage>}
+            </FormGroup>
+
+            <FormGroup>
+              <Label htmlFor="maxMembers">최대 인원</Label>
+              <Input
+                id="maxMembers"
+                name="maxMembers"
+                type="number"
+                min="2"
+                value={formData.maxMembers}
+                onChange={handleChange}
+                placeholder="최대 인원을 입력하세요"
+              />
+              {errors.maxMembers && <ErrorMessage>{errors.maxMembers}</ErrorMessage>}
+            </FormGroup>
+
+            <FormGroup>
+              <Label htmlFor="startDate">시작 날짜</Label>
+              <Input
+                id="startDate"
+                name="startDate"
+                type="date"
+                value={formData.startDate}
+                onChange={handleChange}
+              />
+              {errors.startDate && <ErrorMessage>{errors.startDate}</ErrorMessage>}
+            </FormGroup>
+
+            <FormGroup>
+              <Label htmlFor="endDate">종료 날짜</Label>
+              <Input
+                id="endDate"
+                name="endDate"
+                type="date"
+                value={formData.endDate}
+                onChange={handleChange}
+              />
+              {errors.endDate && <ErrorMessage>{errors.endDate}</ErrorMessage>}
+            </FormGroup>
+
+            <FormGroup>
+              <Label htmlFor="tags">태그</Label>
+              <TagInput
+                id="tags"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={handleTagInputKeyDown}
+                placeholder="태그를 입력하고 Enter를 누르세요"
+              />
+              <TagList>
+                {tags.map((tag) => (
+                  <Tag key={tag}>
+                    {tag}
+                    <button type="button" onClick={() => removeTag(tag)}>
+                      ×
+                    </button>
+                  </Tag>
+                ))}
+              </TagList>
+            </FormGroup>
+
+            <ButtonContainer>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => navigate(-1)}
+              >
+                취소
+              </Button>
+              <Button type="submit">모임 만들기</Button>
+            </ButtonContainer>
+          </Form>
+        </FormContainer>
+      </MainContent>
+      <Footer />
+    </Container>
+  );
+};
+
+export default MoimCreatePage; 
