@@ -3,34 +3,43 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import Header from "../components/Header";
 import Button from "../components/Button";
-import Footer from "../components/Footer";
+import Input from "../components/Input";
+import Textarea from "../components/Textarea";
 
 const Container = styled.div`
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background: #f8fafc;
 `;
 
-const MainContent = styled.main`
+const LayoutContainer = styled.div`
   flex: 1;
-  background-color: #f8fafc;
-  padding: 40px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 0 0 0;
 `;
 
-const FormContainer = styled.div`
-  max-width: 768px;
+const ContentContainer = styled.div`
+  width: 100%;
+  max-width: 640px;
+  background: #fff;
+  border-radius: 16px;
   margin: 0 auto;
-  padding: 32px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 40px 32px 32px 32px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: none;
 `;
 
-const Title = styled.h1`
-  font-size: 24px;
+const TopTitle = styled.h2`
+  color: #0d141c;
+  font-size: 28px;
   font-weight: 700;
-  color: #111827;
-  margin-bottom: 24px;
+  line-height: 1.2;
+  padding-bottom: 24px;
+  text-align: left;
 `;
 
 const Form = styled.form`
@@ -46,53 +55,20 @@ const FormGroup = styled.div`
 `;
 
 const Label = styled.label`
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: #374151;
-`;
-
-const Input = styled.input`
-  padding: 10px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 14px;
-  color: #111827;
-  transition: border-color 0.15s ease;
-
-  &:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  }
-`;
-
-const TextArea = styled.textarea`
-  padding: 10px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 14px;
-  color: #111827;
-  min-height: 120px;
-  resize: vertical;
-  transition: border-color 0.15s ease;
-
-  &:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  }
 `;
 
 const Select = styled.select`
   padding: 10px 12px;
   border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 14px;
+  border-radius: 8px;
+  font-size: 15px;
   color: #111827;
   background-color: white;
   cursor: pointer;
   transition: border-color 0.15s ease;
-
   &:focus {
     outline: none;
     border-color: #3b82f6;
@@ -103,11 +79,10 @@ const Select = styled.select`
 const TagInput = styled.input`
   padding: 10px 12px;
   border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 14px;
+  border-radius: 8px;
+  font-size: 15px;
   color: #111827;
   transition: border-color 0.15s ease;
-
   &:focus {
     outline: none;
     border-color: #3b82f6;
@@ -131,7 +106,6 @@ const Tag = styled.span`
   display: flex;
   align-items: center;
   gap: 4px;
-
   button {
     background: none;
     border: none;
@@ -141,7 +115,6 @@ const Tag = styled.span`
     font-size: 14px;
     display: flex;
     align-items: center;
-
     &:hover {
       color: #ef4444;
     }
@@ -238,7 +211,11 @@ const MoimCreatePage = () => {
     if (!formData.endDate) {
       newErrors.endDate = "종료 날짜를 선택해주세요.";
     }
-    if (formData.startDate && formData.endDate && formData.startDate > formData.endDate) {
+    if (
+      formData.startDate &&
+      formData.endDate &&
+      formData.startDate > formData.endDate
+    ) {
       newErrors.endDate = "종료 날짜는 시작 날짜보다 늦어야 합니다.";
     }
 
@@ -248,7 +225,7 @@ const MoimCreatePage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -266,9 +243,9 @@ const MoimCreatePage = () => {
   return (
     <Container>
       <Header />
-      <MainContent>
-        <FormContainer>
-          <Title>새로운 모임 만들기</Title>
+      <LayoutContainer>
+        <ContentContainer>
+          <TopTitle>새로운 모임 만들기</TopTitle>
           <Form onSubmit={handleSubmit}>
             <FormGroup>
               <Label htmlFor="title">모임 제목</Label>
@@ -284,14 +261,16 @@ const MoimCreatePage = () => {
 
             <FormGroup>
               <Label htmlFor="description">모임 설명</Label>
-              <TextArea
+              <Textarea
                 id="description"
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
                 placeholder="모임에 대해 자세히 설명해주세요"
               />
-              {errors.description && <ErrorMessage>{errors.description}</ErrorMessage>}
+              {errors.description && (
+                <ErrorMessage>{errors.description}</ErrorMessage>
+              )}
             </FormGroup>
 
             <FormGroup>
@@ -309,7 +288,9 @@ const MoimCreatePage = () => {
                   </option>
                 ))}
               </Select>
-              {errors.category && <ErrorMessage>{errors.category}</ErrorMessage>}
+              {errors.category && (
+                <ErrorMessage>{errors.category}</ErrorMessage>
+              )}
             </FormGroup>
 
             <FormGroup>
@@ -323,7 +304,9 @@ const MoimCreatePage = () => {
                 onChange={handleChange}
                 placeholder="최대 인원을 입력하세요"
               />
-              {errors.maxMembers && <ErrorMessage>{errors.maxMembers}</ErrorMessage>}
+              {errors.maxMembers && (
+                <ErrorMessage>{errors.maxMembers}</ErrorMessage>
+              )}
             </FormGroup>
 
             <FormGroup>
@@ -335,7 +318,9 @@ const MoimCreatePage = () => {
                 value={formData.startDate}
                 onChange={handleChange}
               />
-              {errors.startDate && <ErrorMessage>{errors.startDate}</ErrorMessage>}
+              {errors.startDate && (
+                <ErrorMessage>{errors.startDate}</ErrorMessage>
+              )}
             </FormGroup>
 
             <FormGroup>
@@ -382,11 +367,10 @@ const MoimCreatePage = () => {
               <Button type="submit">모임 만들기</Button>
             </ButtonContainer>
           </Form>
-        </FormContainer>
-      </MainContent>
-      <Footer />
+        </ContentContainer>
+      </LayoutContainer>
     </Container>
   );
 };
 
-export default MoimCreatePage; 
+export default MoimCreatePage;

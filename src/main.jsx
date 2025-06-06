@@ -6,6 +6,7 @@ import { Routes, Route } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import MoimMainPage from "./pages/MoimMainPage";
 import MoimCreatePage from "./pages/MoimCreatePage";
+import MoimListPage from "./pages/MoimListPage";
 // import MoimDetailPage from "./pages/MoimDetailPage";
 // import MoimEditPage from "./pages/MoimEditPage";
 // import MoimJoinPage from "./pages/MoimJoinPage";
@@ -17,7 +18,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <Routes>
       <Route path="/" element={<MoimMainPage />} />
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/moims" element={<MoimMainPage />} />
+      <Route path="/moims" element={<MoimListPage />} />
       <Route path="/create" element={<MoimCreatePage />} />
       {/* <Route path="/moim/:id" element={<MoimDetailPage />} />
       <Route path="/moim/:id/edit" element={<MoimEditPage />} />
