@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import Button from "../components/Button";
+import Input from "../components/Input";
 
 const Container = styled.div`
   position: fixed;
@@ -82,22 +83,6 @@ const Form = styled.form`
 const FormGroup = styled.div`
   display: flex;
   flex-direction: column;
-`;
-
-const Input = styled.input`
-  padding: 0.75rem 1rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  font-size: 1rem;
-  color: #111827;
-  background-color: #ffffff;
-  transition: border-color 0.15s ease;
-
-  &:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  }
 `;
 
 const Divider = styled.div`
