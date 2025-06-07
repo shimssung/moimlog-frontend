@@ -138,6 +138,15 @@ const SocialLoginButton = styled(Button)`
       border-color: #dadce0;
     }
   `}
+
+  ${(props) =>
+    props.variant === "naver" &&
+    `
+    background-color: #03C75A;
+    color: #fff;
+    border: none;
+    &:hover { background-color: #1EC800; }
+  `}
 `;
 
 const SocialIcon = styled.img`
@@ -255,6 +264,14 @@ const LoginPage = () => {
             >
               <SocialIcon src="/google_icon.png" alt="Google" />
               Google로 로그인
+            </SocialLoginButton>
+            <SocialLoginButton
+              variant="naver"
+              fullWidth
+              onClick={() => console.log("Naver로 로그인")}
+            >
+              <SocialIcon src="/naver_icon.svg" alt="Naver" />
+              네이버로 로그인
             </SocialLoginButton>
           </SocialLogin>
 
