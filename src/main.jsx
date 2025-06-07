@@ -7,6 +7,7 @@ import LoginPage from "./pages/LoginPage";
 import MoimMainPage from "./pages/MoimMainPage";
 import MoimCreatePage from "./pages/MoimCreatePage";
 import MoimListPage from "./pages/MoimListPage";
+import SignupPage from "./pages/SignupPage";
 // import MoimDetailPage from "./pages/MoimDetailPage";
 // import MoimEditPage from "./pages/MoimEditPage";
 // import MoimJoinPage from "./pages/MoimJoinPage";
@@ -20,6 +21,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       <Route path="/login" element={<LoginPage />} />
       <Route path="/moims" element={<MoimListPage />} />
       <Route path="/create" element={<MoimCreatePage />} />
+      <Route path="/signup" element={<SignupPage />} />
       {/* <Route path="/moim/:id" element={<MoimDetailPage />} />
       <Route path="/moim/:id/edit" element={<MoimEditPage />} />
       <Route path="/moim/:id/join" element={<MoimJoinPage />} />

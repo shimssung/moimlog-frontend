@@ -109,6 +109,21 @@ const CardList = styled.div`
   padding: 0 16px 32px 16px;
 `;
 
+const Spinner = styled.div`
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  border: 4px solid #b3d4fc;
+  border-top: 4px solid #49749c;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  @keyframes spin {
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+`;
+
 const categories = ["All", "Technology", "Arts", "Sports", "Food"];
 
 const meetups = Array.from({ length: 40 }, (_, i) => ({
@@ -126,6 +141,7 @@ const MoimListPage = () => {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [visibleCount, setVisibleCount] = useState(8);
+  const [loading, setLoading] = useState(false);
   const loader = useRef();
 
   // 필터링 로직 (카테고리, 검색)
@@ -144,15 +160,25 @@ const MoimListPage = () => {
   useEffect(() => {
     const observer = new window.IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting) {
-          setVisibleCount((prev) => Math.min(prev + 8, filteredMeetups.length));
+        if (
+          entries[0].isIntersecting &&
+          !loading &&
+          visibleCount < filteredMeetups.length
+        ) {
+          setLoading(true);
+          setTimeout(() => {
+            setVisibleCount((prev) =>
+              Math.min(prev + 8, filteredMeetups.length)
+            );
+            setLoading(false);
+          }, 800);
         }
       },
       { threshold: 0.2 }
     );
     if (loader.current) observer.observe(loader.current);
     return () => observer.disconnect();
-  }, [filteredMeetups.length]);
+  }, [filteredMeetups.length, loading, visibleCount]);
 
   return (
     <Container>
@@ -213,7 +239,18 @@ const MoimListPage = () => {
               />
             ))}
           </CardList>
-          <div ref={loader} style={{ height: 30 }} />
+          <div
+            ref={loader}
+            style={{
+              height: 250,
+              textAlign: "center",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {loading && visibleCount < filteredMeetups.length && <Spinner />}
+          </div>
         </ContentContainer>
       </LayoutContainer>
     </Container>
