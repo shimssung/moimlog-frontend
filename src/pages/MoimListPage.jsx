@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import Header from "../components/Header";
 import Card from "../components/Card";
@@ -102,84 +102,31 @@ const SectionTitle = styled.h2`
   padding: 32px 16px 12px 16px;
 `;
 
-const MeetupList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+const CardList = styled.div`
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
   padding: 0 16px 32px 16px;
-`;
-
-const MeetupRow = styled.div`
-  display: flex;
-  align-items: stretch;
-  justify-content: space-between;
-  gap: 16px;
-  background: #fff;
-  border-radius: 12px;
-  padding: 0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-`;
-
-const MeetupInfo = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex: 2 2 0px;
-  padding: 20px 0 20px 0;
-  justify-content: center;
-`;
-
-const MeetupTitle = styled.p`
-  color: #0d141c;
-  font-size: 16px;
-  font-weight: 700;
-  margin: 0;
-`;
-
-const MeetupDesc = styled.p`
-  color: #49739c;
-  font-size: 14px;
-  margin: 0;
-`;
-
-const MeetupImage = styled.div`
-  flex: 1 1 0px;
-  min-width: 160px;
-  max-width: 240px;
-  aspect-ratio: 16/9;
-  background-size: cover;
-  background-position: center;
-  border-radius: 12px;
 `;
 
 const categories = ["All", "Technology", "Arts", "Sports", "Food"];
 
-const meetups = [
-  {
-    title: "Tech Talk: AI in Business",
-    desc: "Technology · Oct 26, 6:00 PM · 25 participants",
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuDeaIG8qpOvtU_nWVVgN-uKivsREomBrmF67_KWuoClleBVK7Kaoyrg1_nzXfA02vfmGt3_ps21ZQVrUTAVmv1sTld5SHhzFm2ANXtlvpw-oDWXpu0tOmMVCpHvtqxpSRkzYirx04IuIlVeZsO-XRh4wHdZ0L0QA8DCil96q5RNPhl2EFY8STVGF8V5ay0bfjK3C-cC9Np-QJcC73jylS8o6mCo-H3zt6Aqi88MPKX02dBljP3RW6gg2DzB-2tm2LQUvhmVgTbT3Bc",
-  },
-  {
-    title: "Art Workshop: Watercolor Basics",
-    desc: "Arts · Nov 5, 2:00 PM · 15 participants",
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuDPWNMJlmpE3jMuT2BRromNH2VpXeO374MKJ27ytkvDFgVxc_7k5dttSXiO9mMLpVTTVSA6zxFAsH9dxxhPxNhcyoVYuLQBv3iOjhV6pPL099FrT7CSkpu_lCFXggk1916Si2LVTWlSRei_lQn4bk3uhQWP00it2GY2FbMMWUSQk7DuA63CzezcOP-ZQepMX2JBg19VEN-8ZT9ZYv9GBfyob7w-k4rMzFROug5sl_ZAu9fN16JrPsNrfBZBEDe-f7EZRUSAiB3pNjw",
-  },
-  {
-    title: "Sports Meetup: Weekend Hiking",
-    desc: "Sports · Nov 12, 9:00 AM · 30 participants",
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuD2nH2WjODrKh1YRt_zwthlB4B3F_vCNbpwO7BLOj2aKjcP6i83LxqDszAPAPE-Gdd42ZS9cDiW-fyKX4tjfxz-w7IbO-EwGmYEmiqQN1vh5v_ihHFY3JzWUr44j6OdvMlsUFZ23m6cbnyqwJVfetF4Eiyw1o2Fnb4G0dmyvhdGNaE2IiexyfvXly-MRG58xFIOlPgWqw82ntInUlnuSN833vkxBsXSP4vIutFornPe3fLXfLTOny7h-DzxQortySERe_7Pe24nfyE",
-  },
-  {
-    title: "Food Lovers: Cooking Class",
-    desc: "Food · Nov 19, 5:00 PM · 20 participants",
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuDuqvmeQHQ9M_wZ_-xXYkAHTtDs6Ru-ZpDfn6L8e7NZBf_9Yt9DVr7OmJ-_-bMvhTHACK3P4xnFodleJoU2zSwmQ9mYJdpBorYioqwHtljvarT80JOD-f7x_-huncbQq3PB_0-jvamcsSPhdMx2ZwEt8OUsdScygPDenTmy06k0DbjY2RMiow1jmjNlVmipmayehgCQ7LZ3Dov4pHtaEF0Kx-tVduSkjamg2cj2qRolEmR_LOdQckF3PXiI51zaoKarh0D7TxdB_N4",
-  },
-];
+const meetups = Array.from({ length: 40 }, (_, i) => ({
+  title: `Meetup ${i + 1}`,
+  desc: `Category · Date · ${10 + i} participants`,
+  img: [
+    "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
+    "https://images.unsplash.com/photo-1465101046530-73398c7f28ca",
+    "https://images.unsplash.com/photo-1519125323398-675f0ddb6308",
+    "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e",
+  ][i % 4],
+}));
 
 const MoimListPage = () => {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [visibleCount, setVisibleCount] = useState(8);
+  const loader = useRef();
 
   // 필터링 로직 (카테고리, 검색)
   const filteredMeetups = meetups.filter((meetup) => {
@@ -192,6 +139,20 @@ const MoimListPage = () => {
       meetup.desc.toLowerCase().includes(search.toLowerCase());
     return matchCategory && matchSearch;
   });
+
+  // Intersection Observer로 무한 스크롤 구현
+  useEffect(() => {
+    const observer = new window.IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount((prev) => Math.min(prev + 8, filteredMeetups.length));
+        }
+      },
+      { threshold: 0.2 }
+    );
+    if (loader.current) observer.observe(loader.current);
+    return () => observer.disconnect();
+  }, [filteredMeetups.length]);
 
   return (
     <Container>
@@ -241,19 +202,18 @@ const MoimListPage = () => {
             </SearchLabel>
           </SearchSection>
           <SectionTitle>Upcoming Meetups</SectionTitle>
-          <MeetupList>
-            {filteredMeetups.map((meetup, idx) => (
-              <MeetupRow key={idx}>
-                <MeetupInfo>
-                  <MeetupTitle>{meetup.title}</MeetupTitle>
-                  <MeetupDesc>{meetup.desc}</MeetupDesc>
-                </MeetupInfo>
-                <MeetupImage
-                  style={{ backgroundImage: `url('${meetup.img}')` }}
-                />
-              </MeetupRow>
+          <CardList>
+            {filteredMeetups.slice(0, visibleCount).map((meetup, idx) => (
+              <Card
+                key={idx}
+                image={meetup.img}
+                title={meetup.title}
+                desc={meetup.desc}
+                style={{ width: "100%", marginBottom: 16 }}
+              />
             ))}
-          </MeetupList>
+          </CardList>
+          <div ref={loader} style={{ height: 30 }} />
         </ContentContainer>
       </LayoutContainer>
     </Container>
