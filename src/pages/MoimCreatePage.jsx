@@ -10,7 +10,7 @@ const Container = styled.div`
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #f8fafc;
+  background: #fff;
 `;
 
 const LayoutContainer = styled.div`
@@ -24,7 +24,6 @@ const LayoutContainer = styled.div`
 const ContentContainer = styled.div`
   width: 100%;
   max-width: 640px;
-  background: #fff;
   border-radius: 16px;
   margin: 0 auto;
   padding: 40px 32px 32px 32px;
