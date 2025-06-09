@@ -5,6 +5,7 @@ import Input from "../components/Input";
 import kakaoIcon from "/kakao_icon.png";
 import googleIcon from "/google_icon.png";
 import naverIcon from "/naver_icon.svg";
+import { FaCheckCircle, FaTimesCircle, FaRegCircle } from "react-icons/fa";
 
 function SignupPage() {
   const [form, setForm] = useState({
@@ -90,12 +91,33 @@ function SignupPage() {
         />
         <PwDesc>
           <li className={!pwTouched ? "" : pwChecks.rule1 ? "pass" : "fail"}>
+            {!pwTouched ? (
+              <FaRegCircle />
+            ) : pwChecks.rule1 ? (
+              <FaCheckCircle />
+            ) : (
+              <FaTimesCircle />
+            )}
             영문/숫자/특수문자 중, 2가지 이상 포함
           </li>
           <li className={!pwTouched ? "" : pwChecks.rule2 ? "pass" : "fail"}>
+            {!pwTouched ? (
+              <FaRegCircle />
+            ) : pwChecks.rule2 ? (
+              <FaCheckCircle />
+            ) : (
+              <FaTimesCircle />
+            )}
             8자 이상 32자 이하 입력 (공백 제외)
           </li>
           <li className={!pwTouched ? "" : pwChecks.rule3 ? "pass" : "fail"}>
+            {!pwTouched ? (
+              <FaRegCircle />
+            ) : pwChecks.rule3 ? (
+              <FaCheckCircle />
+            ) : (
+              <FaTimesCircle />
+            )}
             연속 3자 이상 동일한 문자/숫자 제외
           </li>
         </PwDesc>
@@ -185,17 +207,23 @@ const Label = styled.label`
 `;
 const PwDesc = styled.ul`
   margin: 6px 0 0 0;
-  padding: 0 0 0 18px;
+  padding: 0 0 0 0;
   font-size: 13px;
   line-height: 1.7;
-  list-style: disc;
+  list-style: none;
   li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     color: #9ca3af; /* 기본 회색 */
     &.fail {
       color: #ef4444;
     }
     &.pass {
       color: #22c55e;
+    }
+    svg {
+      font-size: 16px;
     }
   }
 `;
@@ -206,13 +234,23 @@ const ErrorMsg = styled.div`
   margin: 8px 0 -8px;
 `;
 const Divider = styled.div`
+  display: flex;
+  align-items: center;
+  text-align: center;
   margin: 24px 0 0 0;
-  border-top: 1px solid #e5e7eb;
+  color: #9ca3af;
+  &::before,
+  &::after {
+    content: "";
+    flex: 1;
+    border-top: 1px solid #e5e7eb;
+  }
   span {
-    padding: 0 12px;
+    margin: 0 12px;
     background: #fff;
     font-size: 14px;
     color: #9ca3af;
+    white-space: nowrap;
   }
 `;
 const SocialRow = styled.div`
