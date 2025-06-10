@@ -2,9 +2,6 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import Button from "../components/Button";
 import Input from "../components/Input";
-import kakaoIcon from "/kakao_icon.png";
-import googleIcon from "/google_icon.png";
-import naverIcon from "/naver_icon.svg";
 import { FaCheckCircle, FaTimesCircle, FaRegCircle } from "react-icons/fa";
 
 function SignupPage() {
@@ -65,122 +62,158 @@ function SignupPage() {
   };
 
   return (
-    <Wrap>
-      <FormBox onSubmit={handleSubmit}>
-        <Title>회원가입</Title>
-        <Label>이메일</Label>
-        <Input
-          name="email"
-          placeholder="example@inflab.com"
-          value={form.email}
-          onChange={handleChange}
-        />
-        <Label>비밀번호</Label>
-        <Input
-          name="password"
-          type="password"
-          placeholder="비밀번호"
-          value={form.password}
-          onChange={handlePasswordChange}
-          style={{
-            borderColor:
-              !pwChecks.rule1 || !pwChecks.rule2 || !pwChecks.rule3
-                ? "#ef4444"
-                : undefined,
-          }}
-        />
-        <PwDesc>
-          <li className={!pwTouched ? "" : pwChecks.rule1 ? "pass" : "fail"}>
-            {!pwTouched ? (
-              <FaRegCircle />
-            ) : pwChecks.rule1 ? (
-              <FaCheckCircle />
-            ) : (
-              <FaTimesCircle />
-            )}
-            영문/숫자/특수문자 중, 2가지 이상 포함
-          </li>
-          <li className={!pwTouched ? "" : pwChecks.rule2 ? "pass" : "fail"}>
-            {!pwTouched ? (
-              <FaRegCircle />
-            ) : pwChecks.rule2 ? (
-              <FaCheckCircle />
-            ) : (
-              <FaTimesCircle />
-            )}
-            8자 이상 32자 이하 입력 (공백 제외)
-          </li>
-          <li className={!pwTouched ? "" : pwChecks.rule3 ? "pass" : "fail"}>
-            {!pwTouched ? (
-              <FaRegCircle />
-            ) : pwChecks.rule3 ? (
-              <FaCheckCircle />
-            ) : (
-              <FaTimesCircle />
-            )}
-            연속 3자 이상 동일한 문자/숫자 제외
-          </li>
-        </PwDesc>
-        <Label>비밀번호 확인</Label>
-        <Input
-          name="password2"
-          type="password"
-          placeholder="비밀번호 확인"
-          value={form.password2}
-          onChange={handleChange}
-        />
-        {error && <ErrorMsg>{error}</ErrorMsg>}
-        <Button
-          type="submit"
-          fullWidth
-          size="large"
-          variant="primary"
-          style={{ margin: "24px 0 0 0" }}
-        >
-          가입하기
-        </Button>
-        <Divider>
-          <span>간편 회원가입</span>
-        </Divider>
-        <SocialRow>
-          <SocialBtn
-            bg="#FEE500"
-            color="#191600"
-            onClick={() => alert("카카오로 회원가입")}
-          >
-            <img src={kakaoIcon} alt="카카오" width={24} height={24} />
-          </SocialBtn>
-          <SocialBtn
-            bg="#fff"
-            color="#222"
-            border
-            onClick={() => alert("구글로 회원가입")}
-          >
-            <img src={googleIcon} alt="구글" width={24} height={24} />
-          </SocialBtn>
-          <SocialBtn
-            bg="#03C75A"
-            color="#03C75A"
-            border
-            onClick={() => alert("네이버로로 회원가입")}
-          >
-            <img src={naverIcon} alt="네이버버" width={24} height={24} />
-          </SocialBtn>
-        </SocialRow>
-      </FormBox>
-    </Wrap>
+    <PageWrap>
+      <LeftSection>
+        {/* LeftSection content */}
+      </LeftSection>
+      <RightSection>
+        <FormContainer>
+          <FormBox onSubmit={handleSubmit}>
+            <Title>회원가입</Title>
+            <Label>이메일</Label>
+            <Input
+              name="email"
+              placeholder="example@inflab.com"
+              value={form.email}
+              onChange={handleChange}
+            />
+            <Label>비밀번호</Label>
+            <Input
+              name="password"
+              type="password"
+              placeholder="비밀번호"
+              value={form.password}
+              onChange={handlePasswordChange}
+              style={{
+                borderColor:
+                  !pwChecks.rule1 || !pwChecks.rule2 || !pwChecks.rule3
+                    ? "#ef4444"
+                    : undefined,
+              }}
+            />
+            <PwDesc>
+              <li className={!pwTouched ? "" : pwChecks.rule1 ? "pass" : "fail"}>
+                {!pwTouched ? (
+                  <FaRegCircle />
+                ) : pwChecks.rule1 ? (
+                  <FaCheckCircle />
+                ) : (
+                  <FaTimesCircle />
+                )}
+                영문/숫자/특수문자 중, 2가지 이상 포함
+              </li>
+              <li className={!pwTouched ? "" : pwChecks.rule2 ? "pass" : "fail"}>
+                {!pwTouched ? (
+                  <FaRegCircle />
+                ) : pwChecks.rule2 ? (
+                  <FaCheckCircle />
+                ) : (
+                  <FaTimesCircle />
+                )}
+                8자 이상 32자 이하 입력 (공백 제외)
+              </li>
+              <li className={!pwTouched ? "" : pwChecks.rule3 ? "pass" : "fail"}>
+                {!pwTouched ? (
+                  <FaRegCircle />
+                ) : pwChecks.rule3 ? (
+                  <FaCheckCircle />
+                ) : (
+                  <FaTimesCircle />
+                )}
+                연속 3자 이상 동일한 문자/숫자 제외
+              </li>
+            </PwDesc>
+            <Label>비밀번호 확인</Label>
+            <Input
+              name="password2"
+              type="password"
+              placeholder="비밀번호 확인"
+              value={form.password2}
+              onChange={handleChange}
+            />
+            {error && <ErrorMsg>{error}</ErrorMsg>}
+            <Button
+              type="submit"
+              fullWidth
+              size="large"
+              variant="primary"
+              style={{ margin: "24px 0 0 0" }}
+            >
+              가입하기
+            </Button>
+            <Divider>
+              <span>간편 회원가입</span>
+            </Divider>
+            <SocialRow>
+              <SocialBtn
+                bg="#FEE500"
+                color="#191600"
+                onClick={() => alert("카카오로 회원가입")}
+              >
+                <img src={"/kakao_icon.png"} alt="카카오" width={24} height={24} />
+              </SocialBtn>
+              <SocialBtn
+                bg="#fff"
+                color="#222"
+                border
+                onClick={() => alert("구글로 회원가입")}
+              >
+                <img src={"/google_icon.png"} alt="구글" width={24} height={24} />
+              </SocialBtn>
+              <SocialBtn
+                bg="#03C75A"
+                color="#03C75A"
+                border
+                onClick={() => alert("네이버로로 회원가입")}
+              >
+                <img src={"/naver_icon.svg"} alt="네이버버" width={24} height={24} />
+              </SocialBtn>
+            </SocialRow>
+          </FormBox>
+        </FormContainer>
+      </RightSection>
+    </PageWrap>
   );
 }
 
 export default SignupPage;
 
-const Wrap = styled.div`
+const PageWrap = styled.div`
+  display: flex;
   min-height: 100vh;
+  background: #111827;
+`;
+
+const LeftSection = styled.div`
+  flex: 1.2;
+  background: transparent; // 배경 투명(이미 전체 배경색 있음)
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 48px 24px;
+`;
+
+const RightSection = styled.div`
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f8fafc;
+  background: transparent; // 배경 투명
 `;
+
+const FormContainer = styled.div`
+  background-color: #fff;
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  padding: 2.5rem 2rem;
+  width: 100%;
+  max-width: 28rem;
+  position: relative;
+  top: 0;
+`;
+
 const FormBox = styled.form`
   background: #fff;
   border-radius: 8px;

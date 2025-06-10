@@ -4,6 +4,7 @@ import Header from "../components/Header";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import Textarea from "../components/Textarea";
+import { useRouter } from 'next/router';
 
 const Container = styled.div`
   min-height: 100vh;
@@ -133,6 +134,7 @@ const ErrorMessage = styled.span`
 `;
 
 const MoimCreatePage = () => {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -240,9 +242,14 @@ const MoimCreatePage = () => {
       });
       setTags([]);
       setTagInput("");
-    } catch (error) {
+    } catch (e) {
+      console.error(e);
       alert("에러가 발생했습니다.");
     }
+  };
+
+  const handleClick = () => {
+    router.push('/');
   };
 
   return (
@@ -347,6 +354,9 @@ const MoimCreatePage = () => {
               </TagList>
             </FormGroup>
             <ButtonContainer>
+              <Button type="button" variant="secondary" onClick={handleClick}>
+                취소
+              </Button>
               <Button type="submit" variant="primary">
                 모임 생성
               </Button>

@@ -3,66 +3,56 @@ import styled from "styled-components";
 import Button from "../components/Button";
 import Input from "../components/Input";
 
-const Container = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+const PageWrap = styled.div`
   display: flex;
-  flex-direction: column;
-  background-color: #f9fafb;
-  overflow: hidden;
-`;
-
-const Header = styled.header`
-  background-color: #ffffff;
-  border-bottom: 1px solid #e5e7eb;
-  padding: 1rem 2.5rem;
-  flex-shrink: 0;
-`;
-
-const HeaderContent = styled.div`
-  max-width: 1280px;
-  margin: 0 auto;
-`;
-
-const LogoSection = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-`;
-
-const LogoIcon = styled.div`
-  width: 24px;
-  height: 24px;
-  color: #111827;
-`;
-
-const LogoText = styled.h1`
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #111827;
-  margin: 0;
-`;
-
-const Main = styled.main`
-  flex: 1;
-  display: flex;
+  min-height: 100vh;
+  background: #111827;
   justify-content: center;
   align-items: center;
-  overflow: hidden;
+  padding: 32px;
+  gap: 48px;
+`;
+
+const LeftSection = styled.div`
+  flex: 0 0 620px;
+  background: transparent;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 48px 24px;
+`;
+
+const LeftTitle = styled.h2`
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin-bottom: 16px;
+`;
+
+const LeftDesc = styled.p`
+  font-size: 1.1rem;
+  font-weight: 400;
+  opacity: 0.85;
+`;
+
+const RightSection = styled.div`
+  flex: 0 0 620px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
 `;
 
 const FormContainer = styled.div`
-  background-color: #ffffff;
+  background-color: #fff;
   border-radius: 0.75rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  padding: 2rem;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  padding: 2.5rem 2rem;
   width: 100%;
   max-width: 28rem;
   position: relative;
-  top: -2.5rem;
+  top: 0;
 `;
 
 const Title = styled.h2`
@@ -180,27 +170,15 @@ const LoginPage = () => {
   };
 
   return (
-    <Container>
-      <Header>
-        <HeaderContent>
-          <LogoSection>
-            <LogoIcon>
-              <svg
-                viewBox="0 0 48 48"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M36.7273 44C33.9891 44 31.6043 39.8386 30.3636 33.69C29.123 39.8386 26.7382 44 24 44C21.2618 44 18.877 39.8386 17.6364 33.69C16.3957 39.8386 14.0109 44 11.2727 44C7.25611 44 4 35.0457 4 24C4 12.9543 7.25611 4 11.2727 4C14.0109 4 16.3957 8.16144 17.6364 14.31C18.877 8.16144 21.2618 4 24 4C26.7382 4 29.123 8.16144 30.3636 14.31C31.6043 8.16144 33.9891 4 36.7273 4C40.7439 4 44 12.9543 44 24C44 35.0457 40.7439 44 36.7273 44Z"
-                  fill="currentColor"
-                />
-              </svg>
-            </LogoIcon>
-            <LogoText>MoimLog</LogoText>
-          </LogoSection>
-        </HeaderContent>
-      </Header>
-      <Main>
+    <PageWrap>
+      <LeftSection>
+        <LeftTitle>MoimLog에 오신 걸 환영합니다!</LeftTitle>
+        <LeftDesc>
+          다양한 모임을 만들고, 참여하며<br />
+          새로운 사람들과 함께 성장해보세요.
+        </LeftDesc>
+      </LeftSection>
+      <RightSection>
         <FormContainer>
           <Title>로그인</Title>
           <Form onSubmit={handleLogin}>
@@ -245,10 +223,11 @@ const LoginPage = () => {
           </SocialLogin>
           <Footer>
             <p>아직 회원이 아니신가요? <a href="/signup">회원가입</a></p>
+            <p>비밀번호를 잊으셨나요? <a href="/forgot-password">비밀번호 찾기</a></p>
           </Footer>
         </FormContainer>
-      </Main>
-    </Container>
+      </RightSection>
+    </PageWrap>
   );
 };
 

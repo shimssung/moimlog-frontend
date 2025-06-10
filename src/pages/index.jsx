@@ -2,6 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import Button from "../components/Button";
 
 const StyledMoimMainPage = styled.div`
   display: flex;
@@ -66,41 +67,6 @@ const ButtonGroup = styled.div`
   gap: 16px;
   justify-content: center;
   margin-top: 32px;
-`;
-
-const Button = styled.a`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-weight: 600;
-  transition: all 0.2s;
-  text-decoration: none;
-
-  ${({ primary }) =>
-    primary &&
-    `
-    background-color: #f8fafc;
-    color: #2563eb;
-    border: 2px solid #2563eb;
-    &:hover {
-      background-color: #64748b;
-      color: white;
-      border-color: #64748b;
-    }
-  `}
-
-  ${({ secondary }) =>
-    secondary &&
-    `
-    background-color: #2563eb;
-    color: white;
-    border: 2px solid #2563eb;
-    &:hover {
-      filter: brightness(0.9);
-    }
-  `}
 `;
 
 const ContentSection = styled.section`
@@ -226,15 +192,33 @@ const MoimMainPage = () => {
         <HeroSection>
           <HeroContent>
             <HeroText>
-              <HeroTitle>함께 성장하는 모임 플랫폼, MoimLog</HeroTitle>
+              <HeroTitle>함께 성장하는 모임 플랫폼</HeroTitle>
+              <HeroTitle>MoimLog</HeroTitle>
               <HeroSubtitle>
                 지금 바로 관심 있는 모임을 찾아보세요!
               </HeroSubtitle>
               <ButtonGroup>
-                <Button href="/moim-list" secondary>
+                <Button href="/moim-list" variant="secondary">
                   모임 둘러보기
                 </Button>
-                <Button href="/moim-create" primary>
+                <Button
+                  href="/moim-create"
+                  variant="primary"
+                  style={{
+                    transition: "all 0.15s",
+                    border: "1.5px solid #111827",
+                  }}
+                  onMouseOver={e => {
+                    e.currentTarget.style.background = "#fff";
+                    e.currentTarget.style.color = "#111827";
+                    e.currentTarget.style.border = "1.5px solid #111827";
+                  }}
+                  onMouseOut={e => {
+                    e.currentTarget.style.background = "#111827";
+                    e.currentTarget.style.color = "#fff";
+                    e.currentTarget.style.border = "1.5px solid #111827";
+                  }}
+                >
                   모임 만들기
                 </Button>
               </ButtonGroup>
