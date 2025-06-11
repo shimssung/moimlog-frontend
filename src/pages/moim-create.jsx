@@ -142,10 +142,12 @@ const MoimCreatePage = () => {
     maxMembers: "",
     onlineType: "online",
     location: "",
+    image: null,
   });
   const [tags, setTags] = useState([]);
   const [tagInput, setTagInput] = useState("");
   const [errors, setErrors] = useState({});
+  const [imagePreview, setImagePreview] = useState(null);
 
   const categories = [
     "스터디",
@@ -189,6 +191,14 @@ const MoimCreatePage = () => {
     setTags((prev) => prev.filter((tag) => tag !== tagToRemove));
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData((prev) => ({ ...prev, image: file }));
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
   const validateForm = () => {
     const newErrors = {};
 
@@ -226,9 +236,11 @@ const MoimCreatePage = () => {
         maxMembers: "",
         onlineType: "online",
         location: "",
+        image: null,
       });
       setTags([]);
       setTagInput("");
+      setImagePreview(null);
     } catch (e) {
       console.error(e);
       alert("에러가 발생했습니다.");
@@ -341,6 +353,24 @@ const MoimCreatePage = () => {
                   </Tag>
                 ))}
               </TagList>
+            </FormGroup>
+            <FormGroup>
+              <Label htmlFor="image">모임 대표 이미지</Label>
+              <input
+                id="image"
+                name="image"
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                style={{ marginBottom: "10px" }}
+              />
+              {imagePreview && (
+                <img
+                  src={imagePreview}
+                  alt="미리보기"
+                  style={{ width: "100%", maxWidth: 320, borderRadius: 8, marginTop: 4, marginBottom: 8, objectFit: "cover" }}
+                />
+              )}
             </FormGroup>
             <ButtonContainer>
               <Button type="button" variant="secondary" onClick={handleClick}>
