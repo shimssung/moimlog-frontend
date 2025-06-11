@@ -20,19 +20,8 @@ const ModalBox = styled.div`
   box-shadow: 0 4px 32px rgba(0, 0, 0, 0.18);
   min-width: 320px;
   max-width: 90vw;
-  padding: 32px 24px 24px 24px;
+  padding: 6px;
   position: relative;
-`;
-
-const CloseBtn = styled.button`
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  color: #888;
-  cursor: pointer;
 `;
 
 const Modal = ({ isOpen, onClose, children }) => {
@@ -40,7 +29,6 @@ const Modal = ({ isOpen, onClose, children }) => {
   return (
     <Overlay onClick={onClose}>
       <ModalBox onClick={(e) => e.stopPropagation()}>
-        <CloseBtn onClick={onClose}>&times;</CloseBtn>
         {children}
       </ModalBox>
     </Overlay>

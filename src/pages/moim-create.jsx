@@ -140,8 +140,8 @@ const MoimCreatePage = () => {
     description: "",
     category: "",
     maxMembers: "",
-    startDate: "",
-    endDate: "",
+    onlineType: "online",
+    location: "",
   });
   const [tags, setTags] = useState([]);
   const [tagInput, setTagInput] = useState("");
@@ -204,19 +204,6 @@ const MoimCreatePage = () => {
     if (!formData.maxMembers || formData.maxMembers < 2) {
       newErrors.maxMembers = "최소 2명 이상의 인원을 입력해주세요.";
     }
-    if (!formData.startDate) {
-      newErrors.startDate = "시작 날짜를 선택해주세요.";
-    }
-    if (!formData.endDate) {
-      newErrors.endDate = "종료 날짜를 선택해주세요.";
-    }
-    if (
-      formData.startDate &&
-      formData.endDate &&
-      formData.startDate > formData.endDate
-    ) {
-      newErrors.endDate = "종료 날짜는 시작 날짜보다 늦어야 합니다.";
-    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -237,8 +224,8 @@ const MoimCreatePage = () => {
         description: "",
         category: "",
         maxMembers: "",
-        startDate: "",
-        endDate: "",
+        onlineType: "online",
+        location: "",
       });
       setTags([]);
       setTagInput("");
@@ -313,27 +300,29 @@ const MoimCreatePage = () => {
               {errors.maxMembers && <ErrorMessage>{errors.maxMembers}</ErrorMessage>}
             </FormGroup>
             <FormGroup>
-              <Label htmlFor="startDate">시작 날짜</Label>
-              <Input
-                id="startDate"
-                name="startDate"
-                type="date"
-                value={formData.startDate}
+              <Label htmlFor="onlineType">모임 형태</Label>
+              <Select
+                id="onlineType"
+                name="onlineType"
+                value={formData.onlineType}
                 onChange={handleChange}
-              />
-              {errors.startDate && <ErrorMessage>{errors.startDate}</ErrorMessage>}
+              >
+                <option value="online">온라인</option>
+                <option value="offline">오프라인</option>
+              </Select>
             </FormGroup>
-            <FormGroup>
-              <Label htmlFor="endDate">종료 날짜</Label>
-              <Input
-                id="endDate"
-                name="endDate"
-                type="date"
-                value={formData.endDate}
-                onChange={handleChange}
-              />
-              {errors.endDate && <ErrorMessage>{errors.endDate}</ErrorMessage>}
-            </FormGroup>
+            {formData.onlineType === "offline" && (
+              <FormGroup>
+                <Label htmlFor="location">모임 위치</Label>
+                <Input
+                  id="location"
+                  name="location"
+                  value={formData.location}
+                  onChange={handleChange}
+                  placeholder="모임 장소를 입력하세요"
+                />
+              </FormGroup>
+            )}
             <FormGroup>
               <Label>태그</Label>
               <TagInput

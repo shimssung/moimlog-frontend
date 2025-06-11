@@ -1,8 +1,10 @@
 import React from "react";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Button from "../components/Button";
+import { useState } from "react";
+import Modal from "../components/Modal";
 
 const StyledMoimMainPage = styled.div`
   display: flex;
@@ -133,19 +135,157 @@ const CardDescription = styled.p`
   color: #6b7280;
 `;
 
+const ModalCard = styled.div`
+  max-width: 540px;
+  width: 92vw;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  overflow: hidden;
+  position: relative;
+  animation: ${keyframes`
+    0% { transform: translateY(40px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  `} 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+`;
+
+const ModalImage = styled.img`
+  width: 100%;
+  height: 210px;
+  object-fit: cover;
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  display: block;
+`;
+
+const ModalInner = styled.div`
+  padding: 32px 28px 24px 28px;
+  @media (max-width: 600px) {
+    padding: 18px 8px 16px 8px;
+  }
+`;
+
+const ModalTitle = styled.h2`
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+  color: #1a2233;
+`;
+
+const ModalDesc = styled.p`
+  color: #444;
+  font-size: 1.08rem;
+  margin-bottom: 18px;
+`;
+
+const ModalDivider = styled.hr`
+  border: none;
+  border-top: 1px solid #ececec;
+  margin: 18px 0 18px 0;
+`;
+
+const ModalInfoList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 1rem;
+  color: #222;
+`;
+
+const ModalInfoRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  align-items: center;
+`;
+
+const ModalInfoLabel = styled.span`
+  font-weight: 600;
+  color: #1a2233;
+  min-width: 70px;
+`;
+
+const ModalCreator = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.98rem;
+  color: #444;
+  margin-bottom: 2px;
+`;
+
+const ModalCreatorImg = styled.img`
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+`;
+
+const ModalTagList = styled.div`
+  margin-top: 10px;
+  margin-bottom: 8px;
+`;
+
+const ModalTag = styled.span`
+  display: inline-block;
+  background: #f3f4f6;
+  color: #374151;
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-right: 8px;
+  margin-bottom: 4px;
+`;
+
+const ModalBtnGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 28px;
+`;
+
+const ModalCloseBtn = styled.button`
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #888;
+  cursor: pointer;
+  z-index: 2;
+`;
+
 const MoimMainPage = () => {
+  const [selectedMoim, setSelectedMoim] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const recommendedMoims = [
     {
       id: 1,
       title: "스크럼 플러스 모임",
       description: "스크럼과 함께 성장하는 개발자들의 모임",
       image: "/img1.jpg",
+      creator: {
+        name: "홍길동",
+        profileImage: "/user1.jpg",
+        createdAt: "2024-06-01",
+      },
+      members: 12,
+      maxMembers: 20,
+      tags: ["개발", "스크럼"],
+      onlineType: "online",
+      location: "온라인(Zoom)",
     },
     {
       id: 2,
       title: "웹앱 개발 모임",
       description: "웹과 앱을 아우르는 사이드프로젝트 모임",
       image: "/img2.jpg",
+      onlineType: "offline",
+      location: "서울 강남구 카페",
     },
     {
       id: 3,
@@ -184,6 +324,16 @@ const MoimMainPage = () => {
       image: "/img8.jpg",
     },
   ];
+
+  const openModal = (moim) => {
+    setSelectedMoim(moim);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedMoim(null);
+  };
 
   return (
     <StyledMoimMainPage>
@@ -235,7 +385,7 @@ const MoimMainPage = () => {
             </SectionHeader>
             <MoimGrid>
               {recommendedMoims.map((moim) => (
-                <MoimCard key={moim.id} href="#">
+                <MoimCard key={moim.id} onClick={() => openModal(moim)}>
                   <CardImage src={moim.image} alt={moim.title} />
                   <CardContent>
                     <CardTitle>{moim.title}</CardTitle>
@@ -248,6 +398,52 @@ const MoimMainPage = () => {
         </ContentSection>
       </MainContent>
       <Footer />
+      <Modal isOpen={isModalOpen} onClose={closeModal}>
+        {selectedMoim && (
+          <ModalCard>
+            <ModalImage src={selectedMoim.image} alt={selectedMoim.title} />
+            <ModalCloseBtn onClick={closeModal}>&times;</ModalCloseBtn>
+            <ModalInner>
+              <ModalTitle>{selectedMoim.title}</ModalTitle>
+              <ModalDesc>{selectedMoim.description}</ModalDesc>
+              <ModalDivider />
+              <ModalInfoList>
+                <ModalInfoRow>
+                  <ModalInfoLabel>모임 형태</ModalInfoLabel>
+                  <span>{selectedMoim.onlineType === "online" ? "온라인" : "오프라인"}</span>
+                  {selectedMoim.location && <><ModalInfoLabel>위치</ModalInfoLabel><span>{selectedMoim.location}</span></>}
+                </ModalInfoRow>
+                {selectedMoim.creator && (
+                  <ModalInfoRow>
+                    <ModalCreator>
+                      <ModalCreatorImg src={selectedMoim.creator.profileImage} alt={selectedMoim.creator.name} />
+                      <span>개설자: <b>{selectedMoim.creator.name}</b></span>
+                      <span style={{ fontSize: "12px", color: "#888", marginLeft: 6 }}>{selectedMoim.creator.createdAt} 생성</span>
+                    </ModalCreator>
+                  </ModalInfoRow>
+                )}
+                {selectedMoim.members && selectedMoim.maxMembers && (
+                  <ModalInfoRow>
+                    <ModalInfoLabel>참여 인원</ModalInfoLabel>
+                    <span>{selectedMoim.members} / {selectedMoim.maxMembers}</span>
+                  </ModalInfoRow>
+                )}
+              </ModalInfoList>
+              {selectedMoim.tags && selectedMoim.tags.length > 0 && (
+                <ModalTagList>
+                  {selectedMoim.tags.map((tag, index) => (
+                    <ModalTag key={index}>#{tag}</ModalTag>
+                  ))}
+                </ModalTagList>
+              )}
+              <ModalBtnGroup>
+                <Button variant="primary" fullWidth>참여하기</Button>
+                <Button variant="secondary" fullWidth>문의하기</Button>
+              </ModalBtnGroup>
+            </ModalInner>
+          </ModalCard>
+        )}
+      </Modal>
     </StyledMoimMainPage>
   );
 };
