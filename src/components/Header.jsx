@@ -1,6 +1,34 @@
 import React from "react";
 import styled from "styled-components";
 import Button from "./Button";
+import Link from "next/link";
+
+const Header = () => {
+  return (
+    <StyledHeader>
+      <HeaderContent>
+        <Logo>
+          <Link href="/" passHref>
+            <LogoText>MoimLog</LogoText>
+          </Link>
+        </Logo>
+        <Nav>
+          <NavLink href="/moim-list">모임 보기</NavLink>
+          <ButtonGroup>
+            <Button href="/moim-create" variant="primary" size="small">
+              모임 만들기
+            </Button>
+            <Button href="/MyPage" variant="secondary" size="small">
+              마이페이지 <UserIcon />
+            </Button>
+          </ButtonGroup>
+        </Nav>
+      </HeaderContent>
+    </StyledHeader>
+  );
+};
+
+export default Header;
 
 const StyledHeader = styled.header`
   background-color: #fff;
@@ -74,28 +102,3 @@ const UserIcon = () => (
     <path d="M4 20c0-2.5 3.5-4 8-4s8 1.5 8 4" />
   </svg>
 );
-
-const Header = () => {
-  return (
-    <StyledHeader>
-      <HeaderContent>
-        <Logo>
-          <LogoText>MoimLog</LogoText>
-        </Logo>
-        <Nav>
-          <NavLink href="/moim-list">모임 보기</NavLink>
-          <ButtonGroup>
-            <Button href="/moim-create" variant="primary" size="small">
-              모임 만들기
-            </Button>
-            <Button href="/login" variant="secondary" size="small">
-              로그인 <UserIcon />
-            </Button>
-          </ButtonGroup>
-        </Nav>
-      </HeaderContent>
-    </StyledHeader>
-  );
-};
-
-export default Header;

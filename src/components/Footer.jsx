@@ -1,6 +1,54 @@
 import React from "react";
 import styled from "styled-components";
 
+const Footer = () => {
+  return (
+    <StyledFooter>
+      <FooterContent>
+        <FooterSection>
+          <FooterTitle>서비스 소개</FooterTitle>
+          <FooterLink href="/about">MoimLog 소개</FooterLink>
+          <FooterLink href="/guide">이용 가이드</FooterLink>
+          <FooterLink href="/updates">업데이트 소식</FooterLink>
+        </FooterSection>
+
+        <FooterSection>
+          <FooterTitle>고객 지원</FooterTitle>
+          <FooterLink href="/faq">자주 묻는 질문</FooterLink>
+          <FooterLink href="/contact">문의하기</FooterLink>
+          <FooterLink href="/feedback">피드백 남기기</FooterLink>
+        </FooterSection>
+
+        <FooterSection>
+          <FooterTitle>법적 고지</FooterTitle>
+          <FooterLink href="/terms">이용약관</FooterLink>
+          <FooterLink href="/privacy">개인정보처리방침</FooterLink>
+          <FooterLink href="/rules">커뮤니티 가이드라인</FooterLink>
+        </FooterSection>
+
+        <FooterSection>
+          <FooterTitle>팔로우</FooterTitle>
+          <FooterLink href="https://github.com" target="_blank">
+            GitHub
+          </FooterLink>
+          <FooterLink href="https://twitter.com" target="_blank">
+            Twitter
+          </FooterLink>
+          <FooterLink href="https://instagram.com" target="_blank">
+            Instagram
+          </FooterLink>
+        </FooterSection>
+      </FooterContent>
+
+      <Copyright>
+        © {new Date().getFullYear()} MoimLog. All rights reserved.
+      </Copyright>
+    </StyledFooter>
+  );
+};
+
+export default Footer;
+
 const StyledFooter = styled.footer`
   background-color: #1f2937;
   color: #ffffff;
@@ -61,51 +109,3 @@ const Copyright = styled.div`
   padding-top: 2rem;
   border-top: 1px solid #374151;
 `;
-
-const Footer = () => {
-  return (
-    <StyledFooter>
-      <FooterContent>
-        <FooterSection>
-          <FooterTitle>서비스 소개</FooterTitle>
-          <FooterLink href="/about">MoimLog 소개</FooterLink>
-          <FooterLink href="/guide">이용 가이드</FooterLink>
-          <FooterLink href="/updates">업데이트 소식</FooterLink>
-        </FooterSection>
-
-        <FooterSection>
-          <FooterTitle>고객 지원</FooterTitle>
-          <FooterLink href="/faq">자주 묻는 질문</FooterLink>
-          <FooterLink href="/contact">문의하기</FooterLink>
-          <FooterLink href="/feedback">피드백 남기기</FooterLink>
-        </FooterSection>
-
-        <FooterSection>
-          <FooterTitle>법적 고지</FooterTitle>
-          <FooterLink href="/terms">이용약관</FooterLink>
-          <FooterLink href="/privacy">개인정보처리방침</FooterLink>
-          <FooterLink href="/rules">커뮤니티 가이드라인</FooterLink>
-        </FooterSection>
-
-        <FooterSection>
-          <FooterTitle>팔로우</FooterTitle>
-          <FooterLink href="https://github.com" target="_blank">
-            GitHub
-          </FooterLink>
-          <FooterLink href="https://twitter.com" target="_blank">
-            Twitter
-          </FooterLink>
-          <FooterLink href="https://instagram.com" target="_blank">
-            Instagram
-          </FooterLink>
-        </FooterSection>
-      </FooterContent>
-
-      <Copyright>
-        © {new Date().getFullYear()} MoimLog. All rights reserved.
-      </Copyright>
-    </StyledFooter>
-  );
-};
-
-export default Footer;

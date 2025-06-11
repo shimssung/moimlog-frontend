@@ -4,126 +4,6 @@ import Header from "../components/Header";
 import Card from "../components/Card";
 import Input from "../components/Input";
 
-const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  background: #fff;
-`;
-
-const LayoutContainer = styled.div`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 40px 0 0 0;
-`;
-
-const ContentContainer = styled.div`
-  width: 100%;
-  max-width: 960px;
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-`;
-
-const TopTitle = styled.h2`
-  color: #0d141c;
-  font-size: 28px;
-  font-weight: 700;
-  line-height: 1.2;
-  padding: 32px 16px 12px 16px;
-  text-align: left;
-`;
-
-const CategoryList = styled.div`
-  display: flex;
-  gap: 12px;
-  padding: 12px 0 0 0;
-  flex-wrap: wrap;
-`;
-
-const CategoryItem = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  height: 32px;
-  padding: 0 16px;
-  background: #e7edf4;
-  border-radius: 12px;
-  cursor: pointer;
-  font-size: 15px;
-  font-weight: 500;
-  color: #0d141c;
-  transition: background 0.15s;
-  ${({ active }) =>
-    active &&
-    `
-    background: #0b80ee;
-    color: #fff;
-  `}
-`;
-
-const SearchSection = styled.div`
-  padding: 16px 0 0 0;
-`;
-
-const SearchLabel = styled.label`
-  display: flex;
-  flex-direction: column;
-  min-width: 160px;
-  height: 40px;
-  width: 100%;
-`;
-
-const SearchInputWrapper = styled.div`
-  display: flex;
-  align-items: stretch;
-  border-radius: 8px;
-  height: 100%;
-  background: #e7edf4;
-`;
-
-const SearchIcon = styled.div`
-  color: #49739c;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding-left: 16px;
-  border-radius: 8px 0 0 8px;
-`;
-
-const SectionTitle = styled.h2`
-  color: #0d141c;
-  font-size: 22px;
-  font-weight: 700;
-  line-height: 1.2;
-  padding: 32px 16px 12px 16px;
-`;
-
-const CardList = styled.div`
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
-  padding: 0 16px 32px 16px;
-`;
-
-const Spinner = styled.div`
-  display: inline-block;
-  width: 40px;
-  height: 40px;
-  border: 4px solid #b3d4fc;
-  border-top: 4px solid #49749c;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  @keyframes spin {
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-`;
-
 const categories = ["All", "Technology", "Arts", "Sports", "Food"];
 
 const meetups = Array.from({ length: 40 }, (_, i) => ({
@@ -258,3 +138,123 @@ const MoimListPage = () => {
 };
 
 export default MoimListPage; 
+
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #fff;
+`;
+
+const LayoutContainer = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 0 0 0;
+`;
+
+const ContentContainer = styled.div`
+  width: 100%;
+  max-width: 960px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+`;
+
+const TopTitle = styled.h2`
+  color: #0d141c;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.2;
+  padding: 32px 16px 12px 16px;
+  text-align: left;
+`;
+
+const CategoryList = styled.div`
+  display: flex;
+  gap: 12px;
+  padding: 12px 0 0 0;
+  flex-wrap: wrap;
+`;
+
+const CategoryItem = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 16px;
+  background: #e7edf4;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  color: #0d141c;
+  transition: background 0.15s;
+  ${({ active }) =>
+    active &&
+    `
+    background: #0b80ee;
+    color: #fff;
+  `}
+`;
+
+const SearchSection = styled.div`
+  padding: 16px 0 0 0;
+`;
+
+const SearchLabel = styled.label`
+  display: flex;
+  flex-direction: column;
+  min-width: 160px;
+  height: 40px;
+  width: 100%;
+`;
+
+const SearchInputWrapper = styled.div`
+  display: flex;
+  align-items: stretch;
+  border-radius: 8px;
+  height: 100%;
+  background: #e7edf4;
+`;
+
+const SearchIcon = styled.div`
+  color: #49739c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-left: 16px;
+  border-radius: 8px 0 0 8px;
+`;
+
+const SectionTitle = styled.h2`
+  color: #0d141c;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.2;
+  padding: 32px 16px 12px 16px;
+`;
+
+const CardList = styled.div`
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  padding: 0 16px 32px 16px;
+`;
+
+const Spinner = styled.div`
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  border: 4px solid #b3d4fc;
+  border-top: 4px solid #49749c;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  @keyframes spin {
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+`;

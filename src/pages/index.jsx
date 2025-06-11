@@ -6,6 +6,198 @@ import Button from "../components/Button";
 import { useState } from "react";
 import Modal from "../components/Modal";
 
+const MoimMainPage = () => {
+  const [selectedMoim, setSelectedMoim] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const recommendedMoims = [
+    {
+      id: 1,
+      title: "스크럼 플러스 모임",
+      description: "스크럼과 함께 성장하는 개발자들의 모임",
+      image: "/img1.jpg",
+      creator: {
+        name: "홍길동",
+        profileImage: "/user1.jpg",
+        createdAt: "2024-06-01",
+      },
+      members: 12,
+      maxMembers: 20,
+      tags: ["개발", "스크럼"],
+      onlineType: "online",
+      location: "온라인(Zoom)",
+    },
+    {
+      id: 2,
+      title: "웹앱 개발 모임",
+      description: "웹과 앱을 아우르는 사이드프로젝트 모임",
+      image: "/img2.jpg",
+      onlineType: "offline",
+      location: "서울 강남구 카페",
+    },
+    {
+      id: 3,
+      title: "어반 플레이팅 모임",
+      description: "감각적인 플레이팅을 위한 모든 것",
+      image: "/img3.jpg",
+    },
+    {
+      id: 4,
+      title: "북클럽 모임",
+      description: "함께 읽고 토론하는 독서 모임",
+      image: "/img4.jpg",
+    },
+    {
+      id: 5,
+      title: "축구 동호회",
+      description: "주말 축구로 건강한 삶을",
+      image: "/img5.jpg",
+    },
+    {
+      id: 6,
+      title: "바이크 라이딩",
+      description: "자전거와 함께하는 새로운 도전",
+      image: "/img6.jpg",
+    },
+    {
+      id: 7,
+      title: "아트 스터디",
+      description: "예술을 사랑하는 사람들의 모임",
+      image: "/img7.jpg",
+    },
+    {
+      id: 8,
+      title: "올리브오일 테이스팅",
+      description: "올리브오일의 세계로 초대합니다",
+      image: "/img8.jpg",
+    },
+  ];
+
+  const openModal = (moim) => {
+    setSelectedMoim(moim);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedMoim(null);
+  };
+
+  return (
+    <StyledMoimMainPage>
+      <Header />
+      <MainContent>
+        <HeroSection>
+          <HeroContent>
+            <HeroText>
+              <HeroTitle>함께 성장하는 모임 플랫폼</HeroTitle>
+              <HeroTitle>MoimLog</HeroTitle>
+              <HeroSubtitle>
+                지금 바로 관심 있는 모임을 찾아보세요!
+              </HeroSubtitle>
+              <ButtonGroup>
+                <Button href="/moim-list" variant="secondary">
+                  모임 둘러보기
+                </Button>
+                <Button
+                  href="/moim-create"
+                  variant="primary"
+                  style={{
+                    transition: "all 0.15s",
+                    border: "1.5px solid #111827",
+                  }}
+                  onMouseOver={e => {
+                    e.currentTarget.style.background = "#fff";
+                    e.currentTarget.style.color = "#111827";
+                    e.currentTarget.style.border = "1.5px solid #111827";
+                  }}
+                  onMouseOut={e => {
+                    e.currentTarget.style.background = "#111827";
+                    e.currentTarget.style.color = "#fff";
+                    e.currentTarget.style.border = "1.5px solid #111827";
+                  }}
+                >
+                  모임 만들기
+                </Button>
+              </ButtonGroup>
+            </HeroText>
+            <HeroImage>
+              <img src="/img9.jpg" alt="모임 이미지" />
+            </HeroImage>
+          </HeroContent>
+        </HeroSection>
+        <ContentSection>
+          <SectionContent>
+            <SectionHeader>
+              <SectionTitle>추천 모임</SectionTitle>
+            </SectionHeader>
+            <MoimGrid>
+              {recommendedMoims.map((moim) => (
+                <MoimCard key={moim.id} onClick={() => openModal(moim)}>
+                  <CardImage src={moim.image} alt={moim.title} />
+                  <CardContent>
+                    <CardTitle>{moim.title}</CardTitle>
+                    <CardDescription>{moim.description}</CardDescription>
+                  </CardContent>
+                </MoimCard>
+              ))}
+            </MoimGrid>
+          </SectionContent>
+        </ContentSection>
+      </MainContent>
+      <Footer />
+      <Modal isOpen={isModalOpen} onClose={closeModal}>
+        {selectedMoim && (
+          <ModalCard>
+            <ModalImage src={selectedMoim.image} alt={selectedMoim.title} />
+            <ModalCloseBtn onClick={closeModal}>&times;</ModalCloseBtn>
+            <ModalInner>
+              <ModalTitle>{selectedMoim.title}</ModalTitle>
+              <ModalDesc>{selectedMoim.description}</ModalDesc>
+              <ModalDivider />
+              <ModalInfoList>
+                <ModalInfoRow>
+                  <ModalInfoLabel>모임 형태</ModalInfoLabel>
+                  <span>{selectedMoim.onlineType === "online" ? "온라인" : "오프라인"}</span>
+                  {selectedMoim.location && <><ModalInfoLabel>위치</ModalInfoLabel><span>{selectedMoim.location}</span></>}
+                </ModalInfoRow>
+                {selectedMoim.creator && (
+                  <ModalInfoRow>
+                    <ModalCreator>
+                      <ModalCreatorImg src={selectedMoim.creator.profileImage} alt={selectedMoim.creator.name} />
+                      <span>개설자: <b>{selectedMoim.creator.name}</b></span>
+                      <span style={{ fontSize: "12px", color: "#888", marginLeft: 6 }}>{selectedMoim.creator.createdAt} 생성</span>
+                    </ModalCreator>
+                  </ModalInfoRow>
+                )}
+                {selectedMoim.members && selectedMoim.maxMembers && (
+                  <ModalInfoRow>
+                    <ModalInfoLabel>참여 인원</ModalInfoLabel>
+                    <span>{selectedMoim.members} / {selectedMoim.maxMembers}</span>
+                  </ModalInfoRow>
+                )}
+              </ModalInfoList>
+              {selectedMoim.tags && selectedMoim.tags.length > 0 && (
+                <ModalTagList>
+                  {selectedMoim.tags.map((tag, index) => (
+                    <ModalTag key={index}>#{tag}</ModalTag>
+                  ))}
+                </ModalTagList>
+              )}
+              <ModalBtnGroup>
+                <Button variant="primary" fullWidth>참여하기</Button>
+                <Button variant="secondary" fullWidth>문의하기</Button>
+              </ModalBtnGroup>
+            </ModalInner>
+          </ModalCard>
+        )}
+      </Modal>
+    </StyledMoimMainPage>
+  );
+};
+
+export default MoimMainPage; 
+
 const StyledMoimMainPage = styled.div`
   display: flex;
   flex-direction: column;
@@ -257,195 +449,3 @@ const ModalCloseBtn = styled.button`
   cursor: pointer;
   z-index: 2;
 `;
-
-const MoimMainPage = () => {
-  const [selectedMoim, setSelectedMoim] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const recommendedMoims = [
-    {
-      id: 1,
-      title: "스크럼 플러스 모임",
-      description: "스크럼과 함께 성장하는 개발자들의 모임",
-      image: "/img1.jpg",
-      creator: {
-        name: "홍길동",
-        profileImage: "/user1.jpg",
-        createdAt: "2024-06-01",
-      },
-      members: 12,
-      maxMembers: 20,
-      tags: ["개발", "스크럼"],
-      onlineType: "online",
-      location: "온라인(Zoom)",
-    },
-    {
-      id: 2,
-      title: "웹앱 개발 모임",
-      description: "웹과 앱을 아우르는 사이드프로젝트 모임",
-      image: "/img2.jpg",
-      onlineType: "offline",
-      location: "서울 강남구 카페",
-    },
-    {
-      id: 3,
-      title: "어반 플레이팅 모임",
-      description: "감각적인 플레이팅을 위한 모든 것",
-      image: "/img3.jpg",
-    },
-    {
-      id: 4,
-      title: "북클럽 모임",
-      description: "함께 읽고 토론하는 독서 모임",
-      image: "/img4.jpg",
-    },
-    {
-      id: 5,
-      title: "축구 동호회",
-      description: "주말 축구로 건강한 삶을",
-      image: "/img5.jpg",
-    },
-    {
-      id: 6,
-      title: "바이크 라이딩",
-      description: "자전거와 함께하는 새로운 도전",
-      image: "/img6.jpg",
-    },
-    {
-      id: 7,
-      title: "아트 스터디",
-      description: "예술을 사랑하는 사람들의 모임",
-      image: "/img7.jpg",
-    },
-    {
-      id: 8,
-      title: "올리브오일 테이스팅",
-      description: "올리브오일의 세계로 초대합니다",
-      image: "/img8.jpg",
-    },
-  ];
-
-  const openModal = (moim) => {
-    setSelectedMoim(moim);
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setSelectedMoim(null);
-  };
-
-  return (
-    <StyledMoimMainPage>
-      <Header />
-      <MainContent>
-        <HeroSection>
-          <HeroContent>
-            <HeroText>
-              <HeroTitle>함께 성장하는 모임 플랫폼</HeroTitle>
-              <HeroTitle>MoimLog</HeroTitle>
-              <HeroSubtitle>
-                지금 바로 관심 있는 모임을 찾아보세요!
-              </HeroSubtitle>
-              <ButtonGroup>
-                <Button href="/moim-list" variant="secondary">
-                  모임 둘러보기
-                </Button>
-                <Button
-                  href="/moim-create"
-                  variant="primary"
-                  style={{
-                    transition: "all 0.15s",
-                    border: "1.5px solid #111827",
-                  }}
-                  onMouseOver={e => {
-                    e.currentTarget.style.background = "#fff";
-                    e.currentTarget.style.color = "#111827";
-                    e.currentTarget.style.border = "1.5px solid #111827";
-                  }}
-                  onMouseOut={e => {
-                    e.currentTarget.style.background = "#111827";
-                    e.currentTarget.style.color = "#fff";
-                    e.currentTarget.style.border = "1.5px solid #111827";
-                  }}
-                >
-                  모임 만들기
-                </Button>
-              </ButtonGroup>
-            </HeroText>
-            <HeroImage>
-              <img src="/img9.jpg" alt="모임 이미지" />
-            </HeroImage>
-          </HeroContent>
-        </HeroSection>
-        <ContentSection>
-          <SectionContent>
-            <SectionHeader>
-              <SectionTitle>추천 모임</SectionTitle>
-            </SectionHeader>
-            <MoimGrid>
-              {recommendedMoims.map((moim) => (
-                <MoimCard key={moim.id} onClick={() => openModal(moim)}>
-                  <CardImage src={moim.image} alt={moim.title} />
-                  <CardContent>
-                    <CardTitle>{moim.title}</CardTitle>
-                    <CardDescription>{moim.description}</CardDescription>
-                  </CardContent>
-                </MoimCard>
-              ))}
-            </MoimGrid>
-          </SectionContent>
-        </ContentSection>
-      </MainContent>
-      <Footer />
-      <Modal isOpen={isModalOpen} onClose={closeModal}>
-        {selectedMoim && (
-          <ModalCard>
-            <ModalImage src={selectedMoim.image} alt={selectedMoim.title} />
-            <ModalCloseBtn onClick={closeModal}>&times;</ModalCloseBtn>
-            <ModalInner>
-              <ModalTitle>{selectedMoim.title}</ModalTitle>
-              <ModalDesc>{selectedMoim.description}</ModalDesc>
-              <ModalDivider />
-              <ModalInfoList>
-                <ModalInfoRow>
-                  <ModalInfoLabel>모임 형태</ModalInfoLabel>
-                  <span>{selectedMoim.onlineType === "online" ? "온라인" : "오프라인"}</span>
-                  {selectedMoim.location && <><ModalInfoLabel>위치</ModalInfoLabel><span>{selectedMoim.location}</span></>}
-                </ModalInfoRow>
-                {selectedMoim.creator && (
-                  <ModalInfoRow>
-                    <ModalCreator>
-                      <ModalCreatorImg src={selectedMoim.creator.profileImage} alt={selectedMoim.creator.name} />
-                      <span>개설자: <b>{selectedMoim.creator.name}</b></span>
-                      <span style={{ fontSize: "12px", color: "#888", marginLeft: 6 }}>{selectedMoim.creator.createdAt} 생성</span>
-                    </ModalCreator>
-                  </ModalInfoRow>
-                )}
-                {selectedMoim.members && selectedMoim.maxMembers && (
-                  <ModalInfoRow>
-                    <ModalInfoLabel>참여 인원</ModalInfoLabel>
-                    <span>{selectedMoim.members} / {selectedMoim.maxMembers}</span>
-                  </ModalInfoRow>
-                )}
-              </ModalInfoList>
-              {selectedMoim.tags && selectedMoim.tags.length > 0 && (
-                <ModalTagList>
-                  {selectedMoim.tags.map((tag, index) => (
-                    <ModalTag key={index}>#{tag}</ModalTag>
-                  ))}
-                </ModalTagList>
-              )}
-              <ModalBtnGroup>
-                <Button variant="primary" fullWidth>참여하기</Button>
-                <Button variant="secondary" fullWidth>문의하기</Button>
-              </ModalBtnGroup>
-            </ModalInner>
-          </ModalCard>
-        )}
-      </Modal>
-    </StyledMoimMainPage>
-  );
-};
-
-export default MoimMainPage; 

@@ -1,6 +1,47 @@
 import React from "react";
 import styled, { css } from "styled-components";
 import Link from "next/link";
+
+const Button = ({
+  children,
+  variant = "primary",
+  size = "medium",
+  fullWidth = false,
+  type = "button",
+  href,
+  ...props
+}) => {
+  if (href) {
+    // Next.js의 Link로 감싸서 SPA 라우팅 지원
+    return (
+      <Link href={href} passHref>
+        <ButtonBase
+          variant={variant}
+          size={size}
+          fullWidth={fullWidth}
+          {...props}
+        >
+          {children}
+        </ButtonBase>
+      </Link>
+    );
+  }
+  // 일반 버튼
+  return (
+    <ButtonBase
+      variant={variant}
+      size={size}
+      fullWidth={fullWidth}
+      type={type}
+      {...props}
+    >
+      {children}
+    </ButtonBase>
+  );
+};
+
+export default Button;
+
 const ButtonBase = styled.button.withConfig({
   shouldForwardProp: (prop) => prop !== "fullWidth",
 })`
@@ -67,44 +108,3 @@ const ButtonBase = styled.button.withConfig({
       font-size: 1rem;
     `}
 `;
-
-const Button = ({
-  children,
-  variant = "primary",
-  size = "medium",
-  fullWidth = false,
-  type = "button",
-  href,
-  ...props
-}) => {
-  if (href) {
-    // Next.js의 Link로 감싸서 SPA 라우팅 지원
-    return (
-      <Link href={href} passHref legacyBehavior>
-        <ButtonBase
-          as="a"
-          variant={variant}
-          size={size}
-          fullWidth={fullWidth}
-          {...props}
-        >
-          {children}
-        </ButtonBase>
-      </Link>
-    );
-  }
-  // 일반 버튼
-  return (
-    <ButtonBase
-      variant={variant}
-      size={size}
-      fullWidth={fullWidth}
-      type={type}
-      {...props}
-    >
-      {children}
-    </ButtonBase>
-  );
-};
-
-export default Button;

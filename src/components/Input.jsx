@@ -1,6 +1,12 @@
 import React from "react";
 import styled from "styled-components";
 
+const Input = React.forwardRef(({ type = "text", ...props }, ref) => (
+  <StyledInput type={type} ref={ref} {...props} />
+));
+
+export default Input;
+
 const StyledInput = styled.input`
   padding: 0.75rem 1rem;
   border: 1px solid #d1d5db;
@@ -16,9 +22,3 @@ const StyledInput = styled.input`
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
   }
 `;
-
-const Input = React.forwardRef(({ type = "text", ...props }, ref) => (
-  <StyledInput type={type} ref={ref} {...props} />
-));
-
-export default Input;

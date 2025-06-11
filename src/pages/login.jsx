@@ -3,6 +3,79 @@ import styled from "styled-components";
 import Button from "../components/Button";
 import Input from "../components/Input";
 
+const LoginPage = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    alert("로그인 시도: " + email);
+  };
+
+  return (
+    <PageWrap>
+      <LeftSection>
+        <LeftTitle>MoimLog에 오신 걸 환영합니다!</LeftTitle>
+        <LeftDesc>
+          다양한 모임을 만들고, 참여하며<br />
+          새로운 사람들과 함께 성장해보세요.
+        </LeftDesc>
+      </LeftSection>
+      <RightSection>
+        <FormContainer>
+          <Title>로그인</Title>
+          <Form onSubmit={handleLogin}>
+            <FormGroup>
+              <Input
+                type="email"
+                placeholder="이메일 주소"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </FormGroup>
+            <FormGroup>
+              <Input
+                type="password"
+                placeholder="비밀번호"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </FormGroup>
+            <Button type="submit" fullWidth>
+              로그인
+            </Button>
+          </Form>
+          <Divider>
+            <span>또는</span>
+          </Divider>
+          <SocialLogin>
+            <SocialLoginButton variant="kakao" fullWidth>
+              <SocialIcon src="/kakao_icon.png" alt="카카오" />
+              카카오로 로그인
+            </SocialLoginButton>
+            <SocialLoginButton variant="google" fullWidth>
+              <SocialIcon src="/google_icon.png" alt="구글" />
+              구글로 로그인
+            </SocialLoginButton>
+            <SocialLoginButton variant="naver" fullWidth>
+              <SocialIcon src="/naver_icon.svg" alt="네이버" />
+              네이버로 로그인
+            </SocialLoginButton>
+          </SocialLogin>
+          <Footer>
+            <p>아직 회원이 아니신가요? <a href="/signup">회원가입</a></p>
+            <p>비밀번호를 잊으셨나요? <a href="/forgot-password">비밀번호 찾기</a></p>
+          </Footer>
+        </FormContainer>
+      </RightSection>
+    </PageWrap>
+  );
+};
+
+export default LoginPage; 
+
 const PageWrap = styled.div`
   display: flex;
   min-height: 100vh;
@@ -159,76 +232,3 @@ const Footer = styled.div`
     margin: 0.5rem 0;
   }
 `;
-
-const LoginPage = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
-  const handleLogin = (e) => {
-    e.preventDefault();
-    alert("로그인 시도: " + email);
-  };
-
-  return (
-    <PageWrap>
-      <LeftSection>
-        <LeftTitle>MoimLog에 오신 걸 환영합니다!</LeftTitle>
-        <LeftDesc>
-          다양한 모임을 만들고, 참여하며<br />
-          새로운 사람들과 함께 성장해보세요.
-        </LeftDesc>
-      </LeftSection>
-      <RightSection>
-        <FormContainer>
-          <Title>로그인</Title>
-          <Form onSubmit={handleLogin}>
-            <FormGroup>
-              <Input
-                type="email"
-                placeholder="이메일 주소"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </FormGroup>
-            <FormGroup>
-              <Input
-                type="password"
-                placeholder="비밀번호"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </FormGroup>
-            <Button type="submit" fullWidth>
-              로그인
-            </Button>
-          </Form>
-          <Divider>
-            <span>또는</span>
-          </Divider>
-          <SocialLogin>
-            <SocialLoginButton variant="kakao" fullWidth>
-              <SocialIcon src="/kakao_icon.png" alt="카카오" />
-              카카오로 로그인
-            </SocialLoginButton>
-            <SocialLoginButton variant="google" fullWidth>
-              <SocialIcon src="/google_icon.png" alt="구글" />
-              구글로 로그인
-            </SocialLoginButton>
-            <SocialLoginButton variant="naver" fullWidth>
-              <SocialIcon src="/naver_icon.svg" alt="네이버" />
-              네이버로 로그인
-            </SocialLoginButton>
-          </SocialLogin>
-          <Footer>
-            <p>아직 회원이 아니신가요? <a href="/signup">회원가입</a></p>
-            <p>비밀번호를 잊으셨나요? <a href="/forgot-password">비밀번호 찾기</a></p>
-          </Footer>
-        </FormContainer>
-      </RightSection>
-    </PageWrap>
-  );
-};
-
-export default LoginPage; 

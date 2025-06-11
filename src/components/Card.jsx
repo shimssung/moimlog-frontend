@@ -1,6 +1,19 @@
 import React from "react";
 import styled from "styled-components";
 
+const Card = ({ image, title, desc, onClick, children, ...props }) => (
+  <CardContainer onClick={onClick} {...props}>
+    {image && <CardImage style={{ backgroundImage: `url('${image}')` }} />}
+    <CardContent>
+      {title && <CardTitle>{title}</CardTitle>}
+      {desc && <CardDesc>{desc}</CardDesc>}
+      {children}
+    </CardContent>
+  </CardContainer>
+);
+
+export default Card;
+
 const CardContainer = styled.div`
   background: #fff;
   border-radius: 16px;
@@ -39,16 +52,3 @@ const CardDesc = styled.p`
   font-size: 14px;
   color: #49749c;
 `;
-
-const Card = ({ image, title, desc, onClick, children, ...props }) => (
-  <CardContainer onClick={onClick} {...props}>
-    {image && <CardImage style={{ backgroundImage: `url('${image}')` }} />}
-    <CardContent>
-      {title && <CardTitle>{title}</CardTitle>}
-      {desc && <CardDesc>{desc}</CardDesc>}
-      {children}
-    </CardContent>
-  </CardContainer>
-);
-
-export default Card;

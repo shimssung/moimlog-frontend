@@ -1,6 +1,19 @@
 import React from "react";
 import styled from "styled-components";
 
+const Modal = ({ isOpen, onClose, children }) => {
+  if (!isOpen) return null;
+  return (
+    <Overlay onClick={onClose}>
+      <ModalBox onClick={(e) => e.stopPropagation()}>
+        {children}
+      </ModalBox>
+    </Overlay>
+  );
+};
+
+export default Modal;
+
 const Overlay = styled.div`
   position: fixed;
   top: 0;
@@ -23,16 +36,3 @@ const ModalBox = styled.div`
   padding: 6px;
   position: relative;
 `;
-
-const Modal = ({ isOpen, onClose, children }) => {
-  if (!isOpen) return null;
-  return (
-    <Overlay onClick={onClose}>
-      <ModalBox onClick={(e) => e.stopPropagation()}>
-        {children}
-      </ModalBox>
-    </Overlay>
-  );
-};
-
-export default Modal;
