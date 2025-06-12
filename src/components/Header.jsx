@@ -18,8 +18,8 @@ const Header = () => {
             <Button href="/moim-create" variant="primary" size="small">
               모임 만들기
             </Button>
-            <Button href="/MyPage" variant="secondary" size="small">
-              마이페이지 <UserIcon />
+            <Button href="/login" variant="secondary" size="small">
+              로그인 <UserIcon />
             </Button>
           </ButtonGroup>
         </Nav>

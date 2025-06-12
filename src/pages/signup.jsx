@@ -64,18 +64,23 @@ function SignupPage() {
   return (
     <PageWrap>
       <LeftSection>
-        {/* LeftSection content */}
+        <LeftTitle>MoimLog에 오신 걸 환영합니다!</LeftTitle>
+        <LeftDesc>
+          다양한 모임을 만들고, 참여하며<br />
+          새로운 사람들과 함께 성장해보세요.
+        </LeftDesc>
       </LeftSection>
       <RightSection>
         <FormContainer>
+          <Title>회원가입</Title>
           <FormBox onSubmit={handleSubmit}>
-            <Title>회원가입</Title>
             <Label>이메일</Label>
             <Input
               name="email"
               placeholder="example@inflab.com"
               value={form.email}
               onChange={handleChange}
+              required
             />
             <Label>비밀번호</Label>
             <Input
@@ -90,6 +95,7 @@ function SignupPage() {
                     ? "#ef4444"
                     : undefined,
               }}
+              required
             />
             <PwDesc>
               <li className={!pwTouched ? "" : pwChecks.rule1 ? "pass" : "fail"}>
@@ -130,46 +136,21 @@ function SignupPage() {
               placeholder="비밀번호 확인"
               value={form.password2}
               onChange={handleChange}
+              required
             />
             {error && <ErrorMsg>{error}</ErrorMsg>}
             <Button
               type="submit"
               fullWidth
-              size="large"
               variant="primary"
               style={{ margin: "24px 0 0 0" }}
             >
               가입하기
             </Button>
-            <Divider>
-              <span>간편 회원가입</span>
-            </Divider>
-            <SocialRow>
-              <SocialBtn
-                bg="#FEE500"
-                color="#191600"
-                onClick={() => alert("카카오로 회원가입")}
-              >
-                <img src={"/kakao_icon.png"} alt="카카오" width={24} height={24} />
-              </SocialBtn>
-              <SocialBtn
-                bg="#fff"
-                color="#222"
-                border
-                onClick={() => alert("구글로 회원가입")}
-              >
-                <img src={"/google_icon.png"} alt="구글" width={24} height={24} />
-              </SocialBtn>
-              <SocialBtn
-                bg="#03C75A"
-                color="#03C75A"
-                border
-                onClick={() => alert("네이버로로 회원가입")}
-              >
-                <img src={"/naver_icon.svg"} alt="네이버버" width={24} height={24} />
-              </SocialBtn>
-            </SocialRow>
           </FormBox>
+          <Footer>
+            <p>이미 회원이신가요? <a href="/login">로그인</a></p>
+          </Footer>
         </FormContainer>
       </RightSection>
     </PageWrap>
@@ -182,25 +163,58 @@ const PageWrap = styled.div`
   display: flex;
   min-height: 100vh;
   background: #111827;
+  justify-content: center;
+  align-items: center;
+  padding: 32px;
+  gap: 48px;
+
+  /* 반응형: 1230px 이하에서는 세로로 쌓이고, 패딩/정렬 변경 */
+  @media (max-width: 1230px) {
+    flex-direction: column; // 좌우 → 상하로 쌓임
+    gap: 0;
+    padding: 24px 0 0 0; // 상단 패딩만 남김
+    align-items: stretch; // stretch로 영역 확장
+  }
 `;
 
 const LeftSection = styled.div`
-  flex: 1.2;
-  background: transparent; // 배경 투명(이미 전체 배경색 있음)
+  flex: 0 0 620px;
+  background: transparent;
   color: #fff;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
-  padding: 48px 24px;
+  align-items: flex-start;
+  padding: 48px 0 48px 48px;
+  gap: 32px;
+
+  /* 반응형: 1230px 이하에서 패딩/정렬/텍스트 중앙 정렬로 변경 */
+  @media (max-width: 1230px) {
+    flex: none;
+    padding: 32px 16px 32px 16px; // 패딩 축소
+    align-items: center; // 중앙 정렬
+    text-align: center; // 텍스트 중앙 정렬
+  }
+`;
+
+const LeftTitle = styled.h2`
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin-bottom: 16px;
+`;
+
+const LeftDesc = styled.p`
+  font-size: 1.1rem;
+  font-weight: 400;
+  opacity: 0.85;
 `;
 
 const RightSection = styled.div`
-  flex: 1;
+  flex: 0 0 620px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent; // 배경 투명
+  background: transparent;
 `;
 
 const FormContainer = styled.div`
@@ -214,30 +228,28 @@ const FormContainer = styled.div`
   top: 0;
 `;
 
+const Title = styled.h2`
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  text-align: center;
+  margin-bottom: 2rem;
+`;
+
 const FormBox = styled.form`
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 1px 4px #0001;
-  padding: 32px 20px 24px 20px;
-  min-width: 320px;
   display: flex;
   flex-direction: column;
   gap: 0;
   align-items: stretch;
 `;
-const Title = styled.h2`
-  margin: 0 0 8px;
-  font-size: 28px;
-  color: #222;
-  text-align: center;
-  font-weight: 700;
-`;
+
 const Label = styled.label`
   font-size: 15px;
   color: #222;
   margin: 12px 0 4px 2px;
   font-weight: 500;
 `;
+
 const PwDesc = styled.ul`
   margin: 6px 0 0 0;
   padding: 0 0 0 0;
@@ -248,7 +260,7 @@ const PwDesc = styled.ul`
     display: flex;
     align-items: center;
     gap: 6px;
-    color: #9ca3af; /* 기본 회색 */
+    color: #9ca3af;
     &.fail {
       color: #ef4444;
     }
@@ -260,52 +272,96 @@ const PwDesc = styled.ul`
     }
   }
 `;
+
 const ErrorMsg = styled.div`
   color: #ef4444;
   font-size: 14px;
   text-align: center;
   margin: 8px 0 -8px;
 `;
+
 const Divider = styled.div`
   display: flex;
   align-items: center;
   text-align: center;
-  margin: 24px 0 0 0;
-  color: #9ca3af;
+  margin: 1.5rem 0;
+  color: #6b7280;
+
   &::before,
   &::after {
     content: "";
     flex: 1;
-    border-top: 1px solid #e5e7eb;
+    border-bottom: 1px solid #e5e7eb;
   }
+
   span {
-    margin: 0 12px;
-    background: #fff;
-    padding: 0 8px;
-    font-size: 13px;
+    margin: 0 0.75rem;
+    font-size: 0.875rem;
   }
 `;
-const SocialRow = styled.div`
-  display: flex;
-  gap: 12px;
-  margin-top: 12px;
-  justify-content: center;
-`;
-const SocialBtn = styled.button`
+
+const SocialLoginButton = styled(Button)`
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  background: ${(props) => props.bg || "#fff"};
-  color: ${(props) => props.color || "#222"};
-  border: ${(props) => (props.border ? "1px solid #e5e7eb" : "none")};
-  border-radius: 8px;
-  padding: 8px 16px;
-  font-size: 15px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.15s;
-  &:hover {
-    filter: brightness(0.95);
+  gap: 12px;
+  font-size: 0.875rem;
+  height: 44px;
+
+  ${(props) =>
+    props.variant === "kakao" &&
+    `
+    background-color: #FEE500;
+    color: #000000;
+    border: none;
+    &:hover {
+      background-color: #F6E000;
+      border: none;
+    }
+  `}
+
+  ${(props) =>
+    props.variant === "google" &&
+    `
+    background-color: #ffffff;
+    color: #000000;
+    border: 1px solid #dadce0;
+    &:hover {
+      background-color: #f8f9fa;
+      border-color: #dadce0;
+    }
+  `}
+
+  ${(props) =>
+    props.variant === "naver" &&
+    `
+    background-color: #03C75A;
+    color: #fff;
+    border: none;
+    &:hover { background-color: #1EC800; }
+  `}
+`;
+
+const SocialIcon = styled.img`
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+`;
+
+const SocialLogin = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+`;
+
+const Footer = styled.div`
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: #6b7280;
+
+  p {
+    margin: 0.5rem 0;
   }
 `; 
