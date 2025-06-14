@@ -6,7 +6,6 @@ import Footer from "../components/Footer";
 const TABS = [
   { key: "created", label: "내가 만든 모임" },
   { key: "joined", label: "참여한 모임" },
-  { key: "notifications", label: "알림" },
 ];
 
 const mockProfile = {
@@ -93,16 +92,26 @@ const MyPage = () => {
           <SettingItem>
             <SettingText>Change Password</SettingText>
             <SettingIcon>
-              <svg width="24" height="24" fill="currentColor" viewBox="0 0 256 256">
-                <path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"/>
+              <svg
+                width="24"
+                height="24"
+                fill="currentColor"
+                viewBox="0 0 256 256"
+              >
+                <path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z" />
               </svg>
             </SettingIcon>
           </SettingItem>
           <SettingItem>
             <SettingText>Delete Account</SettingText>
             <SettingIcon>
-              <svg width="24" height="24" fill="currentColor" viewBox="0 0 256 256">
-                <path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z"/>
+              <svg
+                width="24"
+                height="24"
+                fill="currentColor"
+                viewBox="0 0 256 256"
+              >
+                <path d="M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z" />
               </svg>
             </SettingIcon>
           </SettingItem>
@@ -224,7 +233,8 @@ const TabItem = styled.button`
   font-size: 15px;
   font-weight: bold;
   color: ${({ active }) => (active ? "#0d151c" : "#49749c")};
-  border-bottom: 3px solid ${({ active }) => (active ? "#0b80ee" : "transparent")};
+  border-bottom: 3px solid
+    ${({ active }) => (active ? "#0b80ee" : "transparent")};
   padding: 16px 0 13px 0;
   cursor: pointer;
   transition: color 0.15s, border-bottom 0.15s;
@@ -245,7 +255,7 @@ const GatheringCard = styled.div`
   background: #fff;
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   align-items: stretch;
 `;
 

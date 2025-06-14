@@ -15,10 +15,10 @@ const Header = () => {
         <Nav>
           <NavLink href="/moim-list">모임 보기</NavLink>
           <ButtonGroup>
-            <Button href="/moim-create" variant="primary" size="small">
+            <Button href="/moim-create" variant="light" size="small">
               모임 만들기
             </Button>
-            <Button href="/login" variant="secondary" size="small">
+            <Button href="/login" variant="light" size="small">
               로그인 <UserIcon />
             </Button>
           </ButtonGroup>

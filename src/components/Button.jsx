@@ -67,14 +67,14 @@ const ButtonBase = styled.button.withConfig({
   ${(props) =>
     props.variant === "primary" &&
     css`
-      background-color: #111827;
+      background-color: #0d6efd;
       color: #fff;
-      border: 1.5px solid #111827;
+      border: none;
       &:hover:not(:disabled),
       &:active:not(:disabled) {
-        background-color: #111827;
+        background-color: #0b5ed7;
         color: #fff;
-        border: 1.5px solid #111827;
+        border: none;
         cursor: pointer;
       }
     `}
@@ -82,14 +82,29 @@ const ButtonBase = styled.button.withConfig({
   ${(props) =>
     props.variant === "secondary" &&
     css`
-      background-color: #fff;
-      color: #111827;
-      border: 1.5px solid #111827;
+      background-color: #6c757d;
+      color: #fff;
+      border: 1.5px solid #6c757d;
       &:hover:not(:disabled),
       &:active:not(:disabled) {
-        background-color: #fff;
-        color: #111827;
-        border: 1.5px solid #111827;
+        background-color: #5c636a;
+        color: #fff;
+        border: 1.5px solid #5c636a;
+        cursor: pointer;
+      }
+    `}
+
+  ${(props) =>
+    props.variant === "light" &&
+    css`
+      background-color: #f8f9fa;
+      color: #212529;
+      border: 1.5px solid #f8f9fa;
+      &:hover:not(:disabled),
+      &:active:not(:disabled) {
+        background-color: #e2e6ea;
+        color: #212529;
+        border: 1.5px solid #e2e6ea;
         cursor: pointer;
       }
     `}
@@ -99,6 +114,7 @@ const ButtonBase = styled.button.withConfig({
     css`
       padding: 0.5rem 0.75rem;
       font-size: 0.75rem;
+      height: 40px;
     `}
 
   ${(props) =>
