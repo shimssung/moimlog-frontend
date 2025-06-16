@@ -16,16 +16,21 @@ const LoginPage = () => {
   return (
     <>
       <Header>
-        <Link href="/" passHref>
-          <LogoText>MoimLog</LogoText>
-        </Link>
+        <HeaderContent>
+          <Logo>
+            <Link href="/" passHref>
+              <LogoText>MoimLog</LogoText>
+            </Link>
+          </Logo>
+        </HeaderContent>
       </Header>
       <PageWrap>
         <LeftSection>
           <LeftContent>
             <LeftTitle>MoimLog에 오신 걸 환영합니다!</LeftTitle>
             <LeftDesc>
-              다양한 모임을 만들고, 참여하며<br />
+              다양한 모임을 만들고, 참여하며
+              <br />
               새로운 사람들과 함께 성장해보세요.
             </LeftDesc>
           </LeftContent>
@@ -77,7 +82,10 @@ const LoginPage = () => {
               </SocialLoginButton>
             </SocialLogin>
             <Footer>
-              <p>비밀번호를 잊으셨나요? <a href="/forgot-password">비밀번호 찾기</a></p>
+              <p>
+                비밀번호를 잊으셨나요?{" "}
+                <a href="/forgot-password">비밀번호 찾기</a>
+              </p>
             </Footer>
           </FormContainer>
         </RightSection>
@@ -86,7 +94,7 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage; 
+export default LoginPage;
 
 const PageWrap = styled.div`
   display: flex;
@@ -175,19 +183,17 @@ const RightSection = styled.div`
   align-items: center;
   justify-content: center;
   background: transparent;
-
 `;
 
 const FormContainer = styled.div`
   background-color: #fff;
   border-radius: 0.75rem;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
   padding: 2.5rem 2rem;
   width: 100%;
   max-width: 28rem;
   position: relative;
   top: 0;
-
 `;
 
 const Title = styled.h2`
@@ -294,6 +300,7 @@ const Footer = styled.div`
     margin: 0.5rem 0;
   }
 `;
+
 const Header = styled.header`
   width: 100vw;
   min-width: 360px;
@@ -311,4 +318,21 @@ const Header = styled.header`
   @media (max-width: 1230px) {
     justify-content: center;
   }
+`;
+
+const HeaderContent = styled.div`
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+`;
+
+const Logo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
 `;

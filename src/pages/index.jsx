@@ -99,24 +99,7 @@ const MoimMainPage = () => {
                 <Button href="/moim-list" variant="secondary">
                   모임 둘러보기
                 </Button>
-                <Button
-                  href="/moim-create"
-                  variant="primary"
-                  style={{
-                    transition: "all 0.15s",
-                    border: "1.5px solid #111827",
-                  }}
-                  onMouseOver={e => {
-                    e.currentTarget.style.background = "#fff";
-                    e.currentTarget.style.color = "#111827";
-                    e.currentTarget.style.border = "1.5px solid #111827";
-                  }}
-                  onMouseOut={e => {
-                    e.currentTarget.style.background = "#111827";
-                    e.currentTarget.style.color = "#fff";
-                    e.currentTarget.style.border = "1.5px solid #111827";
-                  }}
-                >
+                <Button href="/moim-create" variant="primary">
                   모임 만들기
                 </Button>
               </ButtonGroup>
@@ -158,22 +141,46 @@ const MoimMainPage = () => {
               <ModalInfoList>
                 <ModalInfoRow>
                   <ModalInfoLabel>모임 형태</ModalInfoLabel>
-                  <span>{selectedMoim.onlineType === "online" ? "온라인" : "오프라인"}</span>
-                  {selectedMoim.location && <><ModalInfoLabel>위치</ModalInfoLabel><span>{selectedMoim.location}</span></>}
+                  <span>
+                    {selectedMoim.onlineType === "online"
+                      ? "온라인"
+                      : "오프라인"}
+                  </span>
+                  {selectedMoim.location && (
+                    <>
+                      <ModalInfoLabel>위치</ModalInfoLabel>
+                      <span>{selectedMoim.location}</span>
+                    </>
+                  )}
                 </ModalInfoRow>
                 {selectedMoim.creator && (
                   <ModalInfoRow>
                     <ModalCreator>
-                      <ModalCreatorImg src={selectedMoim.creator.profileImage} alt={selectedMoim.creator.name} />
-                      <span>개설자: <b>{selectedMoim.creator.name}</b></span>
-                      <span style={{ fontSize: "12px", color: "#888", marginLeft: 6 }}>{selectedMoim.creator.createdAt} 생성</span>
+                      <ModalCreatorImg
+                        src={selectedMoim.creator.profileImage}
+                        alt={selectedMoim.creator.name}
+                      />
+                      <span>
+                        개설자: <b>{selectedMoim.creator.name}</b>
+                      </span>
+                      <span
+                        style={{
+                          fontSize: "12px",
+                          color: "#888",
+                          marginLeft: 6,
+                        }}
+                      >
+                        {selectedMoim.creator.createdAt} 생성
+                      </span>
                     </ModalCreator>
                   </ModalInfoRow>
                 )}
                 {selectedMoim.members && selectedMoim.maxMembers && (
                   <ModalInfoRow>
                     <ModalInfoLabel>참여 인원</ModalInfoLabel>
-                    <span>{selectedMoim.members} / {selectedMoim.maxMembers}</span>
+                    <span>
+                      {selectedMoim.members} / {selectedMoim.maxMembers}
+                    </span>
                   </ModalInfoRow>
                 )}
               </ModalInfoList>
@@ -185,8 +192,12 @@ const MoimMainPage = () => {
                 </ModalTagList>
               )}
               <ModalBtnGroup>
-                <Button variant="primary" fullWidth>참여하기</Button>
-                <Button variant="secondary" fullWidth>문의하기</Button>
+                <Button variant="primary" fullWidth>
+                  참여하기
+                </Button>
+                <Button variant="secondary" fullWidth>
+                  문의하기
+                </Button>
               </ModalBtnGroup>
             </ModalInner>
           </ModalCard>
@@ -196,7 +207,7 @@ const MoimMainPage = () => {
   );
 };
 
-export default MoimMainPage; 
+export default MoimMainPage;
 
 const StyledMoimMainPage = styled.div`
   display: flex;
@@ -332,7 +343,7 @@ const ModalCard = styled.div`
   width: 92vw;
   background: #fff;
   border-radius: 18px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
   overflow: hidden;
   position: relative;
   animation: ${keyframes`

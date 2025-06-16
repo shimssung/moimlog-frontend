@@ -15,16 +15,21 @@ const ForgotPassword = () => {
   return (
     <>
       <Header>
-        <Link href="/" passHref>
-          <LogoText>MoimLog</LogoText>
-        </Link>
+        <HeaderContent>
+          <Logo>
+            <Link href="/" passHref>
+              <LogoText>MoimLog</LogoText>
+            </Link>
+          </Logo>
+        </HeaderContent>
       </Header>
       <PageWrap>
         <LeftSection>
           <LeftContent>
             <LeftTitle>비밀번호를 잊으셨나요?</LeftTitle>
             <LeftDesc>
-              가입하신 이메일을 입력하시면<br />
+              가입하신 이메일을 입력하시면
+              <br />
               비밀번호 재설정 링크를 보내드립니다.
             </LeftDesc>
           </LeftContent>
@@ -42,11 +47,13 @@ const ForgotPassword = () => {
                   required
                 />
               </FormGroup>
-              <Button type="submit" fullWidth style={{marginTop: "1rem"}}>
+              <Button type="submit" fullWidth style={{ marginTop: "1rem" }}>
                 다음
               </Button>
               <Footer>
-                <p>로그인이 기억나셨나요? <a href="/login">로그인 하기</a></p>
+                <p>
+                  로그인이 기억나셨나요? <a href="/login">로그인 하기</a>
+                </p>
               </Footer>
             </form>
           </FormContainer>
@@ -145,19 +152,17 @@ const RightSection = styled.div`
   align-items: center;
   justify-content: center;
   background: transparent;
-
 `;
 
 const FormContainer = styled.div`
   background-color: #fff;
   border-radius: 0.75rem;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
   padding: 2.5rem 2rem;
   width: 100%;
   max-width: 28rem;
   position: relative;
   top: 0;
-
 `;
 
 const Title = styled.h2`
@@ -200,4 +205,21 @@ const Header = styled.header`
   @media (max-width: 1230px) {
     justify-content: center;
   }
+`;
+
+const HeaderContent = styled.div`
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+`;
+
+const Logo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
 `;

@@ -84,12 +84,12 @@ const ButtonBase = styled.button.withConfig({
     css`
       background-color: #6c757d;
       color: #fff;
-      border: 1.5px solid #6c757d;
+      border: none;
       &:hover:not(:disabled),
       &:active:not(:disabled) {
         background-color: #5c636a;
         color: #fff;
-        border: 1.5px solid #5c636a;
+        border: none;
         cursor: pointer;
       }
     `}
