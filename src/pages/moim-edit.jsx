@@ -10,11 +10,13 @@ const MoimEdit = () => {
     maxMembers: 12,
     description: "시크릿 가든을 함께 읽고 토론하는 북클럽입니다.",
     location: "서울시 강남구",
-    meetingDay: "매주 수요일",
+    meetingCycle: "weekly",
+    meetingDay: "수요일",
     meetingTime: "14:00",
     tags: ["독서", "토론", "문학"],
     thumbnail:
       "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=1000&auto=format&fit=crop",
+    onlineType: "offline",
   });
 
   const handleChange = (e) => {
@@ -29,6 +31,19 @@ const MoimEdit = () => {
     e.preventDefault();
     // TODO: API 연동
     console.log("Form submitted:", formData);
+  };
+
+  const getMeetingCycleText = () => {
+    switch (formData.meetingCycle) {
+      case "weekly":
+        return "매주";
+      case "biweekly":
+        return "격주";
+      case "monthly":
+        return "매월";
+      default:
+        return "";
+    }
   };
 
   return (
@@ -96,42 +111,80 @@ const MoimEdit = () => {
               </FormGroup>
 
               <FormGroup>
-                <Label htmlFor="location">활동 지역</Label>
-                <Input
-                  type="text"
-                  id="location"
-                  name="location"
-                  value={formData.location}
+                <Label htmlFor="onlineType">모임 형태</Label>
+                <Select
+                  id="onlineType"
+                  name="onlineType"
+                  value={formData.onlineType}
                   onChange={handleChange}
                   required
-                />
+                >
+                  <option value="online">온라인</option>
+                  <option value="offline">오프라인</option>
+                </Select>
               </FormGroup>
+
+              {formData.onlineType === "offline" && (
+                <FormGroup>
+                  <Label htmlFor="location">활동 지역</Label>
+                  <Input
+                    type="text"
+                    id="location"
+                    name="location"
+                    value={formData.location}
+                    onChange={handleChange}
+                    required
+                  />
+                </FormGroup>
+              )}
 
               <FormRow>
                 <FormGroup>
-                  <Label htmlFor="meetingDay">정기 모임 요일</Label>
-                  <Input
-                    type="text"
+                  <Label htmlFor="meetingCycle">모임 주기</Label>
+                  <Select
+                    id="meetingCycle"
+                    name="meetingCycle"
+                    value={formData.meetingCycle}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="weekly">매주</option>
+                    <option value="biweekly">격주</option>
+                    <option value="monthly">매월</option>
+                  </Select>
+                </FormGroup>
+
+                <FormGroup>
+                  <Label htmlFor="meetingDay">모임 요일</Label>
+                  <Select
                     id="meetingDay"
                     name="meetingDay"
                     value={formData.meetingDay}
                     onChange={handleChange}
                     required
-                  />
-                </FormGroup>
-
-                <FormGroup>
-                  <Label htmlFor="meetingTime">정기 모임 시간</Label>
-                  <Input
-                    type="text"
-                    id="meetingTime"
-                    name="meetingTime"
-                    value={formData.meetingTime}
-                    onChange={handleChange}
-                    required
-                  />
+                  >
+                    <option value="월요일">월요일</option>
+                    <option value="화요일">화요일</option>
+                    <option value="수요일">수요일</option>
+                    <option value="목요일">목요일</option>
+                    <option value="금요일">금요일</option>
+                    <option value="토요일">토요일</option>
+                    <option value="일요일">일요일</option>
+                  </Select>
                 </FormGroup>
               </FormRow>
+
+              <FormGroup>
+                <Label htmlFor="meetingTime">모임 시간</Label>
+                <Input
+                  type="time"
+                  id="meetingTime"
+                  name="meetingTime"
+                  value={formData.meetingTime}
+                  onChange={handleChange}
+                  required
+                />
+              </FormGroup>
 
               <FormGroup>
                 <Label>태그</Label>
@@ -227,13 +280,22 @@ const MoimEdit = () => {
               </PreviewMaxMembers>
               <PreviewInfo>
                 <InfoItem>
-                  <InfoLabel>활동 지역</InfoLabel>
-                  <InfoValue>{formData.location}</InfoValue>
+                  <InfoLabel>모임 형태</InfoLabel>
+                  <InfoValue>
+                    {formData.onlineType === "online" ? "온라인" : "오프라인"}
+                  </InfoValue>
                 </InfoItem>
+                {formData.onlineType === "offline" && (
+                  <InfoItem>
+                    <InfoLabel>활동 지역</InfoLabel>
+                    <InfoValue>{formData.location}</InfoValue>
+                  </InfoItem>
+                )}
                 <InfoItem>
                   <InfoLabel>정기 모임</InfoLabel>
                   <InfoValue>
-                    {formData.meetingDay} {formData.meetingTime}
+                    {getMeetingCycleText()} {formData.meetingDay}{" "}
+                    {formData.meetingTime}
                   </InfoValue>
                 </InfoItem>
               </PreviewInfo>
