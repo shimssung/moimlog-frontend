@@ -8,7 +8,9 @@ const categories = ["All", "Technology", "Arts", "Sports", "Food"];
 
 const meetups = Array.from({ length: 40 }, (_, i) => ({
   title: `Meetup ${i + 1}`,
-  desc: `Category · Date · ${10 + i} participants`,
+  category: ["Technology", "Arts", "Sports", "Food"][i % 4],
+  participants: 10 + i,
+  isOnline: i % 2 === 0,
   img: [
     "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
     "https://images.unsplash.com/photo-1465101046530-73398c7f28ca",
@@ -28,11 +30,11 @@ const MoimListPage = () => {
   const filteredMeetups = meetups.filter((meetup) => {
     const matchCategory =
       selectedCategory === "All" ||
-      meetup.desc.toLowerCase().includes(selectedCategory.toLowerCase());
+      meetup.category.toLowerCase().includes(selectedCategory.toLowerCase());
     const matchSearch =
       !search ||
       meetup.title.toLowerCase().includes(search.toLowerCase()) ||
-      meetup.desc.toLowerCase().includes(search.toLowerCase());
+      meetup.category.toLowerCase().includes(search.toLowerCase());
     return matchCategory && matchSearch;
   });
 
@@ -114,7 +116,9 @@ const MoimListPage = () => {
                 key={idx}
                 image={meetup.img}
                 title={meetup.title}
-                desc={meetup.desc}
+                category={meetup.category}
+                participants={meetup.participants}
+                isOnline={meetup.isOnline}
                 style={{ width: "100%", marginBottom: 16 }}
               />
             ))}
