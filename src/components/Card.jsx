@@ -8,7 +8,7 @@ const Card = ({ image, title, category, participants, isOnline, onClick, ...prop
       <CardTitle>{title}</CardTitle>
       <InfoRow>
         <CategoryBadge>{category}</CategoryBadge>
-        <OnlineBadge isOnline={isOnline}>
+        <OnlineBadge $isOnline={isOnline}>
           {isOnline ? "온라인" : "오프라인"}
         </OnlineBadge>
       </InfoRow>
@@ -76,8 +76,8 @@ const CategoryBadge = styled.span`
 
 const OnlineBadge = styled.span`
   font-size: 13px;
-  color: ${props => props.isOnline ? "#0ca678" : "#e67700"};
-  background: ${props => props.isOnline ? "#e6fcf5" : "#fff9db"};
+  color: ${props => props.$isOnline ? "#0ca678" : "#e67700"};
+  background: ${props => props.$isOnline ? "#e6fcf5" : "#fff9db"};
   padding: 4px 12px;
   border-radius: 20px;
   font-weight: 500;

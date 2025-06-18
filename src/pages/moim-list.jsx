@@ -25,6 +25,7 @@ const MoimListPage = () => {
   const [visibleCount, setVisibleCount] = useState(8);
   const [loading, setLoading] = useState(false);
   const loader = useRef();
+  const observerRef = useRef();
 
   // 필터링 로직 (카테고리, 검색)
   const filteredMeetups = meetups.filter((meetup) => {
@@ -40,26 +41,36 @@ const MoimListPage = () => {
 
   // Intersection Observer로 무한 스크롤 구현
   useEffect(() => {
-    const observer = new window.IntersectionObserver(
-      (entries) => {
-        if (
-          entries[0].isIntersecting &&
-          !loading &&
-          visibleCount < filteredMeetups.length
-        ) {
-          setLoading(true);
-          setTimeout(() => {
-            setVisibleCount((prev) =>
-              Math.min(prev + 8, filteredMeetups.length)
-            );
-            setLoading(false);
-          }, 800);
-        }
-      },
-      { threshold: 0.2 }
-    );
-    if (loader.current) observer.observe(loader.current);
-    return () => observer.disconnect();
+    const currentLoader = loader.current;
+    
+    if (currentLoader && typeof window !== "undefined") {
+      observerRef.current = new window.IntersectionObserver(
+        (entries) => {
+          if (
+            entries[0].isIntersecting &&
+            !loading &&
+            visibleCount < filteredMeetups.length
+          ) {
+            setLoading(true);
+            setTimeout(() => {
+              setVisibleCount((prev) =>
+                Math.min(prev + 8, filteredMeetups.length)
+              );
+              setLoading(false);
+            }, 800);
+          }
+        },
+        { threshold: 0.2 }
+      );
+      
+      observerRef.current.observe(currentLoader);
+    }
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
   }, [filteredMeetups.length, loading, visibleCount]);
 
   return (
@@ -72,7 +83,7 @@ const MoimListPage = () => {
             {categories.map((cat) => (
               <CategoryItem
                 key={cat}
-                active={selectedCategory === cat}
+                $active={selectedCategory === cat}
                 onClick={() => setSelectedCategory(cat)}
               >
                 {cat}
@@ -196,8 +207,8 @@ const CategoryItem = styled.div`
   font-weight: 500;
   color: #0d141c;
   transition: background 0.15s;
-  ${({ active }) =>
-    active &&
+  ${({ $active }) =>
+    $active &&
     `
     background: #0b80ee;
     color: #fff;

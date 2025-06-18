@@ -3,6 +3,7 @@ import styled from "styled-components";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import { FaCheckCircle, FaTimesCircle, FaRegCircle } from "react-icons/fa";
+import Link from "next/link";
 
 function SignupPage() {
   const [form, setForm] = useState({
@@ -62,98 +63,109 @@ function SignupPage() {
   };
 
   return (
-    <PageWrap>
-      <LeftSection>
-        <LeftTitle>MoimLog에 오신 걸 환영합니다!</LeftTitle>
-        <LeftDesc>
-          다양한 모임을 만들고, 참여하며<br />
-          새로운 사람들과 함께 성장해보세요.
-        </LeftDesc>
-      </LeftSection>
-      <RightSection>
-        <FormContainer>
-          <Title>회원가입</Title>
-          <FormBox onSubmit={handleSubmit}>
-            <Label>이메일</Label>
-            <Input
-              name="email"
-              placeholder="example@inflab.com"
-              value={form.email}
-              onChange={handleChange}
-              required
-            />
-            <Label>비밀번호</Label>
-            <Input
-              name="password"
-              type="password"
-              placeholder="비밀번호"
-              value={form.password}
-              onChange={handlePasswordChange}
-              style={{
-                borderColor:
-                  !pwChecks.rule1 || !pwChecks.rule2 || !pwChecks.rule3
-                    ? "#ef4444"
-                    : undefined,
-              }}
-              required
-            />
-            <PwDesc>
-              <li className={!pwTouched ? "" : pwChecks.rule1 ? "pass" : "fail"}>
-                {!pwTouched ? (
-                  <FaRegCircle />
-                ) : pwChecks.rule1 ? (
-                  <FaCheckCircle />
-                ) : (
-                  <FaTimesCircle />
-                )}
-                영문/숫자/특수문자 중, 2가지 이상 포함
-              </li>
-              <li className={!pwTouched ? "" : pwChecks.rule2 ? "pass" : "fail"}>
-                {!pwTouched ? (
-                  <FaRegCircle />
-                ) : pwChecks.rule2 ? (
-                  <FaCheckCircle />
-                ) : (
-                  <FaTimesCircle />
-                )}
-                8자 이상 32자 이하 입력 (공백 제외)
-              </li>
-              <li className={!pwTouched ? "" : pwChecks.rule3 ? "pass" : "fail"}>
-                {!pwTouched ? (
-                  <FaRegCircle />
-                ) : pwChecks.rule3 ? (
-                  <FaCheckCircle />
-                ) : (
-                  <FaTimesCircle />
-                )}
-                연속 3자 이상 동일한 문자/숫자 제외
-              </li>
-            </PwDesc>
-            <Label>비밀번호 확인</Label>
-            <Input
-              name="password2"
-              type="password"
-              placeholder="비밀번호 확인"
-              value={form.password2}
-              onChange={handleChange}
-              required
-            />
-            {error && <ErrorMsg>{error}</ErrorMsg>}
-            <Button
-              type="submit"
-              fullWidth
-              variant="primary"
-              style={{ margin: "24px 0 0 0" }}
-            >
-              가입하기
-            </Button>
-          </FormBox>
-          <Footer>
-            <p>이미 회원이신가요? <a href="/login">로그인</a></p>
-          </Footer>
-        </FormContainer>
-      </RightSection>
-    </PageWrap>
+    <>
+      <Header>
+        <HeaderContent>
+          <Logo>
+            <Link href="/" passHref>
+              <LogoText>MoimLog</LogoText>
+            </Link>
+          </Logo>
+        </HeaderContent>
+      </Header>
+      <PageWrap>
+        <LeftSection>
+          <LeftTitle>MoimLog에 오신 걸 환영합니다!</LeftTitle>
+          <LeftDesc>
+            다양한 모임을 만들고, 참여하며<br />
+            새로운 사람들과 함께 성장해보세요.
+          </LeftDesc>
+        </LeftSection>
+        <RightSection>
+          <FormContainer>
+            <Title>회원가입</Title>
+            <FormBox onSubmit={handleSubmit}>
+              <Label>이메일</Label>
+              <Input
+                name="email"
+                placeholder="example@inflab.com"
+                value={form.email}
+                onChange={handleChange}
+                required
+              />
+              <Label>비밀번호</Label>
+              <Input
+                name="password"
+                type="password"
+                placeholder="비밀번호"
+                value={form.password}
+                onChange={handlePasswordChange}
+                style={{
+                  borderColor:
+                    !pwChecks.rule1 || !pwChecks.rule2 || !pwChecks.rule3
+                      ? "#ef4444"
+                      : undefined,
+                }}
+                required
+              />
+              <PwDesc>
+                <li className={!pwTouched ? "" : pwChecks.rule1 ? "pass" : "fail"}>
+                  {!pwTouched ? (
+                    <FaRegCircle />
+                  ) : pwChecks.rule1 ? (
+                    <FaCheckCircle />
+                  ) : (
+                    <FaTimesCircle />
+                  )}
+                  영문/숫자/특수문자 중, 2가지 이상 포함
+                </li>
+                <li className={!pwTouched ? "" : pwChecks.rule2 ? "pass" : "fail"}>
+                  {!pwTouched ? (
+                    <FaRegCircle />
+                  ) : pwChecks.rule2 ? (
+                    <FaCheckCircle />
+                  ) : (
+                    <FaTimesCircle />
+                  )}
+                  8자 이상 32자 이하 입력 (공백 제외)
+                </li>
+                <li className={!pwTouched ? "" : pwChecks.rule3 ? "pass" : "fail"}>
+                  {!pwTouched ? (
+                    <FaRegCircle />
+                  ) : pwChecks.rule3 ? (
+                    <FaCheckCircle />
+                  ) : (
+                    <FaTimesCircle />
+                  )}
+                  연속 3자 이상 동일한 문자/숫자 제외
+                </li>
+              </PwDesc>
+              <Label>비밀번호 확인</Label>
+              <Input
+                name="password2"
+                type="password"
+                placeholder="비밀번호 확인"
+                value={form.password2}
+                onChange={handleChange}
+                required
+              />
+              {error && <ErrorMsg>{error}</ErrorMsg>}
+              <Button
+                type="submit"
+                fullWidth
+                variant="primary"
+                style={{ margin: "24px 0 0 0" }}
+              >
+                가입하기
+              </Button>
+            </FormBox>
+            <Footer>
+              <p>이미 회원이신가요? <a href="/login">로그인</a></p>
+            </Footer>
+          </FormContainer>
+        </RightSection>
+      </PageWrap>
+    </>
   );
 }
 
@@ -165,14 +177,14 @@ const PageWrap = styled.div`
   background: #111827;
   justify-content: center;
   align-items: center;
-  padding: 32px;
+  padding: 96px 32px 32px 32px;
   gap: 48px;
 
   /* 반응형: 1230px 이하에서는 세로로 쌓이고, 패딩/정렬 변경 */
   @media (max-width: 1230px) {
     flex-direction: column; // 좌우 → 상하로 쌓임
     gap: 0;
-    padding: 24px 0 0 0; // 상단 패딩만 남김
+    padding: 88px 0 0 0; // 상단 패딩만 남김
     align-items: stretch; // stretch로 영역 확장
   }
 `;
@@ -363,5 +375,54 @@ const Footer = styled.div`
 
   p {
     margin: 0.5rem 0;
+  }
+`;
+
+const Header = styled.header`
+  width: 100vw;
+  min-width: 360px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  background: transparent;
+  padding: 0 48px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+
+  /* 반응형: 1230px 이하에서 패딩/높이 축소 */
+  @media (max-width: 1230px) {
+    justify-content: center;
+  }
+`;
+
+const HeaderContent = styled.div`
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+`;
+
+const Logo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+`;
+
+const LogoText = styled.h1`
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -1px;
+  margin: 0;
+
+  /* 반응형: 1230px 이하에서 폰트 크기 축소 */
+  @media (max-width: 1230px) {
+    font-size: 2rem;
   }
 `; 

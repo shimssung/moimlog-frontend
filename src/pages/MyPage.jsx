@@ -68,7 +68,7 @@ const MyPage = () => {
           {TABS.map((t) => (
             <TabItem
               key={t.key}
-              active={tab === t.key}
+              $active={tab === t.key}
               onClick={() => setTab(t.key)}
             >
               {t.label}
@@ -232,9 +232,9 @@ const TabItem = styled.button`
   border: none;
   font-size: 15px;
   font-weight: bold;
-  color: ${({ active }) => (active ? "#0d151c" : "#49749c")};
+  color: ${({ $active }) => ($active ? "#0d151c" : "#49749c")};
   border-bottom: 3px solid
-    ${({ active }) => (active ? "#0b80ee" : "transparent")};
+    ${({ $active }) => ($active ? "#0b80ee" : "transparent")};
   padding: 16px 0 13px 0;
   cursor: pointer;
   transition: color 0.15s, border-bottom 0.15s;
