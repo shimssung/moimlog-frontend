@@ -1,10 +1,10 @@
 import React from "react";
-import styled, { keyframes } from "styled-components";
+import styled from "styled-components";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Button from "../components/Button";
 import { useState } from "react";
-import Modal from "../components/Modal";
+import MoimDetailModal from "../components/MoimDetailModal";
 
 const MoimMainPage = () => {
   const [selectedMoim, setSelectedMoim] = useState(null);
@@ -14,7 +14,7 @@ const MoimMainPage = () => {
     {
       id: 1,
       title: "스크럼 플러스 모임",
-      description: "스크럼과 함께 성장하는 개발자들의 모임",
+      description: "스크럼과 함께 성장하는 개발자들의 모임입니다. 매주 스크럼 방법론을 학습하고 실제 프로젝트에 적용해보며 함께 성장하는 시간을 가집니다. 초보자부터 경험자까지 모두 환영합니다!",
       image: "/img1.jpg",
       creator: {
         name: "홍길동",
@@ -23,53 +23,154 @@ const MoimMainPage = () => {
       },
       members: 12,
       maxMembers: 20,
-      tags: ["개발", "스크럼"],
+      tags: ["개발", "스크럼", "프로젝트"],
       onlineType: "online",
       location: "온라인(Zoom)",
+      organizer: "홍길동",
+      attendees: [
+        { name: "Alice", image: "/profile1.jpg" },
+        { name: "Bob", image: "/profile2.jpg" },
+        { name: "Carol", image: "/profile3.jpg" },
+        { name: "David", image: "/profile4.jpg" },
+        { name: "Eve", image: "/profile5.jpg" },
+      ],
+      rules: [
+        "매주 정기 모임 참여 필수",
+        "스크럼 관련 자료 사전 학습",
+        "적극적인 토론 참여",
+        "서로를 존중하는 마음가짐",
+      ],
+      nextEvent: {
+        title: "스크럼 스프린트 계획 회의",
+        date: "2024-12-20T14:00:00",
+      },
     },
     {
       id: 2,
       title: "웹앱 개발 모임",
-      description: "웹과 앱을 아우르는 사이드프로젝트 모임",
+      description: "웹과 앱을 아우르는 사이드프로젝트 모임입니다. 아이디어부터 출시까지 함께 만들어가는 과정을 경험해보세요. 다양한 기술 스택을 다루며 실무 경험을 쌓을 수 있습니다.",
       image: "/img2.jpg",
       onlineType: "offline",
       location: "서울 강남구 카페",
+      organizer: "김개발",
+      attendees: [
+        { name: "Frank", image: "/profile6.jpg" },
+        { name: "Grace", image: "/profile7.jpg" },
+        { name: "Henry", image: "/profile8.jpg" },
+      ],
+      rules: [
+        "프로젝트 기여도 유지",
+        "코드 리뷰 적극 참여",
+        "정기 데모 발표",
+      ],
+      nextEvent: {
+        title: "프로젝트 데모 데이",
+        date: "2024-12-25T19:00:00",
+      },
     },
     {
       id: 3,
       title: "어반 플레이팅 모임",
-      description: "감각적인 플레이팅을 위한 모든 것",
+      description: "감각적인 플레이팅을 위한 모든 것을 배우는 모임입니다. 음식의 예술적 표현과 창의적인 접시 디자인을 함께 탐구해보세요.",
       image: "/img3.jpg",
+      organizer: "박요리",
+      attendees: [
+        { name: "Ivy", image: "/profile9.jpg" },
+        { name: "Jack", image: "/profile10.jpg" },
+      ],
+      rules: [
+        "매월 플레이팅 실습 참여",
+        "사진 촬영 및 공유",
+        "창의적인 아이디어 제안",
+      ],
     },
     {
       id: 4,
       title: "북클럽 모임",
-      description: "함께 읽고 토론하는 독서 모임",
+      description: "함께 읽고 토론하는 독서 모임입니다. 매월 한 권의 책을 선정하여 깊이 있는 독서와 의미 있는 대화를 나눕니다.",
       image: "/img4.jpg",
+      organizer: "이독서",
+      attendees: [
+        { name: "Kate", image: "/profile11.jpg" },
+        { name: "Leo", image: "/profile12.jpg" },
+        { name: "Mia", image: "/profile13.jpg" },
+        { name: "Noah", image: "/profile14.jpg" },
+      ],
+      rules: [
+        "매월 선정 도서 완독",
+        "토론 참여 필수",
+        "다양한 관점 존중",
+      ],
+      nextEvent: {
+        title: "12월 독서 토론회",
+        date: "2024-12-28T15:00:00",
+      },
     },
     {
       id: 5,
       title: "축구 동호회",
-      description: "주말 축구로 건강한 삶을",
+      description: "주말 축구로 건강한 삶을 만들어가는 동호회입니다. 실력에 관계없이 축구를 사랑하는 분들이 모여 즐겁게 뛰는 시간을 가집니다.",
       image: "/img5.jpg",
+      organizer: "최축구",
+      attendees: [
+        { name: "Oscar", image: "/profile15.jpg" },
+        { name: "Paul", image: "/profile16.jpg" },
+        { name: "Quinn", image: "/profile17.jpg" },
+      ],
+      rules: [
+        "정기 참여 권장",
+        "팀워크 중시",
+        "부상 예방 주의",
+      ],
     },
     {
       id: 6,
       title: "바이크 라이딩",
-      description: "자전거와 함께하는 새로운 도전",
+      description: "자전거와 함께하는 새로운 도전을 시작해보세요. 도시 탐방부터 장거리 라이딩까지 다양한 코스를 함께 즐깁니다.",
       image: "/img6.jpg",
+      organizer: "정라이딩",
+      attendees: [
+        { name: "Ruby", image: "/profile18.jpg" },
+        { name: "Sam", image: "/profile19.jpg" },
+      ],
+      rules: [
+        "안전 장비 착용 필수",
+        "코스 난이도 확인",
+        "서로 배려하며 라이딩",
+      ],
     },
     {
       id: 7,
       title: "아트 스터디",
-      description: "예술을 사랑하는 사람들의 모임",
+      description: "예술을 사랑하는 사람들의 모임입니다. 다양한 예술 작품을 감상하고 창작 활동을 통해 예술적 감성을 키워갑니다.",
       image: "/img7.jpg",
+      organizer: "한아트",
+      attendees: [
+        { name: "Tom", image: "/profile20.jpg" },
+        { name: "Uma", image: "/profile21.jpg" },
+        { name: "Vera", image: "/profile22.jpg" },
+      ],
+      rules: [
+        "정기 전시회 관람",
+        "창작 활동 공유",
+        "예술적 감상 능력 향상",
+      ],
     },
     {
       id: 8,
       title: "올리브오일 테이스팅",
-      description: "올리브오일의 세계로 초대합니다",
+      description: "올리브오일의 세계로 초대합니다. 다양한 지역의 올리브오일을 맛보고 그 특성과 활용법을 함께 배워봅니다.",
       image: "/img8.jpg",
+      organizer: "윤테이스팅",
+      attendees: [
+        { name: "Wendy", image: "/profile23.jpg" },
+        { name: "Xander", image: "/profile24.jpg" },
+      ],
+      rules: [
+        "테이스팅 참여 필수",
+        "맛과 향 기록",
+        "요리 활용법 공유",
+      ],
     },
   ];
 
@@ -129,80 +230,11 @@ const MoimMainPage = () => {
         </ContentSection>
       </MainContent>
       <Footer />
-      <Modal isOpen={isModalOpen} onClose={closeModal}>
-        {selectedMoim && (
-          <ModalCard>
-            <ModalImage src={selectedMoim.image} alt={selectedMoim.title} />
-            <ModalCloseBtn onClick={closeModal}>&times;</ModalCloseBtn>
-            <ModalInner>
-              <ModalTitle>{selectedMoim.title}</ModalTitle>
-              <ModalDesc>{selectedMoim.description}</ModalDesc>
-              <ModalDivider />
-              <ModalInfoList>
-                <ModalInfoRow>
-                  <ModalInfoLabel>모임 형태</ModalInfoLabel>
-                  <span>
-                    {selectedMoim.onlineType === "online"
-                      ? "온라인"
-                      : "오프라인"}
-                  </span>
-                  {selectedMoim.location && (
-                    <>
-                      <ModalInfoLabel>위치</ModalInfoLabel>
-                      <span>{selectedMoim.location}</span>
-                    </>
-                  )}
-                </ModalInfoRow>
-                {selectedMoim.creator && (
-                  <ModalInfoRow>
-                    <ModalCreator>
-                      <ModalCreatorImg
-                        src={selectedMoim.creator.profileImage}
-                        alt={selectedMoim.creator.name}
-                      />
-                      <span>
-                        개설자: <b>{selectedMoim.creator.name}</b>
-                      </span>
-                      <span
-                        style={{
-                          fontSize: "12px",
-                          color: "#888",
-                          marginLeft: 6,
-                        }}
-                      >
-                        {selectedMoim.creator.createdAt} 생성
-                      </span>
-                    </ModalCreator>
-                  </ModalInfoRow>
-                )}
-                {selectedMoim.members && selectedMoim.maxMembers && (
-                  <ModalInfoRow>
-                    <ModalInfoLabel>참여 인원</ModalInfoLabel>
-                    <span>
-                      {selectedMoim.members} / {selectedMoim.maxMembers}
-                    </span>
-                  </ModalInfoRow>
-                )}
-              </ModalInfoList>
-              {selectedMoim.tags && selectedMoim.tags.length > 0 && (
-                <ModalTagList>
-                  {selectedMoim.tags.map((tag, index) => (
-                    <ModalTag key={index}>#{tag}</ModalTag>
-                  ))}
-                </ModalTagList>
-              )}
-              <ModalBtnGroup>
-                <Button variant="primary" fullWidth>
-                  참여하기
-                </Button>
-                <Button variant="secondary" fullWidth>
-                  문의하기
-                </Button>
-              </ModalBtnGroup>
-            </ModalInner>
-          </ModalCard>
-        )}
-      </Modal>
+      <MoimDetailModal 
+        isOpen={isModalOpen} 
+        onClose={closeModal} 
+        moim={selectedMoim} 
+      />
     </StyledMoimMainPage>
   );
 };
@@ -336,127 +368,4 @@ const CardTitle = styled.h3`
 const CardDescription = styled.p`
   font-size: 14px;
   color: #6b7280;
-`;
-
-const ModalCard = styled.div`
-  max-width: 540px;
-  width: 92vw;
-  background: #fff;
-  border-radius: 18px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
-  overflow: hidden;
-  position: relative;
-  animation: ${keyframes`
-    0% { transform: translateY(40px); opacity: 0; }
-    100% { transform: translateY(0); opacity: 1; }
-  `} 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-`;
-
-const ModalImage = styled.img`
-  width: 100%;
-  height: 210px;
-  object-fit: cover;
-  border-top-left-radius: 18px;
-  border-top-right-radius: 18px;
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-  display: block;
-`;
-
-const ModalInner = styled.div`
-  padding: 32px 28px 24px 28px;
-  @media (max-width: 600px) {
-    padding: 18px 8px 16px 8px;
-  }
-`;
-
-const ModalTitle = styled.h2`
-  font-size: 2rem;
-  font-weight: 800;
-  margin-bottom: 8px;
-  color: #1a2233;
-`;
-
-const ModalDesc = styled.p`
-  color: #444;
-  font-size: 1.08rem;
-  margin-bottom: 18px;
-`;
-
-const ModalDivider = styled.hr`
-  border: none;
-  border-top: 1px solid #ececec;
-  margin: 18px 0 18px 0;
-`;
-
-const ModalInfoList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  font-size: 1rem;
-  color: #222;
-`;
-
-const ModalInfoRow = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 18px;
-  align-items: center;
-`;
-
-const ModalInfoLabel = styled.span`
-  font-weight: 600;
-  color: #1a2233;
-  min-width: 70px;
-`;
-
-const ModalCreator = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.98rem;
-  color: #444;
-  margin-bottom: 2px;
-`;
-
-const ModalCreatorImg = styled.img`
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  object-fit: cover;
-`;
-
-const ModalTagList = styled.div`
-  margin-top: 10px;
-  margin-bottom: 8px;
-`;
-
-const ModalTag = styled.span`
-  display: inline-block;
-  background: #f3f4f6;
-  color: #374151;
-  padding: 4px 12px;
-  border-radius: 8px;
-  font-size: 13px;
-  margin-right: 8px;
-  margin-bottom: 4px;
-`;
-
-const ModalBtnGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 28px;
-`;
-
-const ModalCloseBtn = styled.button`
-  position: absolute;
-  top: 18px;
-  right: 18px;
-  background: none;
-  border: none;
-  font-size: 2rem;
-  color: #888;
-  cursor: pointer;
-  z-index: 2;
 `;

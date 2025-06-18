@@ -1,7 +1,22 @@
-import React from "react";
+import React, { useEffect } from "react";
 import styled from "styled-components";
 
 const Modal = ({ isOpen, onClose, children }) => {
+  useEffect(() => {
+    if (isOpen) {
+      // 모달이 열릴 때 body 스크롤 막기
+      document.body.style.overflow = 'hidden';
+    } else {
+      // 모달이 닫힐 때 body 스크롤 복원
+      document.body.style.overflow = 'unset';
+    }
+
+    // 컴포넌트 언마운트 시 스크롤 복원
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
   return (
     <Overlay onClick={onClose}>
@@ -33,6 +48,6 @@ const ModalBox = styled.div`
   box-shadow: 0 4px 32px rgba(0, 0, 0, 0.18);
   min-width: 320px;
   max-width: 90vw;
-  padding: 6px;
+  padding: 10px;
   position: relative;
 `;
