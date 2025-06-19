@@ -3,14 +3,16 @@ import styled from "styled-components";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import Link from "next/link";
+import toast from "react-hot-toast";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    alert("로그인 시도: " + email);
+    toast.success("로그인 시도: " + email);
+    // 로그인 로직 구현
   };
 
   return (
@@ -38,7 +40,7 @@ const LoginPage = () => {
         <RightSection>
           <FormContainer>
             <Title>로그인</Title>
-            <Form onSubmit={handleLogin}>
+            <Form onSubmit={handleSubmit}>
               <FormGroup>
                 <Input
                   type="email"

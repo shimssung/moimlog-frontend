@@ -13,10 +13,12 @@ const Header = () => {
           </Link>
         </Logo>
         <Nav>
+          <NavLinks>
+            <NavLink href="/">홈</NavLink>
+            <NavLink href="/my-moims">내 모임</NavLink>
+            <NavLink href="/moim-list">모임 찾기</NavLink>
+          </NavLinks>
           <ButtonGroup>
-            <Button href="/moim-list" variant="light" size="small">
-              모임 보기
-            </Button>
             <Button href="/moim-create" variant="light" size="small">
               모임 만들기
             </Button>
@@ -67,6 +69,28 @@ const LogoText = styled.h1`
 const Nav = styled.nav`
   display: flex;
   align-items: center;
+  gap: 2rem;
+`;
+
+const NavLinks = styled.div`
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+`;
+
+const NavLink = styled(Link)`
+  color: #6b7280;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.9rem;
+  padding: 0.5rem 0;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: #111827;
+    border-bottom-color: #3b82f6;
+  }
 `;
 
 const ButtonGroup = styled.div`

@@ -4,6 +4,7 @@ import Button from "../components/Button";
 import Input from "../components/Input";
 import { FaCheckCircle, FaTimesCircle, FaRegCircle } from "react-icons/fa";
 import Link from "next/link";
+import toast from "react-hot-toast";
 
 function SignupPage() {
   const [form, setForm] = useState({
@@ -58,7 +59,7 @@ function SignupPage() {
     e.preventDefault();
     const err = validate();
     if (err) return setError(err);
-    alert("회원가입이 완료되었습니다!");
+    toast.success("회원가입이 완료되었습니다!");
     setForm({ email: "", password: "", password2: "" });
   };
 

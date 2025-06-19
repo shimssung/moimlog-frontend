@@ -3,13 +3,15 @@ import styled from "styled-components";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import Link from "next/link";
+import toast from "react-hot-toast";
 
 const ForgotPassword = () => {
   const [userId, setUserId] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    alert(`입력한 아이디: ${userId}`);
+    toast.success(`입력한 아이디: ${userId}`);
+    // 비밀번호 재설정 로직 구현
   };
 
   return (
