@@ -5,6 +5,7 @@ import Button from "../components/Button";
 import Input from "../components/Input";
 import Textarea from "../components/Textarea";
 import { useRouter } from "next/router";
+import toast from "react-hot-toast";
 
 const MoimCreatePage = () => {
   const router = useRouter();
@@ -32,8 +33,8 @@ const MoimCreatePage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    toast.success("Form submitted: " + JSON.stringify(formData));
     // TODO: API 연동
-    console.log("Form submitted:", formData);
   };
 
   const getMeetingCycleText = () => {

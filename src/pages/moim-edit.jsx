@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import Header from "../components/Header";
 import Button from "../components/Button";
+import toast from "react-hot-toast";
 
 const MoimEdit = () => {
   const [formData, setFormData] = useState({
@@ -29,8 +30,8 @@ const MoimEdit = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // TODO: API 연동
-    console.log("Form submitted:", formData);
+    toast.success("Form submitted: " + JSON.stringify(formData));
+    // 모임 수정 로직 구현
   };
 
   const getMeetingCycleText = () => {

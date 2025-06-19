@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import Header from "../components/Header";
 import Button from "../components/Button";
+import toast from "react-hot-toast";
 
 const Settings = () => {
   const [formData, setFormData] = useState({
@@ -26,8 +27,8 @@ const Settings = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // TODO: API 연동
-    console.log("Form submitted:", formData);
+    toast.success("Form submitted: " + JSON.stringify(formData));
+    // 설정 저장 로직 구현
   };
 
   return (
