@@ -1,66 +1,75 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import styled from "styled-components";
 import Header from "../components/Header";
 import Card from "../components/Card";
 import Input from "../components/Input";
+import { mockMoims, filterMoimsByCategory, searchMoims } from "../utils/mockData";
+import { CATEGORY_LABELS, CATEGORIES } from "../utils/constants";
 
-const categories = ["All", "Technology", "Arts", "Sports", "Food"];
+const categories = ["All", ...Object.values(CATEGORIES)];
 
-const meetups = Array.from({ length: 40 }, (_, i) => ({
-  title: `Meetup ${i + 1}`,
-  category: ["Technology", "Arts", "Sports", "Food"][i % 4],
-  participants: 10 + i,
-  isOnline: i % 2 === 0,
-  img: [
-    "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
-    "https://images.unsplash.com/photo-1465101046530-73398c7f28ca",
-    "https://images.unsplash.com/photo-1519125323398-675f0ddb6308",
-    "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e",
-  ][i % 4],
-}));
+// 가장 많이 사용되는 isomorphic hook 패턴
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' 
+  ? useLayoutEffect 
+  : useEffect;
+
+// 클라이언트 상태 체크 hook
+const useClientOnly = () => {
+  const [isClient, setIsClient] = useState(false);
+  
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+  
+  return isClient;
+};
 
 const MoimListPage = () => {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [visibleCount, setVisibleCount] = useState(8);
   const [loading, setLoading] = useState(false);
+  const isClient = useClientOnly();
   const loader = useRef();
   const observerRef = useRef();
 
   // 필터링 로직 (카테고리, 검색)
-  const filteredMeetups = meetups.filter((meetup) => {
-    const matchCategory =
-      selectedCategory === "All" ||
-      meetup.category.toLowerCase().includes(selectedCategory.toLowerCase());
-    const matchSearch =
-      !search ||
-      meetup.title.toLowerCase().includes(search.toLowerCase()) ||
-      meetup.category.toLowerCase().includes(search.toLowerCase());
-    return matchCategory && matchSearch;
-  });
+  const filteredMoims = searchMoims(
+    filterMoimsByCategory(mockMoims, selectedCategory === "All" ? null : selectedCategory),
+    search
+  );
+
+  // 카테고리나 검색어가 변경될 때 visibleCount 리셋
+  useEffect(() => {
+    setVisibleCount(8);
+  }, [selectedCategory, search]);
 
   // Intersection Observer로 무한 스크롤 구현
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
+    if (!isClient) return;
+
     const currentLoader = loader.current;
     
-    if (currentLoader && typeof window !== "undefined") {
+    // eslint-disable-next-line no-undef
+    if (currentLoader && typeof window !== 'undefined' && 'IntersectionObserver' in window) {
+      // eslint-disable-next-line no-undef
       observerRef.current = new window.IntersectionObserver(
         (entries) => {
           if (
             entries[0].isIntersecting &&
             !loading &&
-            visibleCount < filteredMeetups.length
+            visibleCount < filteredMoims.length
           ) {
             setLoading(true);
             setTimeout(() => {
               setVisibleCount((prev) =>
-                Math.min(prev + 8, filteredMeetups.length)
+                Math.min(prev + 8, filteredMoims.length)
               );
               setLoading(false);
             }, 800);
           }
         },
-        { threshold: 0.2 }
+        { threshold: 0.1, rootMargin: "100px" }
       );
       
       observerRef.current.observe(currentLoader);
@@ -71,14 +80,14 @@ const MoimListPage = () => {
         observerRef.current.disconnect();
       }
     };
-  }, [filteredMeetups.length, loading, visibleCount]);
+  }, [filteredMoims.length, loading, visibleCount, isClient]);
 
   return (
     <Container>
       <Header />
       <LayoutContainer>
         <ContentContainer>
-          <TopTitle>Find your next meetup</TopTitle>
+          <TopTitle>모임을 찾아보세요</TopTitle>
           <CategoryList>
             {categories.map((cat) => (
               <CategoryItem
@@ -86,7 +95,7 @@ const MoimListPage = () => {
                 $active={selectedCategory === cat}
                 onClick={() => setSelectedCategory(cat)}
               >
-                {cat}
+                {cat === "All" ? "전체" : CATEGORY_LABELS[cat]}
               </CategoryItem>
             ))}
           </CategoryList>
@@ -105,7 +114,7 @@ const MoimListPage = () => {
                   </svg>
                 </SearchIcon>
                 <Input
-                  placeholder="Search meetups"
+                  placeholder="모임 검색"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   style={{
@@ -120,39 +129,26 @@ const MoimListPage = () => {
               </SearchInputWrapper>
             </SearchLabel>
           </SearchSection>
-          <SectionTitle>Upcoming Meetups</SectionTitle>
-          <CardList>
-            {filteredMeetups.slice(0, visibleCount).map((meetup, idx) => (
-              <Card
-                key={idx}
-                image={meetup.img}
-                title={meetup.title}
-                category={meetup.category}
-                participants={meetup.participants}
-                isOnline={meetup.isOnline}
-                style={{ width: "100%", marginBottom: 16 }}
-              />
+          <SectionTitle>추천 모임</SectionTitle>
+          <MoimGrid>
+            {filteredMoims.slice(0, visibleCount).map((moim) => (
+              <CardWrapper key={moim.id}>
+                <Card moim={moim} />
+              </CardWrapper>
             ))}
-          </CardList>
-          <div
-            ref={loader}
-            style={{
-              height: 250,
-              textAlign: "center",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            {loading && <Spinner />}
-          </div>
+          </MoimGrid>
+          {visibleCount < filteredMoims.length && (
+            <LoadingContainer ref={loader}>
+              {loading && <Spinner />}
+            </LoadingContainer>
+          )}
         </ContentContainer>
       </LayoutContainer>
     </Container>
   );
 };
 
-export default MoimListPage; 
+export default MoimListPage;
 
 const Container = styled.div`
   display: flex;
@@ -171,10 +167,11 @@ const LayoutContainer = styled.div`
 
 const ContentContainer = styled.div`
   width: 100%;
-  max-width: 960px;
+  max-width: 1280px;
   display: flex;
   flex-direction: column;
   flex: 1;
+  padding: 0 20px;
 `;
 
 const TopTitle = styled.h2`
@@ -182,7 +179,7 @@ const TopTitle = styled.h2`
   font-size: 28px;
   font-weight: 700;
   line-height: 1.2;
-  padding: 32px 16px 12px 16px;
+  padding: 32px 0 12px 0;
   text-align: left;
 `;
 
@@ -249,14 +246,31 @@ const SectionTitle = styled.h2`
   font-size: 22px;
   font-weight: 700;
   line-height: 1.2;
-  padding: 32px 16px 12px 16px;
+  padding: 32px 0 12px 0;
 `;
 
-const CardList = styled.div`
+const MoimGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 24px;
-  padding: 0 16px 32px 16px;
+  margin-top: 32px;
+`;
+
+const CardWrapper = styled.div`
+  cursor: pointer;
+  transition: transform 0.2s;
+
+  &:hover {
+    transform: translateY(-4px);
+  }
+`;
+
+const LoadingContainer = styled.div`
+  height: 250px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 const Spinner = styled.div`
@@ -272,4 +286,4 @@ const Spinner = styled.div`
       transform: rotate(360deg);
     }
   }
-`;
+`; 

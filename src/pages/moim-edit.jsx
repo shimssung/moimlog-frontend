@@ -2,9 +2,14 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import Header from "../components/Header";
 import Button from "../components/Button";
+import Input from "../components/Input";
+import Textarea from "../components/Textarea";
 import toast from "react-hot-toast";
+import { useRouter } from "next/router";
+import { CATEGORY_OPTIONS } from "../utils/constants";
 
 const MoimEdit = () => {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     title: "시크릿 가든 북클럽",
     category: "book",
@@ -30,8 +35,13 @@ const MoimEdit = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    toast.success("Form submitted: " + JSON.stringify(formData));
-    // 모임 수정 로직 구현
+    toast.success("모임 정보가 성공적으로 수정되었습니다!");
+    // TODO: API 연동
+    router.push("/my-moims");
+  };
+
+  const handleCancel = () => {
+    router.push("/my-moims");
   };
 
   const getMeetingCycleText = () => {
@@ -54,21 +64,25 @@ const MoimEdit = () => {
         <LeftSection>
           <FormContainer>
             <FormTitle>모임 정보 수정</FormTitle>
+            <FormDescription>
+              모임의 기본 정보를 수정할 수 있습니다. 일정 관련 정보는 모임 내 일정 관리에서 설정하세요.
+            </FormDescription>
             <Form onSubmit={handleSubmit}>
               <FormGroup>
-                <Label htmlFor="title">모임명</Label>
+                <Label htmlFor="title">모임명 *</Label>
                 <Input
                   type="text"
                   id="title"
                   name="title"
                   value={formData.title}
                   onChange={handleChange}
+                  placeholder="모임 이름을 입력해주세요"
                   required
                 />
               </FormGroup>
 
               <FormGroup>
-                <Label htmlFor="category">카테고리</Label>
+                <Label htmlFor="category">카테고리 *</Label>
                 <Select
                   id="category"
                   name="category"
@@ -76,17 +90,16 @@ const MoimEdit = () => {
                   onChange={handleChange}
                   required
                 >
-                  <option value="book">독서</option>
-                  <option value="movie">영화</option>
-                  <option value="music">음악</option>
-                  <option value="sports">스포츠</option>
-                  <option value="game">게임</option>
-                  <option value="other">기타</option>
+                  {CATEGORY_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
                 </Select>
               </FormGroup>
 
               <FormGroup>
-                <Label htmlFor="maxMembers">최대 인원</Label>
+                <Label htmlFor="maxMembers">최대 인원 *</Label>
                 <Input
                   type="number"
                   id="maxMembers"
@@ -95,18 +108,20 @@ const MoimEdit = () => {
                   onChange={handleChange}
                   min="2"
                   max="100"
+                  placeholder="2-100명"
                   required
                 />
               </FormGroup>
 
               <FormGroup>
-                <Label htmlFor="description">모임 소개</Label>
+                <Label htmlFor="description">모임 소개 *</Label>
                 <TextArea
                   id="description"
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
                   rows="4"
+                  placeholder="모임에 대해 설명해주세요. 어떤 활동을 하는지, 누구를 위한 모임인지 알려주세요."
                   required
                 />
               </FormGroup>
@@ -206,7 +221,7 @@ const MoimEdit = () => {
                   ))}
                   <TagInput
                     placeholder="태그 입력 후 Enter"
-                    onKeyPress={(e) => {
+                    onKeyDown={(e) => {
                       if (e.key === "Enter") {
                         e.preventDefault();
                         const newTag = e.target.value.trim();
@@ -246,14 +261,20 @@ const MoimEdit = () => {
                   />
                   <FileInputLabel htmlFor="thumbnail">파일 선택</FileInputLabel>
                 </FileInputContainer>
+                {formData.thumbnail && (
+                  <CurrentImageContainer>
+                    <CurrentImageLabel>현재 이미지:</CurrentImageLabel>
+                    <CurrentImage src={formData.thumbnail} alt="현재 모임 이미지" />
+                  </CurrentImageContainer>
+                )}
               </FormGroup>
 
               <ButtonGroup>
-                <Button variant="secondary" type="button">
+                <Button variant="secondary" type="button" onClick={handleCancel}>
                   취소
                 </Button>
                 <Button variant="primary" type="submit">
-                  저장하기
+                  수정 완료
                 </Button>
               </ButtonGroup>
             </Form>
@@ -267,17 +288,23 @@ const MoimEdit = () => {
               <PreviewHeader>
                 <PreviewImageSection>
                   <PreviewImageContainer>
-                    <PreviewImage
-                      src={formData.thumbnail}
-                      alt="모임 대표 이미지"
-                    />
+                    {formData.thumbnail ? (
+                      <PreviewImage
+                        src={formData.thumbnail}
+                        alt="모임 대표 이미지"
+                      />
+                    ) : (
+                      <PreviewImagePlaceholder>
+                        이미지 미리보기
+                      </PreviewImagePlaceholder>
+                    )}
                   </PreviewImageContainer>
                 </PreviewImageSection>
               </PreviewHeader>
 
-              <PreviewName>{formData.title}</PreviewName>
+              <PreviewName>{formData.title || "모임 제목"}</PreviewName>
               <PreviewMaxMembers>
-                최대 {formData.maxMembers}명
+                최대 {formData.maxMembers || "0"}명
               </PreviewMaxMembers>
               <PreviewInfo>
                 <InfoItem>
@@ -301,12 +328,18 @@ const MoimEdit = () => {
                 </InfoItem>
               </PreviewInfo>
 
-              <PreviewDescription>{formData.description}</PreviewDescription>
+              <PreviewDescription>
+                {formData.description || "모임 설명이 여기에 표시됩니다."}
+              </PreviewDescription>
 
               <PreviewTags>
-                {formData.tags.map((tag, index) => (
-                  <PreviewTag key={index}>{tag}</PreviewTag>
-                ))}
+                {formData.tags.length > 0 ? (
+                  formData.tags.map((tag, index) => (
+                    <PreviewTag key={index}>{tag}</PreviewTag>
+                  ))
+                ) : (
+                  <PreviewTag>#태그</PreviewTag>
+                )}
               </PreviewTags>
             </PreviewContent>
           </PreviewContainer>
@@ -394,20 +427,6 @@ const FormRow = styled.div`
 const Label = styled.label`
   font-weight: 500;
   color: #374151;
-`;
-
-const Input = styled.input`
-  padding: 8px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  color: #111827;
-  transition: border-color 0.2s;
-
-  &:focus {
-    outline: none;
-    border-color: #3b82f6;
-  }
 `;
 
 const Select = styled.select`
@@ -523,17 +542,35 @@ const PreviewHeader = styled.div`
   align-items: center;
 `;
 
-const PreviewCategory = styled.span`
-  font-size: 0.875rem;
-  color: #6b7280;
-  background: #f3f4f6;
-  padding: 4px 8px;
-  border-radius: 4px;
+const PreviewImageSection = styled.div`
+  margin-top: 24px;
 `;
 
-const PreviewMaxMembers = styled.span`
-  font-size: 0.875rem;
+const PreviewImageContainer = styled.div`
+  width: 100%;
+  aspect-ratio: 16/9;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f3f4f6;
+`;
+
+const PreviewImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+`;
+
+const PreviewImagePlaceholder = styled.div`
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1rem;
   color: #6b7280;
+  background: #f3f4f6;
+  border-radius: 8px;
+  overflow: hidden;
 `;
 
 const PreviewName = styled.h3`
@@ -541,6 +578,11 @@ const PreviewName = styled.h3`
   font-weight: 700;
   color: #111827;
   margin: 0;
+`;
+
+const PreviewMaxMembers = styled.span`
+  font-size: 0.875rem;
+  color: #6b7280;
 `;
 
 const PreviewInfo = styled.div`
@@ -612,27 +654,32 @@ const FileInputLabel = styled.label`
   }
 `;
 
-const PreviewImageSection = styled.div`
-  margin-top: 24px;
-`;
-
-const PreviewImageTitle = styled.h3`
-  font-size: 1rem;
-  font-weight: 600;
-  color: #111827;
-  margin-bottom: 12px;
-`;
-
-const PreviewImageContainer = styled.div`
-  width: 100%;
-  aspect-ratio: 16/9;
+const CurrentImageContainer = styled.div`
+  margin-top: 12px;
+  padding: 12px;
+  background: #f9fafb;
   border-radius: 8px;
-  overflow: hidden;
-  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
 `;
 
-const PreviewImage = styled.img`
-  width: 100%;
-  height: 100%;
+const CurrentImageLabel = styled.div`
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 8px;
+  font-weight: 500;
+`;
+
+const CurrentImage = styled.img`
+  width: 100px;
+  height: 60px;
   object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+`;
+
+const FormDescription = styled.p`
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin: 0 0 24px 0;
+  line-height: 1.5;
 `;

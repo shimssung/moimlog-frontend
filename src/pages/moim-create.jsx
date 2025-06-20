@@ -6,6 +6,7 @@ import Input from "../components/Input";
 import Textarea from "../components/Textarea";
 import { useRouter } from "next/router";
 import toast from "react-hot-toast";
+import { CATEGORY_OPTIONS } from "../utils/constants";
 
 const MoimCreatePage = () => {
   const router = useRouter();
@@ -14,11 +15,6 @@ const MoimCreatePage = () => {
     category: "",
     maxMembers: "",
     description: "",
-    onlineType: "online",
-    location: "",
-    meetingCycle: "weekly",
-    meetingDay: "월요일",
-    meetingTime: "14:00",
     tags: [],
     thumbnail: null,
   });
@@ -33,21 +29,9 @@ const MoimCreatePage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    toast.success("Form submitted: " + JSON.stringify(formData));
+    toast.success("모임이 성공적으로 생성되었습니다!");
     // TODO: API 연동
-  };
-
-  const getMeetingCycleText = () => {
-    switch (formData.meetingCycle) {
-      case "weekly":
-        return "매주";
-      case "biweekly":
-        return "격주";
-      case "monthly":
-        return "매월";
-      default:
-        return "";
-    }
+    router.push("/my-moims");
   };
 
   const handleClick = () => {
@@ -61,21 +45,25 @@ const MoimCreatePage = () => {
         <LeftSection>
           <FormContainer>
             <FormTitle>새로운 모임 만들기</FormTitle>
+            <FormDescription>
+              모임의 기본 정보를 입력해주세요. 구체적인 일정은 모임 생성 후 설정할 수 있습니다.
+            </FormDescription>
             <Form onSubmit={handleSubmit}>
               <FormGroup>
-                <Label htmlFor="title">모임명</Label>
+                <Label htmlFor="title">모임명 *</Label>
                 <StyledInput
                   type="text"
                   id="title"
                   name="title"
                   value={formData.title}
                   onChange={handleChange}
+                  placeholder="모임 이름을 입력해주세요"
                   required
                 />
               </FormGroup>
 
               <FormGroup>
-                <Label htmlFor="category">카테고리</Label>
+                <Label htmlFor="category">카테고리 *</Label>
                 <Select
                   id="category"
                   name="category"
@@ -84,17 +72,16 @@ const MoimCreatePage = () => {
                   required
                 >
                   <option value="">카테고리 선택</option>
-                  <option value="book">독서</option>
-                  <option value="movie">영화</option>
-                  <option value="music">음악</option>
-                  <option value="sports">스포츠</option>
-                  <option value="game">게임</option>
-                  <option value="other">기타</option>
+                  {CATEGORY_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
                 </Select>
               </FormGroup>
 
               <FormGroup>
-                <Label htmlFor="maxMembers">최대 인원</Label>
+                <Label htmlFor="maxMembers">최대 인원 *</Label>
                 <Input
                   type="number"
                   id="maxMembers"
@@ -103,94 +90,20 @@ const MoimCreatePage = () => {
                   onChange={handleChange}
                   min="2"
                   max="100"
+                  placeholder="2-100명"
                   required
                 />
               </FormGroup>
 
               <FormGroup>
-                <Label htmlFor="description">모임 소개</Label>
+                <Label htmlFor="description">모임 소개 *</Label>
                 <StyledTextarea
                   id="description"
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
                   rows="4"
-                  required
-                />
-              </FormGroup>
-
-              <FormGroup>
-                <Label htmlFor="onlineType">모임 형태</Label>
-                <Select
-                  id="onlineType"
-                  name="onlineType"
-                  value={formData.onlineType}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="online">온라인</option>
-                  <option value="offline">오프라인</option>
-                </Select>
-              </FormGroup>
-
-              {formData.onlineType === "offline" && (
-                <FormGroup>
-                  <Label htmlFor="location">활동 지역</Label>
-                  <Input
-                    type="text"
-                    id="location"
-                    name="location"
-                    value={formData.location}
-                    onChange={handleChange}
-                    required
-                  />
-                </FormGroup>
-              )}
-
-              <FormRow>
-                <FormGroup>
-                  <Label htmlFor="meetingCycle">모임 주기</Label>
-                  <Select
-                    id="meetingCycle"
-                    name="meetingCycle"
-                    value={formData.meetingCycle}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option value="weekly">매주</option>
-                    <option value="biweekly">격주</option>
-                    <option value="monthly">매월</option>
-                  </Select>
-                </FormGroup>
-
-                <FormGroup>
-                  <Label htmlFor="meetingDay">모임 요일</Label>
-                  <Select
-                    id="meetingDay"
-                    name="meetingDay"
-                    value={formData.meetingDay}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option value="월요일">월요일</option>
-                    <option value="화요일">화요일</option>
-                    <option value="수요일">수요일</option>
-                    <option value="목요일">목요일</option>
-                    <option value="금요일">금요일</option>
-                    <option value="토요일">토요일</option>
-                    <option value="일요일">일요일</option>
-                  </Select>
-                </FormGroup>
-              </FormRow>
-
-              <FormGroup>
-                <Label htmlFor="meetingTime">모임 시간</Label>
-                <Input
-                  type="time"
-                  id="meetingTime"
-                  name="meetingTime"
-                  value={formData.meetingTime}
-                  onChange={handleChange}
+                  placeholder="모임에 대해 설명해주세요. 어떤 활동을 하는지, 누구를 위한 모임인지 알려주세요."
                   required
                 />
               </FormGroup>
@@ -214,7 +127,7 @@ const MoimCreatePage = () => {
                   ))}
                   <TagInput
                     placeholder="태그 입력 후 Enter"
-                    onKeyPress={(e) => {
+                    onKeyDown={(e) => {
                       if (e.key === "Enter") {
                         e.preventDefault();
                         const newTag = e.target.value.trim();
@@ -293,28 +206,7 @@ const MoimCreatePage = () => {
               <PreviewMaxMembers>
                 최대 {formData.maxMembers || "0"}명
               </PreviewMaxMembers>
-              <PreviewInfo>
-                <InfoItem>
-                  <InfoLabel>모임 형태</InfoLabel>
-                  <InfoValue>
-                    {formData.onlineType === "online" ? "온라인" : "오프라인"}
-                  </InfoValue>
-                </InfoItem>
-                {formData.onlineType === "offline" && (
-                  <InfoItem>
-                    <InfoLabel>활동 지역</InfoLabel>
-                    <InfoValue>{formData.location}</InfoValue>
-                  </InfoItem>
-                )}
-                <InfoItem>
-                  <InfoLabel>정기 모임</InfoLabel>
-                  <InfoValue>
-                    {getMeetingCycleText()} {formData.meetingDay}{" "}
-                    {formData.meetingTime}
-                  </InfoValue>
-                </InfoItem>
-              </PreviewInfo>
-
+              
               <PreviewDescription>
                 {formData.description || "모임 설명이 여기에 표시됩니다."}
               </PreviewDescription>
@@ -655,4 +547,11 @@ const FileInputLabel = styled.label`
     background: #e5e7eb;
     border-color: #9ca3af;
   }
+`;
+
+const FormDescription = styled.p`
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin: 0 0 24px 0;
+  line-height: 1.5;
 `;

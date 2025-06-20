@@ -1,24 +1,33 @@
 import React from "react";
 import styled from "styled-components";
+import { CATEGORY_LABELS } from "../utils/constants";
 
-const Card = ({ image, title, category, participants, isOnline, onClick, ...props }) => (
-  <CardContainer onClick={onClick} {...props}>
-    {image && <CardImage style={{ backgroundImage: `url('${image}')` }} />}
-    <CardContent>
-      <CardTitle>{title}</CardTitle>
-      <InfoRow>
-        <CategoryBadge>{category}</CategoryBadge>
-        <OnlineBadge $isOnline={isOnline}>
-          {isOnline ? "온라인" : "오프라인"}
-        </OnlineBadge>
-      </InfoRow>
-      <ParticipantsText>
-        <ParticipantsIcon>👥</ParticipantsIcon>
-        {participants}명 참여
-      </ParticipantsText>
-    </CardContent>
-  </CardContainer>
-);
+const Card = ({ moim }) => {
+  const categoryLabel = CATEGORY_LABELS[moim.category];
+  const truncatedDescription = moim.description.length > 60 
+    ? moim.description.substring(0, 60) + "..." 
+    : moim.description;
+  const displayTags = moim.tags.slice(0, 3);
+
+  return (
+    <CardContainer>
+      <CardImage src={moim.thumbnail} alt={moim.title} />
+      <CardContent>
+        <CardTitle>{moim.title}</CardTitle>
+        <CardMeta>
+          <CategoryBadge>{categoryLabel}</CategoryBadge>
+          <MemberCount>최대 {moim.maxMembers}명</MemberCount>
+        </CardMeta>
+        <CardDescription>{truncatedDescription}</CardDescription>
+        <CardTags>
+          {displayTags.map((tag, index) => (
+            <Tag key={index}>#{tag}</Tag>
+          ))}
+        </CardTags>
+      </CardContent>
+    </CardContainer>
+  );
+};
 
 export default Card;
 
@@ -38,11 +47,10 @@ const CardContainer = styled.div`
   }
 `;
 
-const CardImage = styled.div`
+const CardImage = styled.img`
   width: 100%;
   aspect-ratio: 16/9;
-  background-size: cover;
-  background-position: center;
+  object-fit: cover;
 `;
 
 const CardContent = styled.div`
@@ -59,7 +67,7 @@ const CardTitle = styled.h3`
   margin: 0;
 `;
 
-const InfoRow = styled.div`
+const CardMeta = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
@@ -74,24 +82,31 @@ const CategoryBadge = styled.span`
   font-weight: 500;
 `;
 
-const OnlineBadge = styled.span`
+const MemberCount = styled.span`
   font-size: 13px;
-  color: ${props => props.$isOnline ? "#0ca678" : "#e67700"};
-  background: ${props => props.$isOnline ? "#e6fcf5" : "#fff9db"};
+  color: #666;
+  background: #e7edf4;
   padding: 4px 12px;
   border-radius: 20px;
   font-weight: 500;
 `;
 
-const ParticipantsText = styled.p`
+const CardDescription = styled.p`
   font-size: 14px;
   color: #666;
   margin: 0;
+`;
+
+const CardTags = styled.div`
   display: flex;
-  align-items: center;
   gap: 4px;
 `;
 
-const ParticipantsIcon = styled.span`
-  font-size: 16px;
+const Tag = styled.span`
+  font-size: 13px;
+  color: #49749c;
+  background: #e7edf4;
+  padding: 4px 8px;
+  border-radius: 20px;
+  font-weight: 500;
 `;
