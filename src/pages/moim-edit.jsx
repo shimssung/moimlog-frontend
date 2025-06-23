@@ -6,9 +6,11 @@ import Input from "../components/Input";
 import Textarea from "../components/Textarea";
 import { useRouter } from "next/router";
 import toast from "react-hot-toast";
+import { useStore } from "../stores/useStore";
 import { CATEGORY_OPTIONS } from "../utils/constants";
 
 const MoimEdit = () => {
+  const { theme } = useStore();
   const router = useRouter();
   const [formData, setFormData] = useState({
     title: "독서 모임",
@@ -19,9 +21,6 @@ const MoimEdit = () => {
     thumbnail: null,
     onlineType: "offline",
     location: "서울시 강남구",
-    meetingCycle: "weekly",
-    meetingDay: "토요일",
-    meetingTime: "14:00",
   });
 
   const handleChange = (e) => {
@@ -32,8 +31,29 @@ const MoimEdit = () => {
     }));
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setFormData((prev) => ({
+          ...prev,
+          thumbnail: e.target.result,
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    // 오프라인 모임인데 지역이 입력되지 않은 경우
+    if (formData.onlineType === "offline" && !formData.location.trim()) {
+      toast.error("오프라인 모임의 경우 활동 지역을 입력해주세요.");
+      return;
+    }
+
     toast.success("모임 정보가 성공적으로 수정되었습니다!");
     router.push("/my-moims");
   };
@@ -42,28 +62,65 @@ const MoimEdit = () => {
     router.push("/my-moims");
   };
 
-  const getMeetingCycleText = () => {
-    const cycleMap = {
-      weekly: "매주",
-      biweekly: "격주",
-      monthly: "매월",
-    };
-    return cycleMap[formData.meetingCycle] || formData.meetingCycle;
-  };
-
   return (
-    <PageContainer>
+    <PageContainer theme={theme}>
       <Header />
       <Container>
         <LeftSection>
-          <FormContainer>
-            <FormTitle>모임 정보 수정</FormTitle>
-            <FormDescription>
-              모임의 기본 정보를 수정할 수 있습니다.
+          <FormContainer theme={theme}>
+            <FormTitle theme={theme}>모임 정보 수정</FormTitle>
+            <FormDescription theme={theme}>
+              모임의 기본 정보를 수정할 수 있습니다. 구체적인 일정은 모임
+              설정에서 변경할 수 있습니다.
             </FormDescription>
             <Form onSubmit={handleSubmit}>
               <FormGroup>
-                <Label htmlFor="title">모임명 *</Label>
+                <Label htmlFor="thumbnail" theme={theme}>
+                  모임 이미지
+                </Label>
+                <ImageUploadRow>
+                  <ThumbPreview>
+                    {formData.thumbnail ? (
+                      <ThumbImg src={formData.thumbnail} alt="미리보기" />
+                    ) : (
+                      <ThumbPlaceholder>📷</ThumbPlaceholder>
+                    )}
+                  </ThumbPreview>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "6px",
+                    }}
+                  >
+                    <UploadButton
+                      type="button"
+                      onClick={() =>
+                        document.getElementById("thumbnail").click()
+                      }
+                      theme={theme}
+                    >
+                      이미지 선택
+                    </UploadButton>
+                    <FileName theme={theme}>
+                      {formData.thumbnail
+                        ? "이미지 선택됨"
+                        : "이미지를 선택해주세요"}
+                    </FileName>
+                  </div>
+                  <FileInput
+                    type="file"
+                    id="thumbnail"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                  />
+                </ImageUploadRow>
+              </FormGroup>
+
+              <FormGroup>
+                <Label htmlFor="title" theme={theme}>
+                  모임명 *
+                </Label>
                 <Input
                   type="text"
                   id="title"
@@ -76,13 +133,16 @@ const MoimEdit = () => {
               </FormGroup>
 
               <FormGroup>
-                <Label htmlFor="category">카테고리 *</Label>
+                <Label htmlFor="category" theme={theme}>
+                  카테고리 *
+                </Label>
                 <Select
                   id="category"
                   name="category"
                   value={formData.category}
                   onChange={handleChange}
                   required
+                  theme={theme}
                 >
                   <option value="">카테고리 선택</option>
                   {CATEGORY_OPTIONS.map((option) => (
@@ -94,7 +154,9 @@ const MoimEdit = () => {
               </FormGroup>
 
               <FormGroup>
-                <Label htmlFor="maxMembers">최대 인원 *</Label>
+                <Label htmlFor="maxMembers" theme={theme}>
+                  최대 인원 *
+                </Label>
                 <Input
                   type="number"
                   id="maxMembers"
@@ -109,13 +171,16 @@ const MoimEdit = () => {
               </FormGroup>
 
               <FormGroup>
-                <Label htmlFor="onlineType">모임 형태 *</Label>
+                <Label htmlFor="onlineType" theme={theme}>
+                  모임 형태 *
+                </Label>
                 <Select
                   id="onlineType"
                   name="onlineType"
                   value={formData.onlineType}
                   onChange={handleChange}
                   required
+                  theme={theme}
                 >
                   <option value="online">온라인</option>
                   <option value="offline">오프라인</option>
@@ -124,7 +189,9 @@ const MoimEdit = () => {
 
               {formData.onlineType === "offline" && (
                 <FormGroup>
-                  <Label htmlFor="location">활동 지역 *</Label>
+                  <Label htmlFor="location" theme={theme}>
+                    활동 지역 *
+                  </Label>
                   <Input
                     type="text"
                     id="location"
@@ -133,14 +200,16 @@ const MoimEdit = () => {
                     onChange={handleChange}
                     placeholder="예: 서울시 강남구, 부산시 해운대구"
                   />
-                  <HelpText>
+                  <HelpText theme={theme}>
                     오프라인 모임의 경우 활동 지역을 입력해주세요.
                   </HelpText>
                 </FormGroup>
               )}
 
               <FormGroup>
-                <Label htmlFor="description">모임 소개 *</Label>
+                <Label htmlFor="description" theme={theme}>
+                  모임 소개 *
+                </Label>
                 <Textarea
                   id="description"
                   name="description"
@@ -152,59 +221,11 @@ const MoimEdit = () => {
                 />
               </FormGroup>
 
-              <FormRow>
-                <FormGroup>
-                  <Label htmlFor="meetingCycle">모임 주기</Label>
-                  <Select
-                    id="meetingCycle"
-                    name="meetingCycle"
-                    value={formData.meetingCycle}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option value="weekly">매주</option>
-                    <option value="biweekly">격주</option>
-                    <option value="monthly">매월</option>
-                  </Select>
-                </FormGroup>
-
-                <FormGroup>
-                  <Label htmlFor="meetingDay">모임 요일</Label>
-                  <Select
-                    id="meetingDay"
-                    name="meetingDay"
-                    value={formData.meetingDay}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option value="월요일">월요일</option>
-                    <option value="화요일">화요일</option>
-                    <option value="수요일">수요일</option>
-                    <option value="목요일">목요일</option>
-                    <option value="금요일">금요일</option>
-                    <option value="토요일">토요일</option>
-                    <option value="일요일">일요일</option>
-                  </Select>
-                </FormGroup>
-              </FormRow>
-
               <FormGroup>
-                <Label htmlFor="meetingTime">모임 시간</Label>
-                <Input
-                  type="time"
-                  id="meetingTime"
-                  name="meetingTime"
-                  value={formData.meetingTime}
-                  onChange={handleChange}
-                  required
-                />
-              </FormGroup>
-
-              <FormGroup>
-                <Label>태그</Label>
-                <TagContainer>
+                <Label theme={theme}>태그</Label>
+                <TagContainer theme={theme}>
                   {formData.tags.map((tag, index) => (
-                    <Tag key={index}>
+                    <Tag key={index} theme={theme}>
                       {tag}
                       <RemoveButton
                         onClick={() => {
@@ -212,6 +233,7 @@ const MoimEdit = () => {
                           newTags.splice(index, 1);
                           setFormData((prev) => ({ ...prev, tags: newTags }));
                         }}
+                        theme={theme}
                       >
                         ×
                       </RemoveButton>
@@ -232,49 +254,16 @@ const MoimEdit = () => {
                         }
                       }
                     }}
+                    theme={theme}
                   />
                 </TagContainer>
               </FormGroup>
 
-              <FormGroup>
-                <Label>모임 대표 이미지</Label>
-                <FileInputContainer>
-                  <FileInput
-                    type="file"
-                    id="thumbnail"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files[0];
-                      if (file) {
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                          setFormData((prev) => ({
-                            ...prev,
-                            thumbnail: reader.result,
-                          }));
-                        };
-                        reader.readAsDataURL(file);
-                      }
-                    }}
-                  />
-                  <FileInputLabel htmlFor="thumbnail">파일 선택</FileInputLabel>
-                </FileInputContainer>
-                {formData.thumbnail && (
-                  <CurrentImageContainer>
-                    <CurrentImageLabel>현재 이미지:</CurrentImageLabel>
-                    <CurrentImage
-                      src={formData.thumbnail}
-                      alt="현재 모임 이미지"
-                    />
-                  </CurrentImageContainer>
-                )}
-              </FormGroup>
-
               <ButtonGroup>
-                <Button variant="secondary" onClick={handleCancel}>
+                <Button type="button" variant="light" onClick={handleCancel}>
                   취소
                 </Button>
-                <Button variant="primary" type="submit">
+                <Button type="submit" variant="primary">
                   수정 완료
                 </Button>
               </ButtonGroup>
@@ -283,60 +272,73 @@ const MoimEdit = () => {
         </LeftSection>
 
         <RightSection>
-          <PreviewContainer>
-            <PreviewTitle>미리보기</PreviewTitle>
+          <PreviewContainer theme={theme}>
+            <PreviewTitle theme={theme}>미리보기</PreviewTitle>
             <PreviewContent>
-              <PreviewHeader>
-                <PreviewImageSection>
+              <PreviewImageSection>
+                {formData.thumbnail ? (
                   <PreviewImageContainer>
-                    {formData.thumbnail ? (
-                      <PreviewImage
-                        src={formData.thumbnail}
-                        alt="모임 대표 이미지"
-                      />
-                    ) : (
-                      <PreviewImagePlaceholder>
-                        이미지 미리보기
-                      </PreviewImagePlaceholder>
-                    )}
+                    <PreviewImage src={formData.thumbnail} alt="모임 썸네일" />
                   </PreviewImageContainer>
-                </PreviewImageSection>
+                ) : (
+                  <PreviewImageContainer>
+                    <PreviewImagePlaceholder theme={theme}>
+                      이미지를 선택해주세요
+                    </PreviewImagePlaceholder>
+                  </PreviewImageContainer>
+                )}
+              </PreviewImageSection>
+              <PreviewHeader>
+                <PreviewName theme={theme}>
+                  {formData.title || "모임명을 입력해주세요"}
+                </PreviewName>
+                <PreviewMaxMembers theme={theme}>
+                  {formData.maxMembers
+                    ? `${formData.maxMembers}명`
+                    : "인원 미정"}
+                </PreviewMaxMembers>
               </PreviewHeader>
-
-              <PreviewName>{formData.title}</PreviewName>
-              <PreviewMaxMembers>
-                최대 {formData.maxMembers}명
-              </PreviewMaxMembers>
 
               <PreviewInfo>
                 <InfoItem>
-                  <InfoLabel>모임 형태</InfoLabel>
-                  <InfoValue>
+                  <InfoLabel theme={theme}>카테고리</InfoLabel>
+                  <InfoValue theme={theme}>
+                    {formData.category
+                      ? CATEGORY_OPTIONS.find(
+                          (opt) => opt.value === formData.category
+                        )?.label
+                      : "미선택"}
+                  </InfoValue>
+                </InfoItem>
+                <InfoItem>
+                  <InfoLabel theme={theme}>모임 형태</InfoLabel>
+                  <InfoValue theme={theme}>
                     {formData.onlineType === "online" ? "온라인" : "오프라인"}
                   </InfoValue>
                 </InfoItem>
-                {formData.onlineType === "offline" && formData.location && (
+                {formData.onlineType === "offline" && (
                   <InfoItem>
-                    <InfoLabel>활동 지역</InfoLabel>
-                    <InfoValue>{formData.location}</InfoValue>
+                    <InfoLabel theme={theme}>활동 지역</InfoLabel>
+                    <InfoValue theme={theme}>
+                      {formData.location || "미입력"}
+                    </InfoValue>
                   </InfoItem>
                 )}
-                <InfoItem>
-                  <InfoLabel>모임 주기</InfoLabel>
-                  <InfoValue>
-                    {getMeetingCycleText()} {formData.meetingDay}{" "}
-                    {formData.meetingTime}
-                  </InfoValue>
-                </InfoItem>
               </PreviewInfo>
 
-              <PreviewDescription>{formData.description}</PreviewDescription>
+              <PreviewDescription theme={theme}>
+                {formData.description || "모임 소개를 입력해주세요."}
+              </PreviewDescription>
 
-              <PreviewTags>
-                {formData.tags.map((tag, index) => (
-                  <PreviewTag key={index}>#{tag}</PreviewTag>
-                ))}
-              </PreviewTags>
+              {formData.tags.length > 0 && (
+                <PreviewTags>
+                  {formData.tags.map((tag, index) => (
+                    <PreviewTag key={index} theme={theme}>
+                      #{tag}
+                    </PreviewTag>
+                  ))}
+                </PreviewTags>
+              )}
             </PreviewContent>
           </PreviewContainer>
         </RightSection>
@@ -349,20 +351,21 @@ export default MoimEdit;
 
 const PageContainer = styled.div`
   min-height: 100vh;
-  background: #f9fafb;
+  background: ${(props) => props.theme.background};
+  transition: background-color 0.3s ease;
 `;
 
 const Container = styled.div`
-  max-width: 1200px;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 32px 16px;
+  padding: 40px 16px 60px 16px;
   display: grid;
   grid-template-columns: 1fr 400px;
-  gap: 32px;
+  gap: 40px;
 
   @media (max-width: 1024px) {
     grid-template-columns: 1fr;
-    gap: 24px;
+    gap: 32px;
   }
 `;
 
@@ -371,30 +374,34 @@ const LeftSection = styled.div``;
 const RightSection = styled.div``;
 
 const FormContainer = styled.div`
-  background: #fff;
+  background: ${(props) => props.theme.surface};
   border-radius: 12px;
   padding: 32px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: ${(props) => props.theme.cardShadow};
+  border: 1px solid ${(props) => props.theme.borderLight};
+  transition: all 0.3s ease;
 `;
 
 const FormTitle = styled.h1`
-  font-size: 1.5rem;
+  font-size: 2rem;
   font-weight: 700;
-  color: #111827;
+  color: ${(props) => props.theme.textPrimary};
   margin: 0 0 8px 0;
+  transition: color 0.3s ease;
 `;
 
 const FormDescription = styled.p`
-  color: #6b7280;
-  font-size: 0.875rem;
-  margin: 0 0 24px 0;
+  font-size: 1rem;
+  color: ${(props) => props.theme.textSecondary};
+  margin: 0 0 32px 0;
   line-height: 1.5;
+  transition: color 0.3s ease;
 `;
 
 const Form = styled.form`
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
 `;
 
 const FormGroup = styled.div`
@@ -414,38 +421,29 @@ const FormRow = styled.div`
 `;
 
 const Label = styled.label`
+  font-weight: 600;
+  color: ${(props) => props.theme.textPrimary};
   font-size: 0.875rem;
-  font-weight: 500;
-  color: #374151;
+  transition: color 0.3s ease;
 `;
 
 const Select = styled.select`
-  padding: 8px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  color: #111827;
-  background: #fff;
-  transition: border-color 0.2s;
+  padding: 12px 16px;
+  border: 1px solid ${(props) => props.theme.borderLight};
+  border-radius: 8px;
+  font-size: 1rem;
+  background: ${(props) => props.theme.surface};
+  color: ${(props) => props.theme.textPrimary};
+  transition: all 0.2s;
 
   &:focus {
     outline: none;
-    border-color: #3b82f6;
+    border-color: ${(props) => props.theme.buttonPrimary};
   }
-`;
 
-const TextArea = styled.textarea`
-  padding: 8px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  color: #111827;
-  resize: vertical;
-  transition: border-color 0.2s;
-
-  &:focus {
-    outline: none;
-    border-color: #3b82f6;
+  option {
+    background: ${(props) => props.theme.surface};
+    color: ${(props) => props.theme.textPrimary};
   }
 `;
 
@@ -454,9 +452,11 @@ const TagContainer = styled.div`
   flex-wrap: wrap;
   gap: 8px;
   padding: 8px;
-  border: 1px solid #d1d5db;
+  border: 1px solid ${(props) => props.theme.borderLight};
   border-radius: 6px;
   min-height: 42px;
+  background: ${(props) => props.theme.surfaceSecondary};
+  transition: all 0.3s ease;
 `;
 
 const Tag = styled.span`
@@ -464,20 +464,22 @@ const Tag = styled.span`
   align-items: center;
   gap: 4px;
   padding: 4px 8px;
-  background: #e5e7eb;
+  background: ${(props) => props.theme.tagBackground};
   border-radius: 4px;
   font-size: 0.875rem;
-  color: #374151;
+  color: ${(props) => props.theme.textSecondary};
+  transition: all 0.3s ease;
 `;
 
 const RemoveButton = styled.button`
   border: none;
   background: none;
-  color: #6b7280;
+  color: ${(props) => props.theme.textTertiary};
   font-size: 1rem;
   cursor: pointer;
   padding: 0;
   line-height: 1;
+  transition: color 0.3s ease;
 
   &:hover {
     color: #ef4444;
@@ -488,13 +490,15 @@ const TagInput = styled.input`
   border: none;
   outline: none;
   font-size: 0.875rem;
-  color: #111827;
+  color: ${(props) => props.theme.textPrimary};
   padding: 4px;
   flex: 1;
   min-width: 120px;
+  background: transparent;
+  transition: color 0.3s ease;
 
   &::placeholder {
-    color: #9ca3af;
+    color: ${(props) => props.theme.textTertiary};
   }
 `;
 
@@ -506,18 +510,22 @@ const ButtonGroup = styled.div`
 `;
 
 const PreviewContainer = styled.div`
-  background: #fff;
+  background: ${(props) => props.theme.surface};
   border-radius: 12px;
   padding: 32px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: ${(props) => props.theme.cardShadow};
+  border: 1px solid ${(props) => props.theme.borderLight};
   position: sticky;
   top: 32px;
+  transition: all 0.3s ease;
 `;
 
 const PreviewTitle = styled.h2`
   font-size: 1.1rem;
   font-weight: 600;
-  color: #111827;
+  color: ${(props) => props.theme.textPrimary};
+  margin-bottom: 16px;
+  transition: color 0.3s ease;
 `;
 
 const PreviewContent = styled.div`
@@ -533,8 +541,8 @@ const PreviewHeader = styled.div`
 `;
 
 const PreviewImageSection = styled.div`
-  margin-top: 24px;
   width: 100%;
+  margin-bottom: 16px;
 `;
 
 const PreviewImageContainer = styled.div`
@@ -542,8 +550,9 @@ const PreviewImageContainer = styled.div`
   aspect-ratio: 16/9;
   border-radius: 8px;
   overflow: hidden;
-  background: #f3f4f6;
+  background: ${(props) => props.theme.surfaceSecondary};
   min-height: 200px;
+  transition: background-color 0.3s ease;
 `;
 
 const PreviewImage = styled.img`
@@ -560,21 +569,24 @@ const PreviewImagePlaceholder = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #6b7280;
+  color: ${(props) => props.theme.textTertiary};
   font-size: 1rem;
-  background: #f3f4f6;
+  background: ${(props) => props.theme.surfaceSecondary};
+  transition: all 0.3s ease;
 `;
 
 const PreviewName = styled.h3`
   font-size: 1.5rem;
   font-weight: 700;
-  color: #111827;
+  color: ${(props) => props.theme.textPrimary};
   margin: 0;
+  transition: color 0.3s ease;
 `;
 
 const PreviewMaxMembers = styled.span`
   font-size: 0.875rem;
-  color: #6b7280;
+  color: ${(props) => props.theme.textSecondary};
+  transition: color 0.3s ease;
 `;
 
 const PreviewInfo = styled.div`
@@ -590,20 +602,23 @@ const InfoItem = styled.div`
 
 const InfoLabel = styled.span`
   font-size: 0.875rem;
-  color: #6b7280;
+  color: ${(props) => props.theme.textSecondary};
   min-width: 80px;
+  transition: color 0.3s ease;
 `;
 
 const InfoValue = styled.span`
   font-size: 0.875rem;
-  color: #111827;
+  color: ${(props) => props.theme.textPrimary};
+  transition: color 0.3s ease;
 `;
 
 const PreviewDescription = styled.p`
   font-size: 0.875rem;
-  color: #374151;
+  color: ${(props) => props.theme.textSecondary};
   line-height: 1.5;
   margin: 0;
+  transition: color 0.3s ease;
 `;
 
 const PreviewTags = styled.div`
@@ -614,63 +629,64 @@ const PreviewTags = styled.div`
 
 const PreviewTag = styled.span`
   font-size: 0.75rem;
-  color: #6b7280;
-  background: #f3f4f6;
+  color: ${(props) => props.theme.textSecondary};
+  background: ${(props) => props.theme.surfaceSecondary};
   padding: 4px 8px;
   border-radius: 4px;
-`;
-
-const FileInputContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-`;
-
-const FileInput = styled.input`
-  display: none;
-`;
-
-const FileInputLabel = styled.label`
-  padding: 8px 16px;
-  background: #f3f4f6;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  color: #374151;
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover {
-    background: #e5e7eb;
-    border-color: #9ca3af;
-  }
-`;
-
-const CurrentImageContainer = styled.div`
-  margin-top: 12px;
-  padding: 12px;
-  background: #f9fafb;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-`;
-
-const CurrentImageLabel = styled.div`
-  font-size: 0.875rem;
-  color: #6b7280;
-  margin-bottom: 8px;
-  font-weight: 500;
-`;
-
-const CurrentImage = styled.img`
-  width: 100px;
-  height: 60px;
-  object-fit: cover;
-  border-radius: 6px;
-  border: 1px solid #d1d5db;
+  transition: all 0.3s ease;
 `;
 
 const HelpText = styled.p`
   font-size: 0.875rem;
-  color: #6b7280;
+  color: ${(props) => props.theme.textTertiary};
   margin: 8px 0 0 0;
+  transition: color 0.3s ease;
+`;
+
+const ImageUploadRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: 4px;
+`;
+const ThumbPreview = styled.div`
+  width: 72px;
+  height: 72px;
+  border-radius: 16px;
+  background: ${(props) => props.theme.surfaceSecondary};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-size: 2rem;
+`;
+const ThumbImg = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+`;
+const ThumbPlaceholder = styled.div`
+  color: ${(props) => props.theme.textTertiary};
+  font-size: 2.2rem;
+`;
+const UploadButton = styled.button`
+  padding: 6px 16px;
+  background: ${(props) => props.theme.buttonPrimary};
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  &:hover {
+    background: ${(props) => props.theme.buttonHover || "#444"};
+  }
+`;
+const FileInput = styled.input`
+  display: none;
+`;
+const FileName = styled.div`
+  font-size: 0.85rem;
+  color: ${(props) => props.theme.textSecondary};
+  margin-top: 2px;
 `;

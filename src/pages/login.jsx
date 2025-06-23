@@ -1,37 +1,43 @@
 import React, { useState } from "react";
 import styled from "styled-components";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import { useStore } from "../stores/useStore";
+
 import Button from "../components/Button";
 import Input from "../components/Input";
-import AuthLayout from "../components/AuthLayout";
 import SocialLogin from "../components/SocialLogin";
-import Link from "next/link";
+import AuthLayout from "../components/AuthLayout";
 import toast from "react-hot-toast";
 
 const LoginPage = () => {
+  const { theme, login, isLoading } = useStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const router = useRouter();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    toast.success("로그인 시도: " + email);
-    // 로그인 로직 구현
+    if (!email || !password) {
+      toast.error("이메일과 비밀번호를 입력해주세요.");
+      return;
+    }
+    const result = await login(email, password);
+    if (result.success) {
+      toast.success("로그인 성공!");
+      router.push("/");
+    } else {
+      toast.error(result.error || "로그인에 실패했습니다.");
+    }
   };
 
   const footerContent = (
-    <p>
+    <FooterText theme={theme}>
       비밀번호를 잊으셨나요?{" "}
-      <Link href="/forgot-password">
-        <span
-          style={{
-            color: "#3b82f6",
-            textDecoration: "underline",
-            cursor: "pointer",
-          }}
-        >
-          비밀번호 찾기
-        </span>
-      </Link>
-    </p>
+      <StyledLink href="/forgot-password" theme={theme}>
+        비밀번호 찾기
+      </StyledLink>
+    </FooterText>
   );
 
   return (
@@ -51,10 +57,11 @@ const LoginPage = () => {
         <FormGroup>
           <Input
             type="email"
-            placeholder="이메일 주소"
+            placeholder="이메일"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            disabled={isLoading}
           />
         </FormGroup>
         <FormGroup>
@@ -64,26 +71,31 @@ const LoginPage = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            disabled={isLoading}
           />
         </FormGroup>
-        <Button type="submit" fullWidth>
-          로그인
+        <Button type="submit" variant="primary" fullWidth disabled={isLoading}>
+          {isLoading ? "로그인 중..." : "로그인"}
         </Button>
-        <Button href="/signup" variant="secondary" fullWidth>
+        <Button
+          href="/signup"
+          variant="secondary"
+          fullWidth
+          disabled={isLoading}
+        >
           이메일로 회원가입
         </Button>
+        <SocialLogin />
       </Form>
-      <SocialLogin />
     </AuthLayout>
   );
 };
 
-export default LoginPage;
-
 const Form = styled.form`
+  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.25rem;
 `;
 
 const FormGroup = styled.div`
@@ -91,12 +103,20 @@ const FormGroup = styled.div`
   flex-direction: column;
 `;
 
-const StyledLink = styled.span`
-  color: #3b82f6;
-  text-decoration: underline;
-  cursor: pointer;
-
+const StyledLink = styled(Link)`
+  font-weight: 600;
+  color: ${({ theme }) => theme.buttonPrimary};
   &:hover {
-    color: #2563eb;
+    text-decoration: underline;
   }
 `;
+
+const FooterText = styled.p`
+  text-align: center;
+  margin-top: 1rem;
+  margin-bottom: 0;
+  font-size: 0.875rem;
+  color: ${({ theme }) => theme.textSecondary};
+`;
+
+export default LoginPage;
