@@ -2,28 +2,46 @@ import React from "react";
 import styled from "styled-components";
 import Button from "./Button";
 import Link from "next/link";
+import { useStore } from "../stores/useStore";
 
 const Header = () => {
+  const { theme, isDarkMode, toggleTheme, mounted } = useStore();
+
+  const handleThemeToggle = () => {
+    console.log("Header: Theme toggle button clicked");
+    console.log("Header: Current isDarkMode:", isDarkMode);
+    toggleTheme();
+  };
+
   return (
-    <StyledHeader>
+    <StyledHeader theme={theme}>
       <HeaderContent>
         <Logo>
           <Link href="/" passHref>
-            <LogoText>MoimLog</LogoText>
+            <LogoText theme={theme}>MoimLog</LogoText>
           </Link>
         </Logo>
         <Nav>
           <NavLinks>
-            <NavLink href="/">홈</NavLink>
-            <NavLink href="/my-moims">내 모임</NavLink>
-            <NavLink href="/moim-list">모임 찾기</NavLink>
+            <NavLink href="/" theme={theme}>
+              홈
+            </NavLink>
+            <NavLink href="/my-moims" theme={theme}>
+              내 모임
+            </NavLink>
+            <NavLink href="/moim-list" theme={theme}>
+              모임 찾기
+            </NavLink>
           </NavLinks>
           <ButtonGroup>
+            <ThemeToggleButton onClick={handleThemeToggle} theme={theme}>
+              {mounted && (isDarkMode ? <SunIcon /> : <MoonIcon />)}
+            </ThemeToggleButton>
             <Button href="/moim-create" variant="light" size="small">
               모임 만들기
             </Button>
             <Button href="/login" variant="light" size="small">
-              로그인 <UserIcon />
+              로그인 <UserIcon theme={theme} />
             </Button>
           </ButtonGroup>
         </Nav>
@@ -35,12 +53,13 @@ const Header = () => {
 export default Header;
 
 const StyledHeader = styled.header`
-  background-color: #fff;
-  border-bottom: 1.5px solid #e5e7eb;
+  background-color: ${(props) => props.theme.background};
+  border-bottom: 1.5px solid ${(props) => props.theme.borderLight};
   padding: 0.5rem 0;
   position: sticky;
   top: 0;
   z-index: 100;
+  transition: all 0.3s ease;
 `;
 
 const HeaderContent = styled.div`
@@ -62,8 +81,9 @@ const Logo = styled.div`
 const LogoText = styled.h1`
   font-size: 1.15rem;
   font-weight: 700;
-  color: #111827;
+  color: ${(props) => props.theme.textPrimary};
   margin: 0;
+  transition: color 0.3s ease;
 `;
 
 const Nav = styled.nav`
@@ -79,7 +99,7 @@ const NavLinks = styled.div`
 `;
 
 const NavLink = styled(Link)`
-  color: #6b7280;
+  color: ${(props) => props.theme.textTertiary};
   text-decoration: none;
   font-weight: 500;
   font-size: 0.9rem;
@@ -88,8 +108,8 @@ const NavLink = styled(Link)`
   transition: all 0.2s ease;
 
   &:hover {
-    color: #111827;
-    border-bottom-color: #3b82f6;
+    color: ${(props) => props.theme.textPrimary};
+    border-bottom-color: ${(props) => props.theme.buttonPrimary};
   }
 `;
 
@@ -97,18 +117,76 @@ const ButtonGroup = styled.div`
   display: flex;
   gap: 0.5rem;
   margin-left: 0.5rem;
+  align-items: center;
 `;
 
-const UserIcon = () => (
+const ThemeToggleButton = styled.button`
+  background: ${(props) => props.theme.buttonSecondary};
+  border: 1px solid ${(props) => props.theme.border};
+  border-radius: 6px;
+  padding: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  color: ${(props) => props.theme.textSecondary};
+
+  &:hover {
+    background: ${(props) => props.theme.borderLight};
+    border-color: ${(props) => props.theme.border};
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+`;
+
+const UserIcon = ({ theme }) => (
   <svg
     width="18"
     height="18"
     fill="none"
-    stroke="#111827"
+    stroke={theme.textPrimary}
     strokeWidth="1.7"
     viewBox="0 0 24 24"
   >
     <circle cx="12" cy="8" r="4" />
     <path d="M4 20c0-2.5 3.5-4 8-4s8 1.5 8 4" />
+  </svg>
+);
+
+const SunIcon = () => (
+  <svg
+    width="18"
+    height="18"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    viewBox="0 0 24 24"
+  >
+    <circle cx="12" cy="12" r="5" />
+    <line x1="12" y1="1" x2="12" y2="3" />
+    <line x1="12" y1="21" x2="12" y2="23" />
+    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+    <line x1="1" y1="12" x2="3" y2="12" />
+    <line x1="21" y1="12" x2="23" y2="12" />
+    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+  </svg>
+);
+
+const MoonIcon = () => (
+  <svg
+    width="18"
+    height="18"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    viewBox="0 0 24 24"
+  >
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
   </svg>
 );

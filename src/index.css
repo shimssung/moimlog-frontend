@@ -17,7 +17,8 @@ body {
     Arial, "Noto Sans", "Liberation Sans", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f9fafb;
+  background-color: #f9fafb !important;
+  transition: background-color 0.3s ease;
 }
 
 #root {
@@ -47,6 +48,38 @@ a {
   text-decoration: none;
 }
 
+/* 다크모드 스타일 - 더 강력한 선택자 사용 */
+body.dark-mode {
+  background-color: #111827 !important;
+  color: #f9fafb !important;
+}
+
+body.dark-mode * {
+  transition: background-color 0.3s ease, color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+/* 다크모드에서 특정 요소들 강제 스타일링 */
+body.dark-mode div[data-styled] {
+  background-color: #1f2937 !important;
+  color: #f9fafb !important;
+}
+
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode h5,
+body.dark-mode h6 {
+  color: #f9fafb !important;
+}
+
+body.dark-mode p,
+body.dark-mode span,
+body.dark-mode div {
+  color: #d1d5db !important;
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
@@ -54,5 +87,12 @@ a {
   }
   button {
     background-color: #f9f9f9;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color: #f9fafb;
+    background-color: #111827;
   }
 }

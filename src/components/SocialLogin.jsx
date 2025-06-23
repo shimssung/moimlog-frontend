@@ -1,11 +1,14 @@
 import React from "react";
 import styled from "styled-components";
 import Button from "./Button";
+import { useStore } from "../stores/useStore";
 
 const SocialLogin = () => {
+  const { theme } = useStore();
+
   return (
     <>
-      <Divider>
+      <Divider theme={theme}>
         <span>또는</span>
       </Divider>
       <SocialLoginContainer>
@@ -33,13 +36,13 @@ const Divider = styled.div`
   align-items: center;
   text-align: center;
   margin: 1.5rem 0;
-  color: #6b7280;
+  color: ${(props) => props.theme.textTertiary};
 
   &::before,
   &::after {
     content: "";
     flex: 1;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid ${(props) => props.theme.borderLight};
   }
 
   span {
@@ -101,4 +104,4 @@ const SocialIcon = styled.img`
   height: 24px;
   border-radius: 50%;
   object-fit: cover;
-`; 
+`;

@@ -3,8 +3,10 @@ import styled from "styled-components";
 import Header from "../components/Header";
 import Button from "../components/Button";
 import toast from "react-hot-toast";
+import { useTheme } from "../utils/ThemeContext";
 
 const Settings = () => {
+  const { theme } = useTheme();
   const [formData, setFormData] = useState({
     email: "user@example.com",
     nickname: "사용자",
@@ -32,16 +34,18 @@ const Settings = () => {
   };
 
   return (
-    <PageContainer>
+    <PageContainer theme={theme}>
       <Header />
       <Container>
-        <SettingsContainer>
-          <SettingsTitle>설정</SettingsTitle>
+        <SettingsContainer theme={theme}>
+          <SettingsTitle theme={theme}>설정</SettingsTitle>
           <Form onSubmit={handleSubmit}>
             <Section>
-              <SectionTitle>계정 정보</SectionTitle>
+              <SectionTitle theme={theme}>계정 정보</SectionTitle>
               <FormGroup>
-                <Label htmlFor="email">이메일</Label>
+                <Label htmlFor="email" theme={theme}>
+                  이메일
+                </Label>
                 <Input
                   type="email"
                   id="email"
@@ -49,11 +53,14 @@ const Settings = () => {
                   value={formData.email}
                   onChange={handleChange}
                   required
+                  theme={theme}
                 />
               </FormGroup>
 
               <FormGroup>
-                <Label htmlFor="nickname">닉네임</Label>
+                <Label htmlFor="nickname" theme={theme}>
+                  닉네임
+                </Label>
                 <Input
                   type="text"
                   id="nickname"
@@ -61,48 +68,58 @@ const Settings = () => {
                   value={formData.nickname}
                   onChange={handleChange}
                   required
+                  theme={theme}
                 />
               </FormGroup>
             </Section>
 
             <Section>
-              <SectionTitle>비밀번호 변경</SectionTitle>
+              <SectionTitle theme={theme}>비밀번호 변경</SectionTitle>
               <FormGroup>
-                <Label htmlFor="currentPassword">현재 비밀번호</Label>
+                <Label htmlFor="currentPassword" theme={theme}>
+                  현재 비밀번호
+                </Label>
                 <Input
                   type="password"
                   id="currentPassword"
                   name="currentPassword"
                   value={formData.currentPassword}
                   onChange={handleChange}
+                  theme={theme}
                 />
               </FormGroup>
 
               <FormGroup>
-                <Label htmlFor="newPassword">새 비밀번호</Label>
+                <Label htmlFor="newPassword" theme={theme}>
+                  새 비밀번호
+                </Label>
                 <Input
                   type="password"
                   id="newPassword"
                   name="newPassword"
                   value={formData.newPassword}
                   onChange={handleChange}
+                  theme={theme}
                 />
               </FormGroup>
 
               <FormGroup>
-                <Label htmlFor="confirmPassword">새 비밀번호 확인</Label>
+                <Label htmlFor="confirmPassword" theme={theme}>
+                  새 비밀번호 확인
+                </Label>
                 <Input
                   type="password"
                   id="confirmPassword"
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleChange}
+                  theme={theme}
                 />
               </FormGroup>
             </Section>
 
             <Section>
-              <SectionTitle>알림 설정</SectionTitle>
+              <SectionTitle theme={theme}>알림 설정</SectionTitle>
               <CheckboxGroup>
                 <CheckboxItem>
                   <Checkbox
@@ -111,8 +128,9 @@ const Settings = () => {
                     name="notificationEmail"
                     checked={formData.notificationEmail}
                     onChange={handleChange}
+                    theme={theme}
                   />
-                  <CheckboxLabel htmlFor="notificationEmail">
+                  <CheckboxLabel htmlFor="notificationEmail" theme={theme}>
                     이메일 알림
                   </CheckboxLabel>
                 </CheckboxItem>
@@ -124,8 +142,9 @@ const Settings = () => {
                     name="notificationPush"
                     checked={formData.notificationPush}
                     onChange={handleChange}
+                    theme={theme}
                   />
-                  <CheckboxLabel htmlFor="notificationPush">
+                  <CheckboxLabel htmlFor="notificationPush" theme={theme}>
                     푸시 알림
                   </CheckboxLabel>
                 </CheckboxItem>
@@ -137,8 +156,9 @@ const Settings = () => {
                     name="notificationSchedule"
                     checked={formData.notificationSchedule}
                     onChange={handleChange}
+                    theme={theme}
                   />
-                  <CheckboxLabel htmlFor="notificationSchedule">
+                  <CheckboxLabel htmlFor="notificationSchedule" theme={theme}>
                     일정 알림
                   </CheckboxLabel>
                 </CheckboxItem>
@@ -150,8 +170,9 @@ const Settings = () => {
                     name="notificationComment"
                     checked={formData.notificationComment}
                     onChange={handleChange}
+                    theme={theme}
                   />
-                  <CheckboxLabel htmlFor="notificationComment">
+                  <CheckboxLabel htmlFor="notificationComment" theme={theme}>
                     댓글 알림
                   </CheckboxLabel>
                 </CheckboxItem>
@@ -159,7 +180,7 @@ const Settings = () => {
             </Section>
 
             <ButtonGroup>
-              <Button variant="secondary" type="button">
+              <Button variant="light" type="button">
                 취소
               </Button>
               <Button variant="primary" type="submit">
@@ -177,7 +198,8 @@ export default Settings;
 
 const PageContainer = styled.div`
   min-height: 100vh;
-  background: #f8fafc;
+  background: ${(props) => props.theme.background};
+  transition: background-color 0.3s ease;
 `;
 
 const Container = styled.div`
@@ -187,17 +209,20 @@ const Container = styled.div`
 `;
 
 const SettingsContainer = styled.div`
-  background: #fff;
+  background: ${(props) => props.theme.surface};
   border-radius: 12px;
   padding: 32px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: ${(props) => props.theme.cardShadow};
+  border: 1px solid ${(props) => props.theme.borderLight};
+  transition: all 0.3s ease;
 `;
 
 const SettingsTitle = styled.h1`
   font-size: 1.5rem;
   font-weight: 700;
-  color: #111827;
+  color: ${(props) => props.theme.textPrimary};
   margin: 0 0 32px 0;
+  transition: color 0.3s ease;
 `;
 
 const Form = styled.form`
@@ -215,8 +240,9 @@ const Section = styled.section`
 const SectionTitle = styled.h2`
   font-size: 1.1rem;
   font-weight: 600;
-  color: #111827;
+  color: ${(props) => props.theme.textPrimary};
   margin: 0;
+  transition: color 0.3s ease;
 `;
 
 const FormGroup = styled.div`
@@ -227,20 +253,26 @@ const FormGroup = styled.div`
 
 const Label = styled.label`
   font-weight: 500;
-  color: #374151;
+  color: ${(props) => props.theme.textPrimary};
+  transition: color 0.3s ease;
 `;
 
 const Input = styled.input`
   padding: 8px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid ${(props) => props.theme.borderLight};
   border-radius: 6px;
   font-size: 0.875rem;
-  color: #111827;
-  transition: border-color 0.2s;
+  color: ${(props) => props.theme.textPrimary};
+  background: ${(props) => props.theme.surfaceSecondary};
+  transition: all 0.2s;
 
   &:focus {
     outline: none;
-    border-color: #3b82f6;
+    border-color: ${(props) => props.theme.buttonPrimary};
+  }
+
+  &::placeholder {
+    color: ${(props) => props.theme.textTertiary};
   }
 `;
 
@@ -260,12 +292,14 @@ const Checkbox = styled.input`
   width: 16px;
   height: 16px;
   margin: 0;
+  accent-color: ${(props) => props.theme.buttonPrimary};
 `;
 
 const CheckboxLabel = styled.label`
   font-size: 0.875rem;
-  color: #374151;
+  color: ${(props) => props.theme.textPrimary};
   cursor: pointer;
+  transition: color 0.3s ease;
 `;
 
 const ButtonGroup = styled.div`

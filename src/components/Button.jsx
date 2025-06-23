@@ -1,6 +1,7 @@
 import React from "react";
 import styled, { css } from "styled-components";
 import Link from "next/link";
+import { useStore } from "../stores/useStore";
 
 const Button = ({
   children,
@@ -11,6 +12,8 @@ const Button = ({
   href,
   ...props
 }) => {
+  const { theme } = useStore();
+
   if (href) {
     // Next.js의 Link로 감싸서 SPA 라우팅 지원
     return (
@@ -19,6 +22,7 @@ const Button = ({
           variant={variant}
           size={size}
           fullWidth={fullWidth}
+          theme={theme}
           {...props}
         >
           {children}
@@ -33,6 +37,7 @@ const Button = ({
       size={size}
       fullWidth={fullWidth}
       type={type}
+      theme={theme}
       {...props}
     >
       {children}
@@ -43,7 +48,7 @@ const Button = ({
 export default Button;
 
 const ButtonBase = styled.button.withConfig({
-  shouldForwardProp: (prop) => prop !== "fullWidth",
+  shouldForwardProp: (prop) => !["fullWidth", "theme"].includes(prop),
 })`
   padding: 0.75rem 1rem;
   font-weight: 600;
@@ -67,12 +72,12 @@ const ButtonBase = styled.button.withConfig({
   ${(props) =>
     props.variant === "primary" &&
     css`
-      background-color: #0d6efd;
+      background-color: ${props.theme.buttonPrimary};
       color: #fff;
       border: none;
       &:hover:not(:disabled),
       &:active:not(:disabled) {
-        background-color: #0b5ed7;
+        background-color: ${props.theme.buttonHover};
         color: #fff;
         border: none;
         cursor: pointer;
@@ -82,14 +87,14 @@ const ButtonBase = styled.button.withConfig({
   ${(props) =>
     props.variant === "secondary" &&
     css`
-      background-color: #6c757d;
-      color: #fff;
-      border: none;
+      background-color: ${props.theme.surfaceSecondary};
+      color: ${props.theme.textPrimary};
+      border: 1px solid ${props.theme.border};
       &:hover:not(:disabled),
       &:active:not(:disabled) {
-        background-color: #5c636a;
-        color: #fff;
-        border: none;
+        background-color: ${props.theme.borderLight};
+        color: ${props.theme.textPrimary};
+        border: 1px solid ${props.theme.border};
         cursor: pointer;
       }
     `}
@@ -97,14 +102,14 @@ const ButtonBase = styled.button.withConfig({
   ${(props) =>
     props.variant === "light" &&
     css`
-      background-color: #f8f9fa;
-      color: #212529;
-      border: 1.5px solid #f8f9fa;
+      background-color: ${props.theme.buttonSecondary};
+      color: ${props.theme.textSecondary};
+      border: 1px solid ${props.theme.border};
       &:hover:not(:disabled),
       &:active:not(:disabled) {
-        background-color: #e2e6ea;
-        color: #212529;
-        border: 1.5px solid #e2e6ea;
+        background-color: ${props.theme.borderLight};
+        color: ${props.theme.textPrimary};
+        border: 1px solid ${props.theme.border};
         cursor: pointer;
       }
     `}

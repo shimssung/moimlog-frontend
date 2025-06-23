@@ -4,8 +4,10 @@ import { useRouter } from "next/router";
 import toast from "react-hot-toast";
 import Sidebar from "../../../components/Sidebar";
 import Button from "../../../components/Button";
+import { useTheme } from "../../../utils/ThemeContext";
 
 const MoimBoardPage = () => {
+  const { theme } = useTheme();
   const router = useRouter();
   const { id: moimId } = router.query;
   const [moimInfo, setMoimInfo] = useState(null);
@@ -27,7 +29,8 @@ const MoimBoardPage = () => {
         {
           id: 1,
           title: "다음 모임 준비물 안내",
-          content: "다음 모임에서는 시크릿 가든 3-4장을 읽고 토론할 예정입니다. 미리 읽어보시고 질문이나 의견을 준비해주세요.",
+          content:
+            "다음 모임에서는 시크릿 가든 3-4장을 읽고 토론할 예정입니다. 미리 읽어보시고 질문이나 의견을 준비해주세요.",
           author: "소피아",
           date: "2024-03-18T10:00:00",
           type: "notice",
@@ -38,7 +41,8 @@ const MoimBoardPage = () => {
         {
           id: 2,
           title: "지난 모임 후기",
-          content: "지난 모임에서 시크릿 가든 1-2장을 토론했는데, 정말 흥미로운 이야기가 많았습니다. 특히 주인공의 성장 과정이 인상적이었어요.",
+          content:
+            "지난 모임에서 시크릿 가든 1-2장을 토론했는데, 정말 흥미로운 이야기가 많았습니다. 특히 주인공의 성장 과정이 인상적이었어요.",
           author: "앨리스",
           date: "2024-03-17T15:30:00",
           type: "free",
@@ -49,7 +53,8 @@ const MoimBoardPage = () => {
         {
           id: 3,
           title: "독서 노트 공유",
-          content: "시크릿 가든을 읽으면서 작성한 독서 노트를 공유합니다. 다른 분들의 노트도 궁금하네요!",
+          content:
+            "시크릿 가든을 읽으면서 작성한 독서 노트를 공유합니다. 다른 분들의 노트도 궁금하네요!",
           author: "밥",
           date: "2024-03-16T14:20:00",
           type: "free",
@@ -60,7 +65,8 @@ const MoimBoardPage = () => {
         {
           id: 4,
           title: "모임 사진",
-          content: "지난 모임에서 찍은 사진입니다. 모두 즐거운 시간을 보내고 계시네요!",
+          content:
+            "지난 모임에서 찍은 사진입니다. 모두 즐거운 시간을 보내고 계시네요!",
           author: "캐롤",
           date: "2024-03-15T16:45:00",
           type: "photo",
@@ -74,26 +80,26 @@ const MoimBoardPage = () => {
   }, [moimId]);
 
   const getFilteredPosts = () => {
-    return posts.filter(post => post.type === activeTab);
+    return posts.filter((post) => post.type === activeTab);
   };
 
   const formatDate = (dateString) => {
     if (!dateString) {
       return "날짜 없음";
     }
-    
+
     // dateString이 문자열이 아닌 경우 문자열로 변환
     const dateStr = String(dateString);
-    
+
     try {
       // Date 생성자를 직접 호출
       const date = new (global.Date || Date)(dateStr);
-      
+
       // 유효하지 않은 날짜인지 확인
       if (isNaN(date.getTime())) {
         return "날짜 오류";
       }
-      
+
       const result = date.toLocaleDateString("ko-KR", {
         month: "short",
         day: "numeric",
@@ -109,44 +115,55 @@ const MoimBoardPage = () => {
 
   const getTabIcon = (tab) => {
     switch (tab) {
-      case "notice": return "📢";
-      case "free": return "💬";
-      case "photo": return "📸";
-      default: return "📝";
+      case "notice":
+        return "📢";
+      case "free":
+        return "💬";
+      case "photo":
+        return "📸";
+      default:
+        return "📝";
     }
   };
 
   const getTabLabel = (tab) => {
     switch (tab) {
-      case "notice": return "공지사항";
-      case "free": return "자유게시판";
-      case "photo": return "사진게시판";
-      default: return "게시판";
+      case "notice":
+        return "공지사항";
+      case "free":
+        return "자유게시판";
+      case "photo":
+        return "사진게시판";
+      default:
+        return "게시판";
     }
   };
 
   return (
-    <PageContainer>
+    <PageContainer theme={theme}>
       <Sidebar moimId={moimId} moimRole={moimInfo?.role} activeMenu="board" />
-      
+
       <MainContent>
         <PageHeader>
           <HeaderInfo>
-            <PageTitle>게시판</PageTitle>
-            <PageSubtitle>{moimInfo?.title}의 소식을 확인하세요</PageSubtitle>
+            <PageTitle theme={theme}>게시판</PageTitle>
+            <PageSubtitle theme={theme}>
+              {moimInfo?.title}의 소식을 확인하세요
+            </PageSubtitle>
           </HeaderInfo>
-          <CreateButton onClick={() => setShowCreateModal(true)}>
+          <CreateButton onClick={() => setShowCreateModal(true)} theme={theme}>
             <ButtonIcon>✏️</ButtonIcon>
             글쓰기
           </CreateButton>
         </PageHeader>
 
-        <TabContainer>
+        <TabContainer theme={theme}>
           {["notice", "free", "photo"].map((tab) => (
             <Tab
               key={tab}
               $active={activeTab === tab}
               onClick={() => setActiveTab(tab)}
+              theme={theme}
             >
               <TabIcon>{getTabIcon(tab)}</TabIcon>
               {getTabLabel(tab)}
@@ -156,26 +173,26 @@ const MoimBoardPage = () => {
 
         <PostList>
           {getFilteredPosts().map((post) => (
-            <PostCard key={post.id}>
-              {post.isPinned && <PinnedBadge>📌 고정</PinnedBadge>}
+            <PostCard key={post.id} theme={theme}>
+              {post.isPinned && (
+                <PinnedBadge theme={theme}>📌 고정</PinnedBadge>
+              )}
               <PostHeader>
-                <PostTitle>{post.title}</PostTitle>
+                <PostTitle theme={theme}>{post.title}</PostTitle>
                 <PostMeta>
-                  <Author>{post.author}</Author>
-                  <Date>{formatDate(post.date)}</Date>
+                  <Author theme={theme}>{post.author}</Author>
+                  <Date theme={theme}>{formatDate(post.date)}</Date>
                 </PostMeta>
               </PostHeader>
-              <PostContent>{post.content}</PostContent>
-              {post.image && (
-                <PostImage src={post.image} alt="게시글 이미지" />
-              )}
+              <PostContent theme={theme}>{post.content}</PostContent>
+              {post.image && <PostImage src={post.image} alt="게시글 이미지" />}
               <PostFooter>
                 <PostActions>
-                  <ActionButton>
+                  <ActionButton theme={theme}>
                     <ActionIcon>👍</ActionIcon>
                     {post.likes}
                   </ActionButton>
-                  <ActionButton>
+                  <ActionButton theme={theme}>
                     <ActionIcon>💬</ActionIcon>
                     {post.comments}
                   </ActionButton>
@@ -188,50 +205,57 @@ const MoimBoardPage = () => {
         {getFilteredPosts().length === 0 && (
           <EmptyState>
             <EmptyIcon>📝</EmptyIcon>
-            <EmptyTitle>아직 게시글이 없어요</EmptyTitle>
-            <EmptyText>첫 번째 게시글을 작성해보세요!</EmptyText>
+            <EmptyTitle theme={theme}>아직 게시글이 없어요</EmptyTitle>
+            <EmptyText theme={theme}>첫 번째 게시글을 작성해보세요!</EmptyText>
           </EmptyState>
         )}
 
         {showCreateModal && (
           <ModalOverlay onClick={() => setShowCreateModal(false)}>
-            <ModalContent onClick={(e) => e.stopPropagation()}>
-              <ModalHeader>
-                <ModalTitle>새 게시글 작성</ModalTitle>
-                <CloseButton onClick={() => setShowCreateModal(false)}>✕</CloseButton>
+            <ModalContent onClick={(e) => e.stopPropagation()} theme={theme}>
+              <ModalHeader theme={theme}>
+                <ModalTitle theme={theme}>새 게시글 작성</ModalTitle>
+                <CloseButton
+                  onClick={() => setShowCreateModal(false)}
+                  theme={theme}
+                >
+                  ✕
+                </CloseButton>
               </ModalHeader>
               <ModalBody>
                 <FormGroup>
-                  <Label>게시판 선택</Label>
-                  <Select>
+                  <Label theme={theme}>제목</Label>
+                  <Input theme={theme} placeholder="제목을 입력하세요" />
+                </FormGroup>
+                <FormGroup>
+                  <Label theme={theme}>게시판</Label>
+                  <Select theme={theme}>
                     <option value="notice">공지사항</option>
                     <option value="free">자유게시판</option>
                     <option value="photo">사진게시판</option>
                   </Select>
                 </FormGroup>
                 <FormGroup>
-                  <Label>제목</Label>
-                  <Input type="text" placeholder="제목을 입력하세요" />
+                  <Label theme={theme}>내용</Label>
+                  <Textarea
+                    theme={theme}
+                    rows={6}
+                    placeholder="내용을 입력하세요"
+                  />
                 </FormGroup>
                 <FormGroup>
-                  <Label>내용</Label>
-                  <Textarea placeholder="내용을 입력하세요" rows="6" />
-                </FormGroup>
-                <FormGroup>
-                  <Label>이미지 첨부 (선택사항)</Label>
-                  <FileInput type="file" accept="image/*" />
+                  <Label theme={theme}>이미지 첨부</Label>
+                  <FileInput theme={theme} type="file" accept="image/*" />
                 </FormGroup>
               </ModalBody>
-              <ModalFooter>
-                <Button variant="secondary" onClick={() => setShowCreateModal(false)}>
+              <ModalFooter theme={theme}>
+                <Button
+                  variant="light"
+                  onClick={() => setShowCreateModal(false)}
+                >
                   취소
                 </Button>
-                <Button variant="primary" onClick={() => {
-                  toast.success("게시글이 작성되었습니다!");
-                  setShowCreateModal(false);
-                }}>
-                  게시하기
-                </Button>
+                <Button variant="primary">작성하기</Button>
               </ModalFooter>
             </ModalContent>
           </ModalOverlay>
@@ -245,24 +269,21 @@ export default MoimBoardPage;
 
 const PageContainer = styled.div`
   display: flex;
-  height: 100vh;
-  background: #f8fafc;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-  }
+  min-height: 100vh;
+  background: ${(props) => props.theme.background};
+  transition: background-color 0.3s ease;
 `;
 
 const MainContent = styled.div`
   flex: 1;
-  margin-left: 280px;
-  display: flex;
-  flex-direction: column;
-  background: #fff;
+  margin-left: 250px;
+  padding: 24px;
   overflow-y: auto;
+  min-height: 100vh;
 
   @media (max-width: 768px) {
     margin-left: 0;
+    padding: 16px;
   }
 `;
 
@@ -270,41 +291,42 @@ const PageHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 24px 32px;
-  border-bottom: 1px solid #e5e7eb;
-  background: #fff;
+  margin-bottom: 32px;
 `;
 
 const HeaderInfo = styled.div``;
 
 const PageTitle = styled.h1`
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #111827;
-  margin: 0 0 4px 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: ${(props) => props.theme.textPrimary};
+  margin: 0 0 8px 0;
+  transition: color 0.3s ease;
 `;
 
 const PageSubtitle = styled.p`
-  font-size: 0.9rem;
-  color: #6b7280;
+  font-size: 1rem;
+  color: ${(props) => props.theme.textSecondary};
   margin: 0;
+  transition: color 0.3s ease;
 `;
 
 const CreateButton = styled.button`
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 20px;
-  background: #3b82f6;
-  color: #fff;
+  background: ${(props) => props.theme.buttonPrimary};
+  color: white;
   border: none;
   border-radius: 8px;
-  font-weight: 500;
+  padding: 12px 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
-    background: #2563eb;
+    background: ${(props) => props.theme.buttonHover};
   }
 `;
 
@@ -315,26 +337,29 @@ const ButtonIcon = styled.span`
 const TabContainer = styled.div`
   display: flex;
   gap: 8px;
-  padding: 20px 32px;
-  border-bottom: 1px solid #e5e7eb;
-  background: #fff;
+  margin-bottom: 24px;
+  border-bottom: 1px solid ${(props) => props.theme.borderLight};
+  transition: border-color 0.3s ease;
 `;
 
 const Tab = styled.button`
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 20px;
+  background: none;
   border: none;
-  border-radius: 8px;
-  background: ${props => props.$active ? "#3b82f6" : "#f3f4f6"};
-  color: ${props => props.$active ? "#fff" : "#6b7280"};
+  padding: 12px 16px;
+  font-size: 0.9rem;
   font-weight: 500;
+  color: ${({ $active, theme }) =>
+    $active ? theme.textPrimary : theme.textSecondary};
   cursor: pointer;
+  border-bottom: 2px solid
+    ${({ $active, theme }) => ($active ? theme.buttonPrimary : "transparent")};
   transition: all 0.2s ease;
 
   &:hover {
-    background: ${props => props.$active ? "#2563eb" : "#e5e7eb"};
+    color: ${(props) => props.theme.textPrimary};
   }
 `;
 
@@ -343,72 +368,69 @@ const TabIcon = styled.span`
 `;
 
 const PostList = styled.div`
-  flex: 1;
-  padding: 24px 32px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 `;
 
 const PostCard = styled.div`
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  background: ${(props) => props.theme.surface};
+  border: 1px solid ${(props) => props.theme.borderLight};
   border-radius: 12px;
-  padding: 24px;
+  padding: 20px;
   position: relative;
-  transition: all 0.2s ease;
-
-  &:hover {
-    border-color: #3b82f6;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
-  }
+  transition: all 0.3s ease;
 `;
 
 const PinnedBadge = styled.div`
   position: absolute;
   top: 12px;
   right: 12px;
-  background: #fef3c7;
-  color: #92400e;
+  background: ${(props) => props.theme.buttonPrimary};
+  color: white;
   padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 0.7rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
   font-weight: 500;
 `;
 
 const PostHeader = styled.div`
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 `;
 
 const PostTitle = styled.h3`
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 600;
-  color: #111827;
+  color: ${(props) => props.theme.textPrimary};
   margin: 0 0 8px 0;
+  transition: color 0.3s ease;
 `;
 
 const PostMeta = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
+  font-size: 0.85rem;
 `;
 
 const Author = styled.span`
-  font-size: 0.9rem;
-  color: #6b7280;
+  color: ${(props) => props.theme.textSecondary};
   font-weight: 500;
+  transition: color 0.3s ease;
 `;
 
 const Date = styled.span`
   font-size: 0.8rem;
-  color: #9ca3af;
+  color: ${(props) => props.theme.textTertiary};
+  transition: color 0.3s ease;
 `;
 
 const PostContent = styled.div`
   font-size: 0.95rem;
   line-height: 1.6;
-  color: #374151;
+  color: ${(props) => props.theme.textSecondary};
   margin-bottom: 16px;
+  transition: color 0.3s ease;
 `;
 
 const PostImage = styled.img`
@@ -436,7 +458,7 @@ const ActionButton = styled.button`
   gap: 6px;
   background: none;
   border: none;
-  color: #6b7280;
+  color: ${(props) => props.theme.textTertiary};
   font-size: 0.9rem;
   cursor: pointer;
   padding: 6px 12px;
@@ -444,8 +466,8 @@ const ActionButton = styled.button`
   transition: all 0.2s ease;
 
   &:hover {
-    background: #f3f4f6;
-    color: #111827;
+    background: ${(props) => props.theme.surfaceSecondary};
+    color: ${(props) => props.theme.textPrimary};
   }
 `;
 
@@ -466,14 +488,16 @@ const EmptyIcon = styled.div`
 const EmptyTitle = styled.h3`
   font-size: 1.5rem;
   font-weight: 600;
-  color: #111827;
+  color: ${(props) => props.theme.textPrimary};
   margin: 0 0 8px 0;
+  transition: color 0.3s ease;
 `;
 
 const EmptyText = styled.p`
   font-size: 1.1rem;
-  color: #6b7280;
+  color: ${(props) => props.theme.textSecondary};
   margin: 0;
+  transition: color 0.3s ease;
 `;
 
 const ModalOverlay = styled.div`
@@ -490,12 +514,14 @@ const ModalOverlay = styled.div`
 `;
 
 const ModalContent = styled.div`
-  background: #fff;
+  background: ${(props) => props.theme.surface};
   border-radius: 12px;
   width: 90%;
   max-width: 600px;
   max-height: 90vh;
   overflow-y: auto;
+  border: 1px solid ${(props) => props.theme.borderLight};
+  transition: all 0.3s ease;
 `;
 
 const ModalHeader = styled.div`
@@ -503,26 +529,29 @@ const ModalHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 24px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid ${(props) => props.theme.borderLight};
+  transition: border-color 0.3s ease;
 `;
 
 const ModalTitle = styled.h2`
   font-size: 1.25rem;
   font-weight: 600;
-  color: #111827;
+  color: ${(props) => props.theme.textPrimary};
   margin: 0;
+  transition: color 0.3s ease;
 `;
 
 const CloseButton = styled.button`
   background: none;
   border: none;
   font-size: 1.5rem;
-  color: #6b7280;
+  color: ${(props) => props.theme.textTertiary};
   cursor: pointer;
   padding: 4px;
+  transition: color 0.3s ease;
 
   &:hover {
-    color: #111827;
+    color: ${(props) => props.theme.textPrimary};
   }
 `;
 
@@ -535,7 +564,8 @@ const ModalFooter = styled.div`
   justify-content: flex-end;
   gap: 12px;
   padding: 24px;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid ${(props) => props.theme.borderLight};
+  transition: border-color 0.3s ease;
 `;
 
 const FormGroup = styled.div`
@@ -546,63 +576,80 @@ const Label = styled.label`
   display: block;
   font-size: 0.9rem;
   font-weight: 500;
-  color: #374151;
+  color: ${(props) => props.theme.textPrimary};
   margin-bottom: 6px;
+  transition: color 0.3s ease;
 `;
 
 const Input = styled.input`
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid ${(props) => props.theme.borderLight};
   border-radius: 6px;
   font-size: 0.9rem;
   outline: none;
-  transition: border-color 0.2s ease;
+  background: ${(props) => props.theme.surfaceSecondary};
+  color: ${(props) => props.theme.textPrimary};
+  transition: all 0.2s ease;
 
   &:focus {
-    border-color: #3b82f6;
+    border-color: ${(props) => props.theme.buttonPrimary};
+  }
+
+  &::placeholder {
+    color: ${(props) => props.theme.textTertiary};
   }
 `;
 
 const Select = styled.select`
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid ${(props) => props.theme.borderLight};
   border-radius: 6px;
   font-size: 0.9rem;
   outline: none;
-  transition: border-color 0.2s ease;
+  background: ${(props) => props.theme.surfaceSecondary};
+  color: ${(props) => props.theme.textPrimary};
+  transition: all 0.2s ease;
 
   &:focus {
-    border-color: #3b82f6;
+    border-color: ${(props) => props.theme.buttonPrimary};
   }
 `;
 
 const Textarea = styled.textarea`
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid ${(props) => props.theme.borderLight};
   border-radius: 6px;
   font-size: 0.9rem;
   outline: none;
   resize: vertical;
-  transition: border-color 0.2s ease;
+  background: ${(props) => props.theme.surfaceSecondary};
+  color: ${(props) => props.theme.textPrimary};
+  transition: all 0.2s ease;
 
   &:focus {
-    border-color: #3b82f6;
+    border-color: ${(props) => props.theme.buttonPrimary};
+  }
+
+  &::placeholder {
+    color: ${(props) => props.theme.textTertiary};
   }
 `;
 
 const FileInput = styled.input`
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid ${(props) => props.theme.borderLight};
   border-radius: 6px;
   font-size: 0.9rem;
   outline: none;
-  transition: border-color 0.2s ease;
+  background: ${(props) => props.theme.surfaceSecondary};
+  color: ${(props) => props.theme.textPrimary};
+  transition: all 0.2s ease;
 
   &:focus {
-    border-color: #3b82f6;
+    border-color: ${(props) => props.theme.buttonPrimary};
   }
-`; 
+`;

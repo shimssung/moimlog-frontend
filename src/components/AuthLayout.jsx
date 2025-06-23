@@ -1,37 +1,40 @@
 import React from "react";
 import styled from "styled-components";
 import Link from "next/link";
+import { useTheme } from "../utils/ThemeContext";
 
-const AuthLayout = ({ 
-  leftTitle, 
-  leftDesc, 
-  formTitle, 
-  children, 
-  footerContent 
+const AuthLayout = ({
+  leftTitle,
+  leftDesc,
+  formTitle,
+  children,
+  footerContent,
 }) => {
+  const { theme } = useTheme();
+
   return (
     <>
-      <Header>
+      <Header theme={theme}>
         <HeaderContent>
           <Logo>
             <Link href="/" passHref prefetch={true}>
-              <LogoText>MoimLog</LogoText>
+              <LogoText theme={theme}>MoimLog</LogoText>
             </Link>
           </Logo>
         </HeaderContent>
       </Header>
-      <PageWrap>
+      <PageWrap theme={theme}>
         <LeftSection>
           <LeftContent>
-            <LeftTitle>{leftTitle}</LeftTitle>
-            <LeftDesc>{leftDesc}</LeftDesc>
+            <LeftTitle theme={theme}>{leftTitle}</LeftTitle>
+            <LeftDesc theme={theme}>{leftDesc}</LeftDesc>
           </LeftContent>
         </LeftSection>
         <RightSection>
-          <FormContainer>
-            <Title>{formTitle}</Title>
+          <FormContainer theme={theme}>
+            <Title theme={theme}>{formTitle}</Title>
             {children}
-            {footerContent && <Footer>{footerContent}</Footer>}
+            {footerContent && <Footer theme={theme}>{footerContent}</Footer>}
           </FormContainer>
         </RightSection>
       </PageWrap>
@@ -44,11 +47,12 @@ export default AuthLayout;
 const PageWrap = styled.div`
   display: flex;
   min-height: 100vh;
-  background: #111827;
+  background: ${(props) => props.theme.background};
   justify-content: center;
   align-items: center;
   padding: 96px 32px 32px 32px;
   gap: 48px;
+  transition: background-color 0.3s ease;
 
   /* 반응형: 1230px 이하에서는 세로로 쌓이고, 패딩/정렬 변경 */
   @media (max-width: 1230px) {
@@ -62,7 +66,7 @@ const PageWrap = styled.div`
 const LeftSection = styled.div`
   flex: 0 0 620px;
   background: transparent;
-  color: #fff;
+  color: ${(props) => props.theme.textPrimary};
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -90,6 +94,8 @@ const LeftTitle = styled.h2`
   font-size: 2.2rem;
   font-weight: 800;
   margin-bottom: 16px;
+  color: ${(props) => props.theme.textPrimary};
+  transition: color 0.3s ease;
 
   /* 반응형: 900px 이하에서 폰트 크기/마진 축소 */
   @media (max-width: 900px) {
@@ -102,6 +108,8 @@ const LeftDesc = styled.p`
   font-size: 1.1rem;
   font-weight: 400;
   opacity: 0.85;
+  color: ${(props) => props.theme.textSecondary};
+  transition: color 0.3s ease;
 
   /* 반응형: 900px 이하에서 폰트 크기 축소 */
   @media (max-width: 900px) {
@@ -118,29 +126,33 @@ const RightSection = styled.div`
 `;
 
 const FormContainer = styled.div`
-  background-color: #fff;
+  background-color: ${(props) => props.theme.surface};
   border-radius: 0.75rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  box-shadow: ${(props) => props.theme.cardShadow};
   padding: 2.5rem 2rem;
   width: 100%;
   max-width: 28rem;
   position: relative;
   top: 0;
+  border: 1px solid ${(props) => props.theme.borderLight};
+  transition: all 0.3s ease;
 `;
 
 const Title = styled.h2`
   font-size: 1.5rem;
   font-weight: 700;
-  color: #111827;
+  color: ${(props) => props.theme.textPrimary};
   text-align: center;
   margin-bottom: 2rem;
+  transition: color 0.3s ease;
 `;
 
 const Footer = styled.div`
   margin-top: 1.5rem;
   text-align: center;
   font-size: 0.875rem;
-  color: #6b7280;
+  color: ${(props) => props.theme.textTertiary};
+  transition: color 0.3s ease;
 
   p {
     margin: 0.5rem 0;
@@ -186,12 +198,13 @@ const Logo = styled.div`
 const LogoText = styled.h1`
   font-size: 1.5rem;
   font-weight: 800;
-  color: #fff;
+  color: ${(props) => props.theme.textPrimary};
   letter-spacing: -1px;
   margin: 0;
+  transition: color 0.3s ease;
 
   /* 반응형: 1230px 이하에서 폰트 크기 축소 */
   @media (max-width: 1230px) {
     font-size: 2rem;
   }
-`; 
+`;

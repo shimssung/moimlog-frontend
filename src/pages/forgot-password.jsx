@@ -5,8 +5,10 @@ import Input from "../components/Input";
 import AuthLayout from "../components/AuthLayout";
 import Link from "next/link";
 import toast from "react-hot-toast";
+import { useTheme } from "../utils/ThemeContext";
 
 const ForgotPassword = () => {
+  const { theme } = useTheme();
   const [userId, setUserId] = useState("");
 
   const handleSubmit = (e) => {
@@ -19,7 +21,7 @@ const ForgotPassword = () => {
     <p>
       로그인이 기억나셨나요?{" "}
       <Link href="/login">
-        <StyledLink>로그인 하기</StyledLink>
+        <StyledLink theme={theme}>로그인 하기</StyledLink>
       </Link>
     </p>
   );
@@ -63,11 +65,12 @@ const FormGroup = styled.div`
 `;
 
 const StyledLink = styled.span`
-  color: #3b82f6;
+  color: ${(props) => props.theme.buttonPrimary};
   text-decoration: underline;
   cursor: pointer;
-  
+  transition: color 0.3s ease;
+
   &:hover {
-    color: #2563eb;
+    color: ${(props) => props.theme.buttonHover};
   }
 `;

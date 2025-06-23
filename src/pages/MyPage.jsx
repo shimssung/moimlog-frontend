@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { useTheme } from "../utils/ThemeContext";
 
 const TABS = [
   { key: "created", label: "내가 만든 모임" },
@@ -43,33 +44,40 @@ const mockGatherings = [
 ];
 
 const MyPage = () => {
+  const { theme } = useTheme();
   const [tab, setTab] = useState("created");
 
   return (
     <>
       <Header />
-      <PageContainer>
+      <PageContainer theme={theme}>
         <ProfileSection>
           <ProfileLeft>
-            <Avatar style={{ backgroundImage: `url(${mockProfile.avatar})` }} />
+            <Avatar
+              style={{ backgroundImage: `url(${mockProfile.avatar})` }}
+              theme={theme}
+            />
             <ProfileInfo>
-              <ProfileName>{mockProfile.name}</ProfileName>
-              <ProfileEmail>{mockProfile.email}</ProfileEmail>
-              <ProfileJoined>Joined on {mockProfile.joined}</ProfileJoined>
+              <ProfileName theme={theme}>{mockProfile.name}</ProfileName>
+              <ProfileEmail theme={theme}>{mockProfile.email}</ProfileEmail>
+              <ProfileJoined theme={theme}>
+                Joined on {mockProfile.joined}
+              </ProfileJoined>
             </ProfileInfo>
           </ProfileLeft>
-          <EditButton>프로필 수정</EditButton>
+          <EditButton theme={theme}>프로필 수정</EditButton>
         </ProfileSection>
         <AboutSection>
-          <AboutTitle>About Me</AboutTitle>
-          <AboutDesc>{mockProfile.about}</AboutDesc>
+          <AboutTitle theme={theme}>About Me</AboutTitle>
+          <AboutDesc theme={theme}>{mockProfile.about}</AboutDesc>
         </AboutSection>
-        <TabBar>
+        <TabBar theme={theme}>
           {TABS.map((t) => (
             <TabItem
               key={t.key}
               $active={tab === t.key}
               onClick={() => setTab(t.key)}
+              theme={theme}
             >
               {t.label}
             </TabItem>
@@ -77,21 +85,21 @@ const MyPage = () => {
         </TabBar>
         <GatheringList>
           {mockGatherings.map((g, i) => (
-            <GatheringCard key={i}>
+            <GatheringCard key={i} theme={theme}>
               <GatheringImage style={{ backgroundImage: `url(${g.image})` }} />
               <GatheringInfo>
-                <GatheringStatus>{g.status}</GatheringStatus>
-                <GatheringTitle>{g.title}</GatheringTitle>
-                <GatheringDesc>{g.desc}</GatheringDesc>
+                <GatheringStatus theme={theme}>{g.status}</GatheringStatus>
+                <GatheringTitle theme={theme}>{g.title}</GatheringTitle>
+                <GatheringDesc theme={theme}>{g.desc}</GatheringDesc>
               </GatheringInfo>
             </GatheringCard>
           ))}
         </GatheringList>
-        <SectionTitle>Account Settings</SectionTitle>
+        <SectionTitle theme={theme}>Account Settings</SectionTitle>
         <SettingList>
-          <SettingItem>
-            <SettingText>Change Password</SettingText>
-            <SettingIcon>
+          <SettingItem theme={theme}>
+            <SettingText theme={theme}>Change Password</SettingText>
+            <SettingIcon theme={theme}>
               <svg
                 width="24"
                 height="24"
@@ -102,9 +110,9 @@ const MyPage = () => {
               </svg>
             </SettingIcon>
           </SettingItem>
-          <SettingItem>
-            <SettingText>Delete Account</SettingText>
-            <SettingIcon>
+          <SettingItem theme={theme}>
+            <SettingText theme={theme}>Delete Account</SettingText>
+            <SettingIcon theme={theme}>
               <svg
                 width="24"
                 height="24"
@@ -127,11 +135,12 @@ export default MyPage;
 // styled-components
 const PageContainer = styled.div`
   min-height: 100vh;
-  background: #f8fafc;
+  background: ${(props) => props.theme.background};
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 0 0 40px 0;
+  transition: background-color 0.3s ease;
 `;
 
 const ProfileSection = styled.section`
@@ -157,7 +166,8 @@ const Avatar = styled.div`
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  background-color: #e7edf4;
+  background-color: ${(props) => props.theme.surfaceSecondary};
+  transition: background-color 0.3s ease;
 `;
 
 const ProfileInfo = styled.div`
@@ -169,25 +179,28 @@ const ProfileInfo = styled.div`
 const ProfileName = styled.p`
   font-size: 22px;
   font-weight: bold;
-  color: #0d151c;
+  color: ${(props) => props.theme.textPrimary};
   margin: 0;
+  transition: color 0.3s ease;
 `;
 
 const ProfileEmail = styled.p`
-  color: #49749c;
+  color: ${(props) => props.theme.textSecondary};
   font-size: 16px;
   margin: 0;
+  transition: color 0.3s ease;
 `;
 
 const ProfileJoined = styled.p`
-  color: #49749c;
+  color: ${(props) => props.theme.textSecondary};
   font-size: 16px;
   margin: 0;
+  transition: color 0.3s ease;
 `;
 
 const EditButton = styled.button`
-  background: #e7edf4;
-  color: #0d151c;
+  background: ${(props) => props.theme.surfaceSecondary};
+  color: ${(props) => props.theme.textPrimary};
   font-size: 15px;
   font-weight: bold;
   border: none;
@@ -196,6 +209,11 @@ const EditButton = styled.button`
   height: 40px;
   cursor: pointer;
   min-width: 84px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: ${(props) => props.theme.borderLight};
+  }
 `;
 
 const AboutSection = styled.section`
@@ -207,24 +225,27 @@ const AboutSection = styled.section`
 const AboutTitle = styled.h2`
   font-size: 22px;
   font-weight: bold;
-  color: #0d151c;
+  color: ${(props) => props.theme.textPrimary};
   margin: 32px 0 0 0;
   padding: 0 0 8px 0;
+  transition: color 0.3s ease;
 `;
 
 const AboutDesc = styled.p`
-  color: #49749c;
+  color: ${(props) => props.theme.textSecondary};
   font-size: 15px;
   margin: 0 0 16px 0;
+  transition: color 0.3s ease;
 `;
 
 const TabBar = styled.div`
   display: flex;
   gap: 32px;
-  border-bottom: 1px solid #cedce8;
+  border-bottom: 1px solid ${(props) => props.theme.borderLight};
   width: 100%;
   max-width: 960px;
   margin: 0 0 16px 0;
+  transition: border-color 0.3s ease;
 `;
 
 const TabItem = styled.button`
@@ -232,12 +253,13 @@ const TabItem = styled.button`
   border: none;
   font-size: 15px;
   font-weight: bold;
-  color: ${({ $active }) => ($active ? "#0d151c" : "#49749c")};
+  color: ${({ $active, theme }) =>
+    $active ? theme.textPrimary : theme.textSecondary};
   border-bottom: 3px solid
-    ${({ $active }) => ($active ? "#0b80ee" : "transparent")};
+    ${({ $active, theme }) => ($active ? theme.buttonPrimary : "transparent")};
   padding: 16px 0 13px 0;
   cursor: pointer;
-  transition: color 0.15s, border-bottom 0.15s;
+  transition: all 0.15s;
 `;
 
 const GatheringList = styled.div`
@@ -252,11 +274,13 @@ const GatheringList = styled.div`
 const GatheringCard = styled.div`
   display: flex;
   gap: 16px;
-  background: #fff;
+  background: ${(props) => props.theme.surface};
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  box-shadow: ${(props) => props.theme.cardShadow};
   align-items: stretch;
+  border: 1px solid ${(props) => props.theme.borderLight};
+  transition: all 0.3s ease;
 `;
 
 const GatheringInfo = styled.div`
@@ -268,22 +292,25 @@ const GatheringInfo = styled.div`
 `;
 
 const GatheringStatus = styled.p`
-  color: #49749c;
+  color: ${(props) => props.theme.textSecondary};
   font-size: 15px;
   margin: 0;
+  transition: color 0.3s ease;
 `;
 
 const GatheringTitle = styled.p`
-  color: #0d151c;
+  color: ${(props) => props.theme.textPrimary};
   font-size: 18px;
   font-weight: bold;
   margin: 0;
+  transition: color 0.3s ease;
 `;
 
 const GatheringDesc = styled.p`
-  color: #49749c;
+  color: ${(props) => props.theme.textSecondary};
   font-size: 15px;
   margin: 0;
+  transition: color 0.3s ease;
 `;
 
 const GatheringImage = styled.div`
@@ -299,9 +326,10 @@ const GatheringImage = styled.div`
 const SectionTitle = styled.h2`
   font-size: 22px;
   font-weight: bold;
-  color: #0d151c;
+  color: ${(props) => props.theme.textPrimary};
   margin: 32px 0 8px 0;
   padding: 0 0 8px 0;
+  transition: color 0.3s ease;
 `;
 
 const SettingList = styled.div`
@@ -316,26 +344,30 @@ const SettingItem = styled.div`
   display: flex;
   align-items: center;
   gap: 16px;
-  background: #f8fafc;
+  background: ${(props) => props.theme.surfaceSecondary};
   border-radius: 12px;
   padding: 0 16px;
   min-height: 56px;
   justify-content: space-between;
+  border: 1px solid ${(props) => props.theme.borderLight};
+  transition: all 0.3s ease;
 `;
 
 const SettingText = styled.p`
-  color: #0d151c;
+  color: ${(props) => props.theme.textPrimary};
   font-size: 16px;
   margin: 0;
   flex: 1 1 0px;
   font-weight: normal;
+  transition: color 0.3s ease;
 `;
 
 const SettingIcon = styled.div`
-  color: #0d151c;
+  color: ${(props) => props.theme.textPrimary};
   display: flex;
   width: 28px;
   height: 28px;
   align-items: center;
   justify-content: center;
+  transition: color 0.3s ease;
 `;

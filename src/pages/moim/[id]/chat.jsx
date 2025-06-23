@@ -2,8 +2,10 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useRouter } from "next/router";
 import Sidebar from "../../../components/Sidebar";
+import { useTheme } from "../../../utils/ThemeContext";
 
 const MoimChatPage = () => {
+  const { theme } = useTheme();
   const router = useRouter();
   const { id: moimId } = router.query;
   const [message, setMessage] = useState("");
@@ -84,47 +86,50 @@ const MoimChatPage = () => {
   }
 
   return (
-    <PageContainer>
+    <PageContainer theme={theme}>
       <Sidebar moimId={moimId} moimRole={moimInfo.role} activeMenu="chat" />
-      
-      <MainContent>
-        <ChatHeader>
+
+      <MainContent theme={theme}>
+        <ChatHeader theme={theme}>
           <MoimInfo>
             <MoimImage src={moimInfo.image} alt={moimInfo.title} />
             <MoimDetails>
-              <MoimTitle>{moimInfo.title}</MoimTitle>
-              <MoimRole>{moimInfo.role}</MoimRole>
+              <MoimTitle theme={theme}>{moimInfo.title}</MoimTitle>
+              <MoimRole theme={theme}>{moimInfo.role}</MoimRole>
             </MoimDetails>
           </MoimInfo>
           <OnlineIndicator>
             <OnlineDot />
-            <OnlineText>온라인</OnlineText>
+            <OnlineText theme={theme}>온라인</OnlineText>
           </OnlineIndicator>
         </ChatHeader>
 
-        <ChatArea>
+        <ChatArea theme={theme}>
           <MessageList>
             {messages.map((msg) => (
               <MessageItem key={msg.id} $isMyMessage={msg.isMyMessage}>
-                <MessageBubble $isMyMessage={msg.isMyMessage}>
+                <MessageBubble $isMyMessage={msg.isMyMessage} theme={theme}>
                   {!msg.isMyMessage && (
-                    <MessageAuthor>{msg.author}</MessageAuthor>
+                    <MessageAuthor theme={theme}>{msg.author}</MessageAuthor>
                   )}
                   <MessageContent>{msg.content}</MessageContent>
-                  <MessageTime $isMyMessage={msg.isMyMessage}>{formatTime(msg.timestamp)}</MessageTime>
+                  <MessageTime $isMyMessage={msg.isMyMessage} theme={theme}>
+                    {formatTime(msg.timestamp)}
+                  </MessageTime>
                 </MessageBubble>
               </MessageItem>
             ))}
           </MessageList>
         </ChatArea>
 
-        <MessageInput>
+        <MessageInput theme={theme}>
           <MessageForm onSubmit={handleSendMessage}>
             <InputField
               type="text"
               placeholder="메시지를 입력하세요..."
               value={message}
               onChange={(e) => setMessage(e.target.value)}
+              theme={theme}
             />
             <SendButton type="submit" disabled={!message.trim()}>
               <SendIcon>↑</SendIcon>
@@ -141,7 +146,8 @@ export default MoimChatPage;
 const PageContainer = styled.div`
   display: flex;
   height: 100vh;
-  background: #f8fafc;
+  background: ${(props) => props.theme.background};
+  transition: background-color 0.3s ease;
 
   @media (max-width: 768px) {
     flex-direction: column;
@@ -150,14 +156,14 @@ const PageContainer = styled.div`
 
 const MainContent = styled.div`
   flex: 1;
-  margin-left: 280px;
-  display: flex;
-  flex-direction: column;
-  background: #fff;
+  margin-left: 250px;
+  padding: 24px;
+  overflow-y: auto;
+  min-height: 100vh;
 
   @media (max-width: 768px) {
     margin-left: 0;
-    height: calc(100vh - 60px);
+    padding: 16px;
   }
 `;
 
@@ -166,8 +172,9 @@ const ChatHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px;
-  border-bottom: 1px solid #e5e7eb;
-  background: #fff;
+  border-bottom: 1px solid ${(props) => props.theme.borderLight};
+  background: ${(props) => props.theme.surface};
+  transition: all 0.3s ease;
 `;
 
 const MoimInfo = styled.div`
@@ -188,16 +195,18 @@ const MoimDetails = styled.div``;
 const MoimTitle = styled.h2`
   font-size: 1.1rem;
   font-weight: 600;
-  color: #111827;
+  color: ${(props) => props.theme.textPrimary};
   margin: 0 0 2px 0;
+  transition: color 0.3s ease;
 `;
 
 const MoimRole = styled.span`
   font-size: 0.8rem;
-  color: #6b7280;
-  background: #f3f4f6;
+  color: ${(props) => props.theme.textSecondary};
+  background: ${(props) => props.theme.surfaceSecondary};
   padding: 2px 8px;
   border-radius: 12px;
+  transition: all 0.3s ease;
 `;
 
 const OnlineIndicator = styled.div`
@@ -215,14 +224,16 @@ const OnlineDot = styled.div`
 
 const OnlineText = styled.span`
   font-size: 0.8rem;
-  color: #6b7280;
+  color: ${(props) => props.theme.textSecondary};
+  transition: color 0.3s ease;
 `;
 
 const ChatArea = styled.div`
   flex: 1;
   overflow-y: auto;
   padding: 20px;
-  background: #f8fafc;
+  background: ${(props) => props.theme.background};
+  transition: background-color 0.3s ease;
 `;
 
 const MessageList = styled.div`
@@ -233,24 +244,30 @@ const MessageList = styled.div`
 
 const MessageItem = styled.div`
   display: flex;
-  justify-content: ${props => props.$isMyMessage ? "flex-end" : "flex-start"};
+  justify-content: ${(props) =>
+    props.$isMyMessage ? "flex-end" : "flex-start"};
 `;
 
 const MessageBubble = styled.div`
   max-width: 70%;
   padding: 12px 16px;
   border-radius: 18px;
-  background: ${props => props.$isMyMessage ? "#3b82f6" : "#f3f4f6"};
-  color: ${props => props.$isMyMessage ? "#fff" : "#111827"};
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background: ${(props) =>
+    props.$isMyMessage
+      ? props.theme.buttonPrimary
+      : props.theme.surfaceSecondary};
+  color: ${(props) => (props.$isMyMessage ? "#fff" : props.theme.textPrimary)};
+  box-shadow: ${(props) => props.theme.cardShadow};
   position: relative;
+  transition: all 0.3s ease;
 `;
 
 const MessageAuthor = styled.div`
   font-size: 0.8rem;
   font-weight: 600;
   margin-bottom: 4px;
-  color: #6b7280;
+  color: ${(props) => props.theme.textSecondary};
+  transition: color 0.3s ease;
 `;
 
 const MessageContent = styled.div`
@@ -262,13 +279,17 @@ const MessageContent = styled.div`
 const MessageTime = styled.div`
   font-size: 0.7rem;
   opacity: 0.7;
-  text-align: ${props => props.$isMyMessage ? "right" : "left"};
+  text-align: ${(props) => (props.$isMyMessage ? "right" : "left")};
+  color: ${(props) =>
+    props.$isMyMessage ? "rgba(255, 255, 255, 0.7)" : props.theme.textTertiary};
+  transition: color 0.3s ease;
 `;
 
 const MessageInput = styled.div`
   padding: 20px 24px;
-  border-top: 1px solid #e5e7eb;
-  background: #fff;
+  border-top: 1px solid ${(props) => props.theme.borderLight};
+  background: ${(props) => props.theme.surface};
+  transition: all 0.3s ease;
 `;
 
 const MessageForm = styled.form`
@@ -280,18 +301,20 @@ const MessageForm = styled.form`
 const InputField = styled.input`
   flex: 1;
   padding: 12px 16px;
-  border: 1px solid #d1d5db;
+  border: 1px solid ${(props) => props.theme.borderLight};
   border-radius: 24px;
   font-size: 0.95rem;
   outline: none;
-  transition: border-color 0.2s ease;
+  background: ${(props) => props.theme.surfaceSecondary};
+  color: ${(props) => props.theme.textPrimary};
+  transition: all 0.2s ease;
 
   &:focus {
-    border-color: #3b82f6;
+    border-color: ${(props) => props.theme.buttonPrimary};
   }
 
   &::placeholder {
-    color: #9ca3af;
+    color: ${(props) => props.theme.textTertiary};
   }
 `;
 
@@ -323,4 +346,4 @@ const SendIcon = styled.span`
   font-size: 1.2rem;
   font-weight: bold;
   transform: rotate(0deg);
-`; 
+`;

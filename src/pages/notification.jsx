@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import Header from "../components/Header";
 import Button from "../components/Button";
+import { useTheme } from "../utils/ThemeContext";
 
 const dummyNotifications = [
   {
@@ -31,6 +32,7 @@ const dummyNotifications = [
 ];
 
 const Notification = () => {
+  const { theme } = useTheme();
   const [notifications, setNotifications] = useState(dummyNotifications);
 
   const markAsRead = (id) => {
@@ -66,12 +68,12 @@ const Notification = () => {
   };
 
   return (
-    <PageContainer>
+    <PageContainer theme={theme}>
       <Header />
       <Container>
-        <NotificationContainer>
+        <NotificationContainer theme={theme}>
           <NotificationHeader>
-            <NotificationTitle>알림</NotificationTitle>
+            <NotificationTitle theme={theme}>알림</NotificationTitle>
             <Button variant="light" size="small" onClick={markAllAsRead}>
               모두 읽음 표시
             </Button>
@@ -79,19 +81,22 @@ const Notification = () => {
 
           <NotificationList>
             {notifications.length === 0 ? (
-              <EmptyState>알림이 없습니다.</EmptyState>
+              <EmptyState theme={theme}>알림이 없습니다.</EmptyState>
             ) : (
               notifications.map((notification) => (
                 <NotificationItem
                   key={notification.id}
                   isRead={notification.isRead}
+                  theme={theme}
                 >
                   <NotificationContent>
-                    <NotificationTitle>{notification.title}</NotificationTitle>
-                    <NotificationMessage>
+                    <NotificationTitle theme={theme}>
+                      {notification.title}
+                    </NotificationTitle>
+                    <NotificationMessage theme={theme}>
                       {notification.message}
                     </NotificationMessage>
-                    <NotificationDate>
+                    <NotificationDate theme={theme}>
                       {formatDate(notification.date)}
                     </NotificationDate>
                   </NotificationContent>
@@ -127,7 +132,8 @@ export default Notification;
 
 const PageContainer = styled.div`
   min-height: 100vh;
-  background: #f8fafc;
+  background: ${(props) => props.theme.background};
+  transition: background-color 0.3s ease;
 `;
 
 const Container = styled.div`
@@ -137,10 +143,12 @@ const Container = styled.div`
 `;
 
 const NotificationContainer = styled.div`
-  background: #fff;
+  background: ${(props) => props.theme.surface};
   border-radius: 12px;
   padding: 24px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: ${(props) => props.theme.cardShadow};
+  border: 1px solid ${(props) => props.theme.borderLight};
+  transition: all 0.3s ease;
 `;
 
 const NotificationHeader = styled.div`
@@ -153,8 +161,9 @@ const NotificationHeader = styled.div`
 const NotificationTitle = styled.h1`
   font-size: 1.5rem;
   font-weight: 700;
-  color: #111827;
+  color: ${(props) => props.theme.textPrimary};
   margin: 0;
+  transition: color 0.3s ease;
 `;
 
 const NotificationList = styled.div`
@@ -169,12 +178,13 @@ const NotificationItem = styled.div`
   gap: 16px;
   padding: 16px;
   border-radius: 8px;
-  background: ${(props) => (props.isRead ? "#fff" : "#f3f4f6")};
-  border: 1px solid #e5e7eb;
-  transition: background-color 0.2s;
+  background: ${(props) =>
+    props.isRead ? props.theme.surface : props.theme.surfaceSecondary};
+  border: 1px solid ${(props) => props.theme.borderLight};
+  transition: all 0.2s;
 
   &:hover {
-    background: #f9fafb;
+    background: ${(props) => props.theme.borderLight};
   }
 `;
 
@@ -187,13 +197,15 @@ const NotificationContent = styled.div`
 
 const NotificationMessage = styled.div`
   font-size: 0.875rem;
-  color: #374151;
+  color: ${(props) => props.theme.textSecondary};
+  transition: color 0.3s ease;
 `;
 
 const NotificationDate = styled.div`
   font-size: 0.75rem;
-  color: #6b7280;
+  color: ${(props) => props.theme.textTertiary};
   margin-top: 4px;
+  transition: color 0.3s ease;
 `;
 
 const NotificationActions = styled.div`
@@ -205,6 +217,7 @@ const NotificationActions = styled.div`
 const EmptyState = styled.div`
   text-align: center;
   padding: 48px 0;
-  color: #6b7280;
+  color: ${(props) => props.theme.textTertiary};
   font-size: 0.875rem;
+  transition: color 0.3s ease;
 `;

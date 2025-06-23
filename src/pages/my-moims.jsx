@@ -3,8 +3,10 @@ import styled from "styled-components";
 import Header from "../components/Header";
 import Button from "../components/Button";
 import { useRouter } from "next/router";
+import { useTheme } from "../utils/ThemeContext";
 
 const MyMoimsPage = () => {
+  const { theme } = useTheme();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("내 모임");
 
@@ -150,30 +152,35 @@ const MyMoimsPage = () => {
   };
 
   return (
-    <PageContainer>
+    <PageContainer theme={theme}>
       <Header />
       <Container>
         <PageHeader>
-          <Title>내 모임</Title>
-          <Subtitle>참여하고 있는 모임들을 한눈에 확인하세요</Subtitle>
+          <Title theme={theme}>내 모임</Title>
+          <Subtitle theme={theme}>
+            참여하고 있는 모임들을 한눈에 확인하세요
+          </Subtitle>
         </PageHeader>
 
         <TabContainer>
           <Tab
             active={activeTab === "내 모임"}
             onClick={() => setActiveTab("내 모임")}
+            theme={theme}
           >
             내 모임 ({myMoims.length})
           </Tab>
           <Tab
             active={activeTab === "운영 중"}
             onClick={() => setActiveTab("운영 중")}
+            theme={theme}
           >
             운영 중 ({myMoims.filter((m) => m.role === "운영자").length})
           </Tab>
           <Tab
             active={activeTab === "참여 중"}
             onClick={() => setActiveTab("참여 중")}
+            theme={theme}
           >
             참여 중 ({myMoims.filter((m) => m.role === "멤버").length})
           </Tab>
@@ -181,27 +188,31 @@ const MyMoimsPage = () => {
 
         <CardGrid>
           {myMoims.map((moim) => (
-            <MoimCard key={moim.id} onClick={() => handleCardClick(moim.id)}>
+            <MoimCard
+              key={moim.id}
+              onClick={() => handleCardClick(moim.id)}
+              theme={theme}
+            >
               <CardImage src={moim.image} alt={moim.title} />
               <CardContent>
                 <CardHeader>
-                  <CardTitle>{moim.title}</CardTitle>
-                  <CategoryTag>{moim.category}</CategoryTag>
+                  <CardTitle theme={theme}>{moim.title}</CardTitle>
+                  <CategoryTag theme={theme}>{moim.category}</CategoryTag>
                 </CardHeader>
 
                 <CardInfo>
                   <InfoItem>
                     <InfoIcon>👥</InfoIcon>
-                    <InfoText>
+                    <InfoText theme={theme}>
                       {moim.members}/{moim.maxMembers}명
                     </InfoText>
                   </InfoItem>
                   <InfoItem>
                     <InfoIcon>🏷️</InfoIcon>
-                    <InfoText>{moim.role}</InfoText>
-                  </InfoItem>
-                  <InfoItem>
-                    <OnlineStatusBadge onlineType={moim.onlineType}>
+                    <OnlineStatusBadge
+                      onlineType={moim.onlineType}
+                      theme={theme}
+                    >
                       {moim.onlineType === "online" ? "온라인" : "오프라인"}
                     </OnlineStatusBadge>
                   </InfoItem>
@@ -210,39 +221,52 @@ const MyMoimsPage = () => {
                 {moim.onlineType === "offline" && moim.location && (
                   <LocationInfo>
                     <LocationIcon>📍</LocationIcon>
-                    <LocationText>{moim.location}</LocationText>
+                    <LocationText theme={theme}>{moim.location}</LocationText>
                   </LocationInfo>
                 )}
 
                 {moim.nextEvent && (
-                  <NextEvent>
+                  <NextEvent theme={theme}>
                     <EventIcon>📅</EventIcon>
                     <EventInfo>
-                      <EventTitle>{moim.nextEvent.title}</EventTitle>
+                      <EventTitle theme={theme}>
+                        {moim.nextEvent.title}
+                      </EventTitle>
                       <EventDate>{formatDate(moim.nextEvent.date)}</EventDate>
-                      <EventLocation>
-                        📍 {moim.nextEvent.location}
+                      <EventLocation theme={theme}>
+                        {moim.nextEvent.location}
                       </EventLocation>
                     </EventInfo>
                   </NextEvent>
                 )}
 
                 <ActivityInfo>
-                  {moim.newMessages > 0 && (
-                    <ActivityItem>
-                      <ActivityIcon>💬</ActivityIcon>
-                      <ActivityText>
-                        새 메시지 {moim.newMessages}개
-                      </ActivityText>
-                    </ActivityItem>
-                  )}
-                  {moim.newPosts > 0 && (
-                    <ActivityItem>
-                      <ActivityIcon>📝</ActivityIcon>
-                      <ActivityText>새 게시글 {moim.newPosts}개</ActivityText>
-                    </ActivityItem>
+                  {(moim.newMessages > 0 || moim.newPosts > 0) && (
+                    <>
+                      {moim.newMessages > 0 && (
+                        <ActivityItem>
+                          <ActivityIcon>💬</ActivityIcon>
+                          <ActivityText>
+                            새 메시지 {moim.newMessages}개
+                          </ActivityText>
+                        </ActivityItem>
+                      )}
+                      {moim.newPosts > 0 && (
+                        <ActivityItem>
+                          <ActivityIcon>📝</ActivityIcon>
+                          <ActivityText>
+                            새 게시글 {moim.newPosts}개
+                          </ActivityText>
+                        </ActivityItem>
+                      )}
+                    </>
                   )}
                 </ActivityInfo>
+
+                <ClickHint theme={theme}>
+                  <HintIcon>💡</HintIcon>
+                  <HintText>클릭하여 모임으로 이동</HintText>
+                </ClickHint>
               </CardContent>
             </MoimCard>
           ))}
@@ -251,8 +275,8 @@ const MyMoimsPage = () => {
         {myMoims.length === 0 && (
           <EmptyState>
             <EmptyIcon>🤝</EmptyIcon>
-            <EmptyTitle>아직 참여한 모임이 없어요</EmptyTitle>
-            <EmptyText>새로운 모임에 참여해보세요!</EmptyText>
+            <EmptyTitle theme={theme}>아직 참여한 모임이 없어요</EmptyTitle>
+            <EmptyText theme={theme}>새로운 모임에 참여해보세요!</EmptyText>
             <Button href="/moim-list" variant="primary">
               모임 찾아보기
             </Button>
@@ -267,7 +291,8 @@ export default MyMoimsPage;
 
 const PageContainer = styled.div`
   min-height: 100vh;
-  background: #f8fafc;
+  background: ${(props) => props.theme.background};
+  transition: background-color 0.3s ease;
 `;
 
 const Container = styled.div`
@@ -284,14 +309,16 @@ const PageHeader = styled.div`
 const Title = styled.h1`
   font-size: 2.5rem;
   font-weight: 700;
-  color: #111827;
+  color: ${(props) => props.theme.textPrimary};
   margin: 0 0 8px 0;
+  transition: color 0.3s ease;
 `;
 
 const Subtitle = styled.p`
   font-size: 1.1rem;
-  color: #6b7280;
+  color: ${(props) => props.theme.textSecondary};
   margin: 0;
+  transition: color 0.3s ease;
 `;
 
 const TabContainer = styled.div`
@@ -305,18 +332,21 @@ const Tab = styled.button`
   padding: 12px 24px;
   border: none;
   border-radius: 8px;
-  background: ${(props) => (props.active ? "#3b82f6" : "#fff")};
-  color: ${(props) => (props.active ? "#fff" : "#6b7280")};
+  background: ${(props) =>
+    props.active ? props.theme.buttonPrimary : props.theme.surface};
+  color: ${(props) => (props.active ? "#fff" : props.theme.textSecondary)};
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: ${(props) =>
     props.active
       ? "0 4px 12px rgba(59, 130, 246, 0.3)"
-      : "0 1px 3px rgba(0, 0, 0, 0.1)"};
+      : props.theme.cardShadow};
+  border: 1px solid ${(props) => props.theme.borderLight};
 
   &:hover {
-    background: ${(props) => (props.active ? "#2563eb" : "#f3f4f6")};
+    background: ${(props) =>
+      props.active ? props.theme.buttonHover : props.theme.borderLight};
   }
 `;
 
@@ -327,12 +357,13 @@ const CardGrid = styled.div`
 `;
 
 const MoimCard = styled.div`
-  background: #fff;
+  background: ${(props) => props.theme.surface};
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: ${(props) => props.theme.cardShadow};
   transition: all 0.3s ease;
   cursor: pointer;
+  border: 1px solid ${(props) => props.theme.borderLight};
 
   &:hover {
     transform: translateY(-4px);
@@ -360,18 +391,20 @@ const CardHeader = styled.div`
 const CardTitle = styled.h3`
   font-size: 1.25rem;
   font-weight: 600;
-  color: #111827;
+  color: ${(props) => props.theme.textPrimary};
   margin: 0;
   flex: 1;
+  transition: color 0.3s ease;
 `;
 
 const CategoryTag = styled.span`
-  background: #e0e7ff;
-  color: #3730a3;
+  background: ${(props) => props.theme.tagBackground};
+  color: ${(props) => props.theme.textSecondary};
   padding: 4px 12px;
   border-radius: 20px;
   font-size: 0.8rem;
   font-weight: 500;
+  transition: all 0.3s ease;
 `;
 
 const CardInfo = styled.div`
@@ -392,16 +425,19 @@ const InfoIcon = styled.span`
 
 const InfoText = styled.span`
   font-size: 0.9rem;
-  color: #6b7280;
+  color: ${(props) => props.theme.textTertiary};
+  transition: color 0.3s ease;
 `;
 
 const NextEvent = styled.div`
   display: flex;
   gap: 12px;
   padding: 16px;
-  background: #f0f9ff;
+  background: ${(props) => props.theme.surfaceSecondary};
   border-radius: 8px;
   margin-bottom: 16px;
+  border: 1px solid ${(props) => props.theme.borderLight};
+  transition: all 0.3s ease;
 `;
 
 const EventIcon = styled.span`
@@ -414,8 +450,9 @@ const EventInfo = styled.div`
 
 const EventTitle = styled.div`
   font-weight: 600;
-  color: #111827;
+  color: ${(props) => props.theme.textPrimary};
   margin-bottom: 4px;
+  transition: color 0.3s ease;
 `;
 
 const EventDate = styled.div`
@@ -426,7 +463,8 @@ const EventDate = styled.div`
 
 const EventLocation = styled.div`
   font-size: 0.8rem;
-  color: #6b7280;
+  color: ${(props) => props.theme.textTertiary};
+  transition: color 0.3s ease;
 `;
 
 const ActivityInfo = styled.div`
@@ -455,10 +493,11 @@ const ClickHint = styled.div`
   align-items: center;
   gap: 8px;
   padding: 12px;
-  background: #f0f9ff;
+  background: ${(props) => props.theme.surfaceSecondary};
   border-radius: 8px;
   margin-top: 16px;
-  border: 1px solid #bae6fd;
+  border: 1px solid ${(props) => props.theme.borderLight};
+  transition: all 0.3s ease;
 `;
 
 const HintIcon = styled.span`
@@ -467,8 +506,9 @@ const HintIcon = styled.span`
 
 const HintText = styled.span`
   font-size: 0.9rem;
-  color: #0369a1;
+  color: ${(props) => props.theme.textSecondary};
   font-weight: 500;
+  transition: color 0.3s ease;
 `;
 
 const EmptyState = styled.div`
@@ -484,14 +524,16 @@ const EmptyIcon = styled.div`
 const EmptyTitle = styled.h3`
   font-size: 1.5rem;
   font-weight: 600;
-  color: #111827;
+  color: ${(props) => props.theme.textPrimary};
   margin: 0 0 8px 0;
+  transition: color 0.3s ease;
 `;
 
 const EmptyText = styled.p`
   font-size: 1.1rem;
-  color: #6b7280;
+  color: ${(props) => props.theme.textSecondary};
   margin: 0 0 24px 0;
+  transition: color 0.3s ease;
 `;
 
 const OnlineStatusBadge = styled.span`
@@ -517,5 +559,6 @@ const LocationIcon = styled.span`
 
 const LocationText = styled.span`
   font-size: 0.9rem;
-  color: #6b7280;
+  color: ${(props) => props.theme.textTertiary};
+  transition: color 0.3s ease;
 `;

@@ -4,6 +4,7 @@ import Header from "../components/Header";
 import Card from "../components/Card";
 import Input from "../components/Input";
 import Button from "../components/Button";
+import { useTheme } from "../utils/ThemeContext";
 import {
   mockMoims,
   filterMoimsByCategory,
@@ -29,6 +30,7 @@ const useClientOnly = () => {
 };
 
 const MoimListPage = () => {
+  const { theme } = useTheme();
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [onlineType, setOnlineType] = useState("all"); // 온라인/오프라인 필터
@@ -170,11 +172,11 @@ const MoimListPage = () => {
   };
 
   return (
-    <Container>
+    <Container theme={theme}>
       <Header />
       <LayoutContainer>
         <ContentContainer>
-          <TopTitle>모임을 찾아보세요</TopTitle>
+          <TopTitle theme={theme}>모임을 찾아보세요</TopTitle>
 
           {/* 기본 필터 */}
           <CategoryList>
@@ -183,6 +185,7 @@ const MoimListPage = () => {
                 key={cat}
                 $active={selectedCategory === cat}
                 onClick={() => setSelectedCategory(cat)}
+                theme={theme}
               >
                 {cat === "All" ? "전체" : CATEGORY_LABELS[cat]}
               </CategoryItem>
@@ -192,8 +195,8 @@ const MoimListPage = () => {
           {/* 검색바 */}
           <SearchSection>
             <SearchLabel>
-              <SearchInputWrapper>
-                <SearchIcon>
+              <SearchInputWrapper theme={theme}>
+                <SearchIcon theme={theme}>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="24px"
@@ -210,11 +213,11 @@ const MoimListPage = () => {
                   onChange={(e) => setSearch(e.target.value)}
                   style={{
                     border: "none",
-                    background: "#e7edf4",
+                    background: "transparent",
                     borderRadius: "0 8px 8px 0",
                     height: 40,
                     fontSize: 16,
-                    color: "#0d141c",
+                    color: theme.textPrimary,
                   }}
                 />
               </SearchInputWrapper>
@@ -239,13 +242,14 @@ const MoimListPage = () => {
 
           {/* 고급 필터 */}
           {showAdvancedFilters && (
-            <AdvancedFiltersContainer>
+            <AdvancedFiltersContainer theme={theme}>
               <FilterRow>
                 <FilterGroup>
-                  <FilterLabel>모임 형태</FilterLabel>
+                  <FilterLabel theme={theme}>모임 형태</FilterLabel>
                   <FilterSelect
                     value={onlineType}
                     onChange={(e) => setOnlineType(e.target.value)}
+                    theme={theme}
                   >
                     <option value="all">전체</option>
                     <option value="online">온라인</option>
@@ -254,10 +258,11 @@ const MoimListPage = () => {
                 </FilterGroup>
 
                 <FilterGroup>
-                  <FilterLabel>지역</FilterLabel>
+                  <FilterLabel theme={theme}>지역</FilterLabel>
                   <FilterSelect
                     value={selectedLocation}
                     onChange={(e) => setSelectedLocation(e.target.value)}
+                    theme={theme}
                   >
                     <option value="all">전체 지역</option>
                     {locations.map((location) => (
@@ -269,10 +274,11 @@ const MoimListPage = () => {
                 </FilterGroup>
 
                 <FilterGroup>
-                  <FilterLabel>정렬</FilterLabel>
+                  <FilterLabel theme={theme}>정렬</FilterLabel>
                   <FilterSelect
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
+                    theme={theme}
                   >
                     <option value="latest">최신순</option>
                     <option value="popular">인기순</option>
@@ -283,7 +289,7 @@ const MoimListPage = () => {
 
               <FilterRow>
                 <FilterGroup>
-                  <FilterLabel>인원수 범위</FilterLabel>
+                  <FilterLabel theme={theme}>인원수 범위</FilterLabel>
                   <RangeContainer>
                     <RangeInput
                       type="number"
@@ -297,8 +303,9 @@ const MoimListPage = () => {
                         }))
                       }
                       placeholder="최소"
+                      theme={theme}
                     />
-                    <RangeSeparator>~</RangeSeparator>
+                    <RangeSeparator theme={theme}>~</RangeSeparator>
                     <RangeInput
                       type="number"
                       min="0"
@@ -311,15 +318,18 @@ const MoimListPage = () => {
                         }))
                       }
                       placeholder="최대"
+                      theme={theme}
                     />
-                    <RangeUnit>명</RangeUnit>
+                    <RangeUnit theme={theme}>명</RangeUnit>
                   </RangeContainer>
                 </FilterGroup>
               </FilterRow>
             </AdvancedFiltersContainer>
           )}
 
-          <SectionTitle>추천 모임 ({filteredMoims.length}개)</SectionTitle>
+          <SectionTitle theme={theme}>
+            추천 모임 ({filteredMoims.length}개)
+          </SectionTitle>
 
           <MoimGrid>
             {filteredMoims.slice(0, visibleCount).map((moim) => (
@@ -349,9 +359,10 @@ const MoimListPage = () => {
           width: "50px",
           height: "50px",
           borderRadius: "50%",
-          fontSize: "20px",
-          fontWeight: "bold",
-          boxShadow: "0 4px 12px rgba(59, 130, 246, 0.3)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
           zIndex: 1000,
         }}
       >
@@ -364,36 +375,29 @@ const MoimListPage = () => {
 export default MoimListPage;
 
 const Container = styled.div`
-  display: flex;
-  flex-direction: column;
   min-height: 100vh;
-  background: #fff;
+  background: ${(props) => props.theme.background};
+  transition: background-color 0.3s ease;
 `;
 
 const LayoutContainer = styled.div`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 40px 0 0 0;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 16px;
 `;
 
 const ContentContainer = styled.div`
-  width: 100%;
-  max-width: 1280px;
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  padding: 0 20px;
+  padding: 32px 0 60px 0;
 `;
 
-const TopTitle = styled.h2`
-  color: #0d141c;
-  font-size: 28px;
+const TopTitle = styled.h1`
+  color: ${(props) => props.theme.textPrimary};
+  font-size: 32px;
   font-weight: 700;
   line-height: 1.2;
   padding: 32px 0 12px 0;
   text-align: left;
+  transition: color 0.3s ease;
 `;
 
 const CategoryList = styled.div`
@@ -410,18 +414,21 @@ const CategoryItem = styled.div`
   gap: 8px;
   height: 32px;
   padding: 0 16px;
-  background: #e7edf4;
+  background: ${(props) => props.theme.surfaceSecondary};
   border-radius: 12px;
   cursor: pointer;
   font-size: 15px;
   font-weight: 500;
-  color: #0d141c;
-  transition: background 0.15s;
-  ${({ $active }) =>
+  color: ${(props) => props.theme.textPrimary};
+  transition: all 0.15s;
+  border: 1px solid ${(props) => props.theme.borderLight};
+
+  ${({ $active, theme }) =>
     $active &&
     `
-    background: #0b80ee;
+    background: ${theme.buttonPrimary};
     color: #fff;
+    border-color: ${theme.buttonPrimary};
   `}
 `;
 
@@ -442,24 +449,28 @@ const SearchInputWrapper = styled.div`
   align-items: stretch;
   border-radius: 8px;
   height: 100%;
-  background: #e7edf4;
+  background: ${(props) => props.theme.surfaceSecondary};
+  border: 1px solid ${(props) => props.theme.borderLight};
+  transition: all 0.3s ease;
 `;
 
 const SearchIcon = styled.div`
-  color: #49739c;
+  color: ${(props) => props.theme.textSecondary};
   display: flex;
   align-items: center;
   justify-content: center;
   padding-left: 16px;
   border-radius: 8px 0 0 8px;
+  transition: color 0.3s ease;
 `;
 
 const SectionTitle = styled.h2`
-  color: #0d141c;
+  color: ${(props) => props.theme.textPrimary};
   font-size: 22px;
   font-weight: 700;
   line-height: 1.2;
   padding: 32px 0 12px 0;
+  transition: color 0.3s ease;
 `;
 
 const MoimGrid = styled.div`
@@ -513,10 +524,11 @@ const ToggleIcon = styled.span`
 
 const AdvancedFiltersContainer = styled.div`
   padding: 20px;
-  background: #f8fafc;
-  border: 1px solid #e5e7eb;
+  background: ${(props) => props.theme.surfaceSecondary};
+  border: 1px solid ${(props) => props.theme.borderLight};
   border-radius: 12px;
   margin-top: 8px;
+  transition: all 0.3s ease;
 `;
 
 const FilterRow = styled.div`
@@ -540,22 +552,23 @@ const FilterGroup = styled.div`
 const FilterLabel = styled.label`
   font-weight: 600;
   margin-bottom: 8px;
-  color: #374151;
+  color: ${(props) => props.theme.textPrimary};
   font-size: 14px;
+  transition: color 0.3s ease;
 `;
 
 const FilterSelect = styled.select`
   padding: 10px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid ${(props) => props.theme.borderLight};
   border-radius: 8px;
-  background: #fff;
+  background: ${(props) => props.theme.surface};
   font-size: 14px;
-  color: #374151;
-  transition: border-color 0.2s;
+  color: ${(props) => props.theme.textPrimary};
+  transition: all 0.2s;
 
   &:focus {
     outline: none;
-    border-color: #3b82f6;
+    border-color: ${(props) => props.theme.buttonPrimary};
   }
 `;
 
@@ -567,26 +580,34 @@ const RangeContainer = styled.div`
 
 const RangeInput = styled.input`
   padding: 10px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid ${(props) => props.theme.borderLight};
   border-radius: 8px;
   width: 80px;
   font-size: 14px;
   text-align: center;
-  transition: border-color 0.2s;
+  background: ${(props) => props.theme.surface};
+  color: ${(props) => props.theme.textPrimary};
+  transition: all 0.2s;
 
   &:focus {
     outline: none;
-    border-color: #3b82f6;
+    border-color: ${(props) => props.theme.buttonPrimary};
+  }
+
+  &::placeholder {
+    color: ${(props) => props.theme.textTertiary};
   }
 `;
 
 const RangeSeparator = styled.span`
   font-weight: 500;
-  color: #6b7280;
+  color: ${(props) => props.theme.textSecondary};
+  transition: color 0.3s ease;
 `;
 
 const RangeUnit = styled.span`
   font-weight: 500;
-  color: #6b7280;
+  color: ${(props) => props.theme.textSecondary};
   font-size: 14px;
+  transition: color 0.3s ease;
 `;

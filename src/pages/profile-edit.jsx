@@ -6,8 +6,10 @@ import Button from "../components/Button";
 import Textarea from "../components/Textarea";
 import Modal from "../components/Modal";
 import { sanitizeFormData, sanitizeInput } from "../utils/sanitize";
+import { useTheme } from "../utils/ThemeContext";
 
 const ProfileEdit = () => {
+  const { theme } = useTheme();
   const [userData, setUserData] = useState({
     name: "",
     email: "",
@@ -159,12 +161,12 @@ const ProfileEdit = () => {
   };
 
   return (
-    <PageContainer>
+    <PageContainer theme={theme}>
       <Header />
       <MainContent>
         <LayoutContainer>
           <MainSection>
-            <Title>프로필 수정</Title>
+            <Title theme={theme}>프로필 수정</Title>
 
             {error && <ErrorMessage>{error}</ErrorMessage>}
             {success && <SuccessMessage>{success}</SuccessMessage>}
@@ -195,8 +197,8 @@ const ProfileEdit = () => {
             </FormSection>
 
             <Section>
-              <SectionTitle>관심사</SectionTitle>
-              <InterestTags>
+              <SectionTitle theme={theme}>관심사</SectionTitle>
+              <InterestTags theme={theme}>
                 {[
                   "등산",
                   "요리",
@@ -209,15 +211,17 @@ const ProfileEdit = () => {
                   "영화",
                   "게임",
                 ].map((interest) => (
-                  <InterestTag key={interest}>{interest}</InterestTag>
+                  <InterestTag key={interest} theme={theme}>
+                    {interest}
+                  </InterestTag>
                 ))}
               </InterestTags>
             </Section>
 
             <Section>
-              <SectionTitle>알림 설정</SectionTitle>
-              <NotificationItem>
-                <NotificationLabel>이메일 알림</NotificationLabel>
+              <SectionTitle theme={theme}>알림 설정</SectionTitle>
+              <NotificationItem theme={theme}>
+                <NotificationLabel theme={theme}>이메일 알림</NotificationLabel>
                 <ToggleSwitch>
                   <input
                     type="checkbox"
@@ -237,18 +241,19 @@ const ProfileEdit = () => {
           </MainSection>
 
           <SideSection>
-            <PreviewContainer>
+            <PreviewContainer theme={theme}>
               <ProfileImagePreview
                 src={previewImage || "/default-profile.png"}
                 alt="프로필 이미지"
               />
-              <PreviewText>미리보기</PreviewText>
+              <PreviewText theme={theme}>미리보기</PreviewText>
             </PreviewContainer>
             <UploadButton
               onClick={() => {
                 const fileInput = document.getElementById("profileImage");
                 if (fileInput) fileInput.click();
               }}
+              theme={theme}
             >
               이미지 업로드/변경
             </UploadButton>
@@ -296,7 +301,7 @@ const ProfileEdit = () => {
           <ModalButtonGroup>
             <Button
               type="button"
-              variant="secondary"
+              variant="light"
               onClick={() => setShowPasswordModal(false)}
             >
               취소
@@ -317,8 +322,9 @@ const PageContainer = styled.div`
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: #ffffff;
+  background-color: ${(props) => props.theme.background};
   font-family: "Manrope", "Noto Sans", sans-serif;
+  transition: background-color 0.3s ease;
 `;
 
 const MainContent = styled.main`
@@ -348,10 +354,11 @@ const SideSection = styled.div`
 `;
 
 const Title = styled.h1`
-  color: #111827;
+  color: ${(props) => props.theme.textPrimary};
   font-size: 32px;
   font-weight: bold;
   margin-bottom: 24px;
+  transition: color 0.3s ease;
 `;
 
 const FormSection = styled.div`
@@ -366,10 +373,11 @@ const Section = styled.div`
 `;
 
 const SectionTitle = styled.h2`
-  color: #111827;
+  color: ${(props) => props.theme.textPrimary};
   font-size: 22px;
   font-weight: bold;
   margin-bottom: 16px;
+  transition: color 0.3s ease;
 `;
 
 const InterestTags = styled.div`
@@ -384,11 +392,13 @@ const InterestTag = styled.div`
   align-items: center;
   justify-content: center;
   padding: 8px 16px;
-  background-color: #f3f4f6;
+  background-color: ${(props) => props.theme.surfaceSecondary};
   border-radius: 12px;
-  color: #374151;
+  color: ${(props) => props.theme.textPrimary};
   font-size: 14px;
   font-weight: 500;
+  border: 1px solid ${(props) => props.theme.borderLight};
+  transition: all 0.3s ease;
 `;
 
 const NotificationItem = styled.div`
@@ -396,19 +406,21 @@ const NotificationItem = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 16px;
-  background-color: #ffffff;
+  background-color: ${(props) => props.theme.surface};
   min-height: 56px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid ${(props) => props.theme.borderLight};
   border-radius: 12px;
+  transition: all 0.3s ease;
 `;
 
 const NotificationLabel = styled.p`
-  color: #374151;
+  color: ${(props) => props.theme.textPrimary};
   font-size: 16px;
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: color 0.3s ease;
 `;
 
 const ToggleSwitch = styled.label`
@@ -431,7 +443,7 @@ const ToggleSwitch = styled.label`
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #e5e7eb;
+    background-color: ${(props) => props.theme.borderLight};
     transition: 0.4s;
     border-radius: 34px;
     padding: 4px;
@@ -444,14 +456,14 @@ const ToggleSwitch = styled.label`
     width: 23px;
     left: 4px;
     bottom: 4px;
-    background-color: white;
+    background-color: ${(props) => props.theme.surface};
     transition: 0.4s;
     border-radius: 50%;
     box-shadow: rgba(0, 0, 0, 0.15) 0px 3px 8px, rgba(0, 0, 0, 0.06) 0px 3px 1px;
   }
 
   input:checked + .slider {
-    background-color: #3b82f6;
+    background-color: ${(props) => props.theme.buttonPrimary};
   }
 
   input:checked + .slider:before {
@@ -481,10 +493,11 @@ const ProfileImagePreview = styled.img`
 `;
 
 const PreviewText = styled.p`
-  color: #111827;
+  color: ${(props) => props.theme.textPrimary};
   font-size: 22px;
   font-weight: bold;
   text-align: center;
+  transition: color 0.3s ease;
 `;
 
 const UploadButton = styled.button`
@@ -492,8 +505,8 @@ const UploadButton = styled.button`
   max-width: 480px;
   height: 40px;
   padding: 0 16px;
-  background-color: #f3f4f6;
-  color: #374151;
+  background-color: ${(props) => props.theme.surfaceSecondary};
+  color: ${(props) => props.theme.textPrimary};
   font-size: 14px;
   font-weight: bold;
   border-radius: 12px;
@@ -503,9 +516,11 @@ const UploadButton = styled.button`
   justify-content: center;
   overflow: hidden;
   margin: 0 auto;
+  border: 1px solid ${(props) => props.theme.borderLight};
+  transition: all 0.3s ease;
 
   &:hover {
-    background-color: #e5e7eb;
+    background-color: ${(props) => props.theme.borderLight};
   }
 `;
 

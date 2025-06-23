@@ -6,8 +6,10 @@ import AuthLayout from "../components/AuthLayout";
 import { FaCheckCircle, FaTimesCircle, FaRegCircle } from "react-icons/fa";
 import Link from "next/link";
 import toast from "react-hot-toast";
+import { useTheme } from "../utils/ThemeContext";
 
 function SignupPage() {
+  const { theme } = useTheme();
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -65,9 +67,10 @@ function SignupPage() {
   };
 
   const footerContent = (
-    <p>이미 회원이신가요?{" "}
+    <p>
+      이미 회원이신가요?{" "}
       <Link href="/login">
-        <StyledLink>로그인</StyledLink>
+        <StyledLink theme={theme}>로그인</StyledLink>
       </Link>
     </p>
   );
@@ -77,7 +80,8 @@ function SignupPage() {
       leftTitle="MoimLog에 오신 걸 환영합니다!"
       leftDesc={
         <>
-          다양한 모임을 만들고, 참여하며<br />
+          다양한 모임을 만들고, 참여하며
+          <br />
           새로운 사람들과 함께 성장해보세요.
         </>
       }
@@ -85,7 +89,7 @@ function SignupPage() {
       footerContent={footerContent}
     >
       <FormBox onSubmit={handleSubmit}>
-        <Label>이메일</Label>
+        <Label theme={theme}>이메일</Label>
         <Input
           name="email"
           placeholder="example@inflab.com"
@@ -93,7 +97,7 @@ function SignupPage() {
           onChange={handleChange}
           required
         />
-        <Label>비밀번호</Label>
+        <Label theme={theme}>비밀번호</Label>
         <Input
           name="password"
           type="password"
@@ -108,7 +112,7 @@ function SignupPage() {
           }}
           required
         />
-        <PwDesc>
+        <PwDesc theme={theme}>
           <li className={!pwTouched ? "" : pwChecks.rule1 ? "pass" : "fail"}>
             {!pwTouched ? (
               <FaRegCircle />
@@ -140,7 +144,7 @@ function SignupPage() {
             연속 3자 이상 동일한 문자/숫자 제외
           </li>
         </PwDesc>
-        <Label>비밀번호 확인</Label>
+        <Label theme={theme}>비밀번호 확인</Label>
         <Input
           name="password2"
           type="password"
@@ -174,9 +178,10 @@ const FormBox = styled.form`
 
 const Label = styled.label`
   font-size: 15px;
-  color: #222;
+  color: ${(props) => props.theme.textPrimary};
   margin: 12px 0 4px 2px;
   font-weight: 500;
+  transition: color 0.3s ease;
 `;
 
 const PwDesc = styled.ul`
@@ -189,7 +194,8 @@ const PwDesc = styled.ul`
     display: flex;
     align-items: center;
     gap: 6px;
-    color: #9ca3af;
+    color: ${(props) => props.theme.textTertiary};
+    transition: color 0.3s ease;
     &.fail {
       color: #ef4444;
     }
@@ -210,11 +216,12 @@ const ErrorMsg = styled.div`
 `;
 
 const StyledLink = styled.span`
-  color: #3b82f6;
+  color: ${(props) => props.theme.buttonPrimary};
   text-decoration: underline;
   cursor: pointer;
-  
+  transition: color 0.3s ease;
+
   &:hover {
-    color: #2563eb;
+    color: ${(props) => props.theme.buttonHover};
   }
-`; 
+`;
