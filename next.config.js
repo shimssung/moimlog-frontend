@@ -3,10 +3,6 @@ const nextConfig = {
   compiler: {
     styledComponents: true,
   },
-  // 이미지 최적화
-  images: {
-    domains: [],
-  },
   async headers() {
     return [
       {
