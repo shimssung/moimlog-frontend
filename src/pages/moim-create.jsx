@@ -17,6 +17,8 @@ const MoimCreatePage = () => {
     description: "",
     tags: [],
     thumbnail: null,
+    onlineType: "offline",
+    location: "",
   });
 
   const handleChange = (e) => {
@@ -29,6 +31,13 @@ const MoimCreatePage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    // 오프라인 모임인데 지역이 입력되지 않은 경우
+    if (formData.onlineType === "offline" && !formData.location.trim()) {
+      toast.error("오프라인 모임의 경우 활동 지역을 입력해주세요.");
+      return;
+    }
+
     toast.success("모임이 성공적으로 생성되었습니다!");
     // TODO: API 연동
     router.push("/my-moims");
@@ -46,12 +55,13 @@ const MoimCreatePage = () => {
           <FormContainer>
             <FormTitle>새로운 모임 만들기</FormTitle>
             <FormDescription>
-              모임의 기본 정보를 입력해주세요. 구체적인 일정은 모임 생성 후 설정할 수 있습니다.
+              모임의 기본 정보를 입력해주세요. 구체적인 일정은 모임 생성 후
+              설정할 수 있습니다.
             </FormDescription>
             <Form onSubmit={handleSubmit}>
               <FormGroup>
                 <Label htmlFor="title">모임명 *</Label>
-                <StyledInput
+                <Input
                   type="text"
                   id="title"
                   name="title"
@@ -96,8 +106,39 @@ const MoimCreatePage = () => {
               </FormGroup>
 
               <FormGroup>
+                <Label htmlFor="onlineType">모임 형태 *</Label>
+                <Select
+                  id="onlineType"
+                  name="onlineType"
+                  value={formData.onlineType}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="online">온라인</option>
+                  <option value="offline">오프라인</option>
+                </Select>
+              </FormGroup>
+
+              {formData.onlineType === "offline" && (
+                <FormGroup>
+                  <Label htmlFor="location">활동 지역 *</Label>
+                  <Input
+                    type="text"
+                    id="location"
+                    name="location"
+                    value={formData.location}
+                    onChange={handleChange}
+                    placeholder="예: 서울시 강남구, 부산시 해운대구"
+                  />
+                  <HelpText>
+                    오프라인 모임의 경우 활동 지역을 입력해주세요.
+                  </HelpText>
+                </FormGroup>
+              )}
+
+              <FormGroup>
                 <Label htmlFor="description">모임 소개 *</Label>
-                <StyledTextarea
+                <Textarea
                   id="description"
                   name="description"
                   value={formData.description}
@@ -170,7 +211,7 @@ const MoimCreatePage = () => {
               </FormGroup>
 
               <ButtonGroup>
-                <Button variant="secondary" type="button" onClick={handleClick}>
+                <Button variant="secondary" onClick={handleClick}>
                   취소
                 </Button>
                 <Button variant="primary" type="submit">
@@ -206,7 +247,22 @@ const MoimCreatePage = () => {
               <PreviewMaxMembers>
                 최대 {formData.maxMembers || "0"}명
               </PreviewMaxMembers>
-              
+
+              <PreviewInfo>
+                <InfoItem>
+                  <InfoLabel>모임 형태</InfoLabel>
+                  <InfoValue>
+                    {formData.onlineType === "online" ? "온라인" : "오프라인"}
+                  </InfoValue>
+                </InfoItem>
+                {formData.onlineType === "offline" && formData.location && (
+                  <InfoItem>
+                    <InfoLabel>활동 지역</InfoLabel>
+                    <InfoValue>{formData.location}</InfoValue>
+                  </InfoItem>
+                )}
+              </PreviewInfo>
+
               <PreviewDescription>
                 {formData.description || "모임 설명이 여기에 표시됩니다."}
               </PreviewDescription>
@@ -232,40 +288,26 @@ export default MoimCreatePage;
 
 const PageContainer = styled.div`
   min-height: 100vh;
-  background: #f8fafc;
+  background: #f9fafb;
 `;
 
 const Container = styled.div`
-  max-width: 1280px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 40px 16px 60px 16px;
-  display: flex;
-  gap: 48px;
+  padding: 32px 16px;
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 32px;
 
   @media (max-width: 1024px) {
-    flex-direction: column;
-    gap: 32px;
+    grid-template-columns: 1fr;
+    gap: 24px;
   }
 `;
 
-const LeftSection = styled.div`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-`;
+const LeftSection = styled.div``;
 
-const RightSection = styled.div`
-  flex: 0 0 400px;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-
-  @media (max-width: 1024px) {
-    flex: none;
-    width: 100%;
-  }
-`;
+const RightSection = styled.div``;
 
 const FormContainer = styled.div`
   background: #fff;
@@ -278,13 +320,20 @@ const FormTitle = styled.h1`
   font-size: 1.5rem;
   font-weight: 700;
   color: #111827;
-  margin: 0 0 32px 0;
+  margin: 0 0 8px 0;
+`;
+
+const FormDescription = styled.p`
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin: 0 0 24px 0;
+  line-height: 1.5;
 `;
 
 const Form = styled.form`
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
 `;
 
 const FormGroup = styled.div`
@@ -293,33 +342,10 @@ const FormGroup = styled.div`
   gap: 8px;
 `;
 
-const FormRow = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-
-  @media (max-width: 640px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
 const Label = styled.label`
+  font-size: 0.875rem;
   font-weight: 500;
   color: #374151;
-`;
-
-const StyledInput = styled.input`
-  padding: 8px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  color: #111827;
-  transition: border-color 0.2s;
-
-  &:focus {
-    outline: none;
-    border-color: #3b82f6;
-  }
 `;
 
 const Select = styled.select`
@@ -329,21 +355,6 @@ const Select = styled.select`
   font-size: 0.875rem;
   color: #111827;
   background: #fff;
-  transition: border-color 0.2s;
-
-  &:focus {
-    outline: none;
-    border-color: #3b82f6;
-  }
-`;
-
-const StyledTextarea = styled.textarea`
-  padding: 8px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  color: #111827;
-  resize: vertical;
   transition: border-color 0.2s;
 
   &:focus {
@@ -549,9 +560,8 @@ const FileInputLabel = styled.label`
   }
 `;
 
-const FormDescription = styled.p`
-  color: #6b7280;
+const HelpText = styled.p`
   font-size: 0.875rem;
-  margin: 0 0 24px 0;
-  line-height: 1.5;
+  color: #6b7280;
+  margin: 8px 0 0 0;
 `;

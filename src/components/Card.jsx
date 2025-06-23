@@ -4,9 +4,10 @@ import { CATEGORY_LABELS } from "../utils/constants";
 
 const Card = ({ moim }) => {
   const categoryLabel = CATEGORY_LABELS[moim.category];
-  const truncatedDescription = moim.description.length > 60 
-    ? moim.description.substring(0, 60) + "..." 
-    : moim.description;
+  const truncatedDescription =
+    moim.description.length > 60
+      ? moim.description.substring(0, 60) + "..."
+      : moim.description;
   const displayTags = moim.tags.slice(0, 3);
 
   return (
@@ -18,6 +19,14 @@ const Card = ({ moim }) => {
           <CategoryBadge>{categoryLabel}</CategoryBadge>
           <MemberCount>최대 {moim.maxMembers}명</MemberCount>
         </CardMeta>
+        <CardLocation>
+          <LocationBadge onlineType={moim.onlineType}>
+            {moim.onlineType === "online" ? "온라인" : "오프라인"}
+          </LocationBadge>
+          {moim.onlineType === "offline" && moim.location && (
+            <LocationText>{moim.location}</LocationText>
+          )}
+        </CardLocation>
         <CardDescription>{truncatedDescription}</CardDescription>
         <CardTags>
           {displayTags.map((tag, index) => (
@@ -88,6 +97,29 @@ const MemberCount = styled.span`
   background: #e7edf4;
   padding: 4px 12px;
   border-radius: 20px;
+  font-weight: 500;
+`;
+
+const CardLocation = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+`;
+
+const LocationBadge = styled.span`
+  font-size: 13px;
+  color: ${(props) => (props.onlineType === "online" ? "#059669" : "#dc2626")};
+  background: ${(props) =>
+    props.onlineType === "online" ? "#d1fae5" : "#fee2e2"};
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 500;
+`;
+
+const LocationText = styled.span`
+  font-size: 13px;
+  color: #666;
   font-weight: 500;
 `;
 

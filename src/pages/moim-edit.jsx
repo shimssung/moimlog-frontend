@@ -4,25 +4,24 @@ import Header from "../components/Header";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import Textarea from "../components/Textarea";
-import toast from "react-hot-toast";
 import { useRouter } from "next/router";
+import toast from "react-hot-toast";
 import { CATEGORY_OPTIONS } from "../utils/constants";
 
 const MoimEdit = () => {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    title: "시크릿 가든 북클럽",
-    category: "book",
-    maxMembers: 12,
-    description: "시크릿 가든을 함께 읽고 토론하는 북클럽입니다.",
+    title: "독서 모임",
+    category: "독서",
+    maxMembers: "10",
+    description: "매주 새로운 책을 읽고 토론하는 모임입니다.",
+    tags: ["독서", "토론", "학습"],
+    thumbnail: null,
+    onlineType: "offline",
     location: "서울시 강남구",
     meetingCycle: "weekly",
-    meetingDay: "수요일",
+    meetingDay: "토요일",
     meetingTime: "14:00",
-    tags: ["독서", "토론", "문학"],
-    thumbnail:
-      "https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=1000&auto=format&fit=crop",
-    onlineType: "offline",
   });
 
   const handleChange = (e) => {
@@ -36,7 +35,6 @@ const MoimEdit = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     toast.success("모임 정보가 성공적으로 수정되었습니다!");
-    // TODO: API 연동
     router.push("/my-moims");
   };
 
@@ -45,16 +43,12 @@ const MoimEdit = () => {
   };
 
   const getMeetingCycleText = () => {
-    switch (formData.meetingCycle) {
-      case "weekly":
-        return "매주";
-      case "biweekly":
-        return "격주";
-      case "monthly":
-        return "매월";
-      default:
-        return "";
-    }
+    const cycleMap = {
+      weekly: "매주",
+      biweekly: "격주",
+      monthly: "매월",
+    };
+    return cycleMap[formData.meetingCycle] || formData.meetingCycle;
   };
 
   return (
@@ -65,7 +59,7 @@ const MoimEdit = () => {
           <FormContainer>
             <FormTitle>모임 정보 수정</FormTitle>
             <FormDescription>
-              모임의 기본 정보를 수정할 수 있습니다. 일정 관련 정보는 모임 내 일정 관리에서 설정하세요.
+              모임의 기본 정보를 수정할 수 있습니다.
             </FormDescription>
             <Form onSubmit={handleSubmit}>
               <FormGroup>
@@ -90,6 +84,7 @@ const MoimEdit = () => {
                   onChange={handleChange}
                   required
                 >
+                  <option value="">카테고리 선택</option>
                   {CATEGORY_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
                       {option.label}
@@ -114,20 +109,7 @@ const MoimEdit = () => {
               </FormGroup>
 
               <FormGroup>
-                <Label htmlFor="description">모임 소개 *</Label>
-                <TextArea
-                  id="description"
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  rows="4"
-                  placeholder="모임에 대해 설명해주세요. 어떤 활동을 하는지, 누구를 위한 모임인지 알려주세요."
-                  required
-                />
-              </FormGroup>
-
-              <FormGroup>
-                <Label htmlFor="onlineType">모임 형태</Label>
+                <Label htmlFor="onlineType">모임 형태 *</Label>
                 <Select
                   id="onlineType"
                   name="onlineType"
@@ -142,17 +124,33 @@ const MoimEdit = () => {
 
               {formData.onlineType === "offline" && (
                 <FormGroup>
-                  <Label htmlFor="location">활동 지역</Label>
+                  <Label htmlFor="location">활동 지역 *</Label>
                   <Input
                     type="text"
                     id="location"
                     name="location"
                     value={formData.location}
                     onChange={handleChange}
-                    required
+                    placeholder="예: 서울시 강남구, 부산시 해운대구"
                   />
+                  <HelpText>
+                    오프라인 모임의 경우 활동 지역을 입력해주세요.
+                  </HelpText>
                 </FormGroup>
               )}
+
+              <FormGroup>
+                <Label htmlFor="description">모임 소개 *</Label>
+                <Textarea
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  rows="4"
+                  placeholder="모임에 대해 설명해주세요. 어떤 활동을 하는지, 누구를 위한 모임인지 알려주세요."
+                  required
+                />
+              </FormGroup>
 
               <FormRow>
                 <FormGroup>
@@ -264,13 +262,16 @@ const MoimEdit = () => {
                 {formData.thumbnail && (
                   <CurrentImageContainer>
                     <CurrentImageLabel>현재 이미지:</CurrentImageLabel>
-                    <CurrentImage src={formData.thumbnail} alt="현재 모임 이미지" />
+                    <CurrentImage
+                      src={formData.thumbnail}
+                      alt="현재 모임 이미지"
+                    />
                   </CurrentImageContainer>
                 )}
               </FormGroup>
 
               <ButtonGroup>
-                <Button variant="secondary" type="button" onClick={handleCancel}>
+                <Button variant="secondary" onClick={handleCancel}>
                   취소
                 </Button>
                 <Button variant="primary" type="submit">
@@ -302,10 +303,11 @@ const MoimEdit = () => {
                 </PreviewImageSection>
               </PreviewHeader>
 
-              <PreviewName>{formData.title || "모임 제목"}</PreviewName>
+              <PreviewName>{formData.title}</PreviewName>
               <PreviewMaxMembers>
-                최대 {formData.maxMembers || "0"}명
+                최대 {formData.maxMembers}명
               </PreviewMaxMembers>
+
               <PreviewInfo>
                 <InfoItem>
                   <InfoLabel>모임 형태</InfoLabel>
@@ -313,14 +315,14 @@ const MoimEdit = () => {
                     {formData.onlineType === "online" ? "온라인" : "오프라인"}
                   </InfoValue>
                 </InfoItem>
-                {formData.onlineType === "offline" && (
+                {formData.onlineType === "offline" && formData.location && (
                   <InfoItem>
                     <InfoLabel>활동 지역</InfoLabel>
                     <InfoValue>{formData.location}</InfoValue>
                   </InfoItem>
                 )}
                 <InfoItem>
-                  <InfoLabel>정기 모임</InfoLabel>
+                  <InfoLabel>모임 주기</InfoLabel>
                   <InfoValue>
                     {getMeetingCycleText()} {formData.meetingDay}{" "}
                     {formData.meetingTime}
@@ -328,18 +330,12 @@ const MoimEdit = () => {
                 </InfoItem>
               </PreviewInfo>
 
-              <PreviewDescription>
-                {formData.description || "모임 설명이 여기에 표시됩니다."}
-              </PreviewDescription>
+              <PreviewDescription>{formData.description}</PreviewDescription>
 
               <PreviewTags>
-                {formData.tags.length > 0 ? (
-                  formData.tags.map((tag, index) => (
-                    <PreviewTag key={index}>{tag}</PreviewTag>
-                  ))
-                ) : (
-                  <PreviewTag>#태그</PreviewTag>
-                )}
+                {formData.tags.map((tag, index) => (
+                  <PreviewTag key={index}>#{tag}</PreviewTag>
+                ))}
               </PreviewTags>
             </PreviewContent>
           </PreviewContainer>
@@ -353,40 +349,26 @@ export default MoimEdit;
 
 const PageContainer = styled.div`
   min-height: 100vh;
-  background: #f8fafc;
+  background: #f9fafb;
 `;
 
 const Container = styled.div`
-  max-width: 1280px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 40px 16px 60px 16px;
-  display: flex;
-  gap: 48px;
+  padding: 32px 16px;
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 32px;
 
   @media (max-width: 1024px) {
-    flex-direction: column;
-    gap: 32px;
+    grid-template-columns: 1fr;
+    gap: 24px;
   }
 `;
 
-const LeftSection = styled.div`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-`;
+const LeftSection = styled.div``;
 
-const RightSection = styled.div`
-  flex: 0 0 400px;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-
-  @media (max-width: 1024px) {
-    flex: none;
-    width: 100%;
-  }
-`;
+const RightSection = styled.div``;
 
 const FormContainer = styled.div`
   background: #fff;
@@ -399,13 +381,20 @@ const FormTitle = styled.h1`
   font-size: 1.5rem;
   font-weight: 700;
   color: #111827;
-  margin: 0 0 32px 0;
+  margin: 0 0 8px 0;
+`;
+
+const FormDescription = styled.p`
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin: 0 0 24px 0;
+  line-height: 1.5;
 `;
 
 const Form = styled.form`
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
 `;
 
 const FormGroup = styled.div`
@@ -417,14 +406,15 @@ const FormGroup = styled.div`
 const FormRow = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 24px;
+  gap: 16px;
 
-  @media (max-width: 640px) {
+  @media (max-width: 768px) {
     grid-template-columns: 1fr;
   }
 `;
 
 const Label = styled.label`
+  font-size: 0.875rem;
   font-weight: 500;
   color: #374151;
 `;
@@ -544,6 +534,7 @@ const PreviewHeader = styled.div`
 
 const PreviewImageSection = styled.div`
   margin-top: 24px;
+  width: 100%;
 `;
 
 const PreviewImageContainer = styled.div`
@@ -552,25 +543,26 @@ const PreviewImageContainer = styled.div`
   border-radius: 8px;
   overflow: hidden;
   background: #f3f4f6;
+  min-height: 200px;
 `;
 
 const PreviewImage = styled.img`
   width: 100%;
   height: 100%;
   object-fit: cover;
+  min-height: 200px;
 `;
 
 const PreviewImagePlaceholder = styled.div`
   width: 100%;
   height: 100%;
+  min-height: 200px;
   display: flex;
-  justify-content: center;
   align-items: center;
-  font-size: 1rem;
+  justify-content: center;
   color: #6b7280;
+  font-size: 1rem;
   background: #f3f4f6;
-  border-radius: 8px;
-  overflow: hidden;
 `;
 
 const PreviewName = styled.h3`
@@ -677,9 +669,8 @@ const CurrentImage = styled.img`
   border: 1px solid #d1d5db;
 `;
 
-const FormDescription = styled.p`
-  color: #6b7280;
+const HelpText = styled.p`
   font-size: 0.875rem;
-  margin: 0 0 24px 0;
-  line-height: 1.5;
+  color: #6b7280;
+  margin: 8px 0 0 0;
 `;

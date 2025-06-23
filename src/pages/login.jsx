@@ -21,7 +21,15 @@ const LoginPage = () => {
     <p>
       비밀번호를 잊으셨나요?{" "}
       <Link href="/forgot-password">
-        <StyledLink>비밀번호 찾기</StyledLink>
+        <span
+          style={{
+            color: "#3b82f6",
+            textDecoration: "underline",
+            cursor: "pointer",
+          }}
+        >
+          비밀번호 찾기
+        </span>
       </Link>
     </p>
   );
@@ -87,7 +95,7 @@ const StyledLink = styled.span`
   color: #3b82f6;
   text-decoration: underline;
   cursor: pointer;
-  
+
   &:hover {
     color: #2563eb;
   }

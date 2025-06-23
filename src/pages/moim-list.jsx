@@ -3,57 +3,122 @@ import styled from "styled-components";
 import Header from "../components/Header";
 import Card from "../components/Card";
 import Input from "../components/Input";
-import { mockMoims, filterMoimsByCategory, searchMoims } from "../utils/mockData";
+import Button from "../components/Button";
+import {
+  mockMoims,
+  filterMoimsByCategory,
+  searchMoims,
+} from "../utils/mockData";
 import { CATEGORY_LABELS, CATEGORIES } from "../utils/constants";
 
 const categories = ["All", ...Object.values(CATEGORIES)];
 
 // 가장 많이 사용되는 isomorphic hook 패턴
-const useIsomorphicLayoutEffect = typeof window !== 'undefined' 
-  ? useLayoutEffect 
-  : useEffect;
+const useIsomorphicLayoutEffect =
+  typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 // 클라이언트 상태 체크 hook
 const useClientOnly = () => {
   const [isClient, setIsClient] = useState(false);
-  
+
   useEffect(() => {
     setIsClient(true);
   }, []);
-  
+
   return isClient;
 };
 
 const MoimListPage = () => {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [onlineType, setOnlineType] = useState("all"); // 온라인/오프라인 필터
+  const [selectedLocation, setSelectedLocation] = useState("all"); // 지역 필터
+  const [memberRange, setMemberRange] = useState({ min: 0, max: 100 }); // 인원수 범위
+  const [sortBy, setSortBy] = useState("latest"); // 정렬 옵션
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false); // 고급 필터 표시 여부
   const [visibleCount, setVisibleCount] = useState(8);
   const [loading, setLoading] = useState(false);
   const isClient = useClientOnly();
   const loader = useRef();
   const observerRef = useRef();
 
-  // 필터링 로직 (카테고리, 검색)
-  const filteredMoims = searchMoims(
-    filterMoimsByCategory(mockMoims, selectedCategory === "All" ? null : selectedCategory),
-    search
-  );
+  // 고급 필터링 로직
+  const getFilteredMoims = () => {
+    let filtered = mockMoims;
+
+    // 카테고리 필터
+    filtered = filterMoimsByCategory(
+      filtered,
+      selectedCategory === "All" ? null : selectedCategory
+    );
+
+    // 검색 필터
+    filtered = searchMoims(filtered, search);
+
+    // 온라인/오프라인 필터
+    if (onlineType !== "all") {
+      filtered = filtered.filter((moim) => moim.onlineType === onlineType);
+    }
+
+    // 지역 필터
+    if (selectedLocation !== "all") {
+      filtered = filtered.filter(
+        (moim) =>
+          moim.onlineType === "offline" &&
+          moim.location &&
+          moim.location.includes(selectedLocation)
+      );
+    }
+
+    // 인원수 범위 필터
+    filtered = filtered.filter(
+      (moim) =>
+        moim.maxMembers >= memberRange.min && moim.maxMembers <= memberRange.max
+    );
+
+    // 정렬
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case "latest":
+          return b.id - a.id; // ID 기준 최신순 (실제로는 createdAt 사용)
+        case "popular":
+          return b.maxMembers - a.maxMembers; // 인원수 기준 인기순
+        case "name":
+          return a.title.localeCompare(b.title); // 이름순
+        default:
+          return 0;
+      }
+    });
+
+    return filtered;
+  };
+
+  const filteredMoims = getFilteredMoims();
 
   // 카테고리나 검색어가 변경될 때 visibleCount 리셋
   useEffect(() => {
     setVisibleCount(8);
-  }, [selectedCategory, search]);
+  }, [
+    selectedCategory,
+    search,
+    onlineType,
+    selectedLocation,
+    memberRange,
+    sortBy,
+  ]);
 
   // Intersection Observer로 무한 스크롤 구현
   useIsomorphicLayoutEffect(() => {
     if (!isClient) return;
 
     const currentLoader = loader.current;
-    
-    // eslint-disable-next-line no-undef
-    if (currentLoader && typeof window !== 'undefined' && 'IntersectionObserver' in window) {
-      // eslint-disable-next-line no-undef
-      observerRef.current = new window.IntersectionObserver(
+
+    if (
+      currentLoader &&
+      typeof window !== "undefined" &&
+      "IntersectionObserver" in window
+    ) {
+      observerRef.current = new IntersectionObserver(
         (entries) => {
           if (
             entries[0].isIntersecting &&
@@ -71,7 +136,7 @@ const MoimListPage = () => {
         },
         { threshold: 0.1, rootMargin: "100px" }
       );
-      
+
       observerRef.current.observe(currentLoader);
     }
 
@@ -82,12 +147,36 @@ const MoimListPage = () => {
     };
   }, [filteredMoims.length, loading, visibleCount, isClient]);
 
+  // 지역 목록 (실제로는 API에서 가져올 데이터)
+  const locations = [
+    "서울시 강남구",
+    "서울시 마포구",
+    "서울시 송파구",
+    "서울시 종로구",
+    "서울시 용산구",
+    "서울시 강서구",
+    "서울시 영등포구",
+    "서울시 서초구",
+    "서울시 중구",
+    "서울시 노원구",
+    "서울시 광진구",
+    "서울시 성동구",
+  ];
+
+  const handleScrollToTop = () => {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   return (
     <Container>
       <Header />
       <LayoutContainer>
         <ContentContainer>
           <TopTitle>모임을 찾아보세요</TopTitle>
+
+          {/* 기본 필터 */}
           <CategoryList>
             {categories.map((cat) => (
               <CategoryItem
@@ -99,6 +188,8 @@ const MoimListPage = () => {
               </CategoryItem>
             ))}
           </CategoryList>
+
+          {/* 검색바 */}
           <SearchSection>
             <SearchLabel>
               <SearchInputWrapper>
@@ -129,7 +220,107 @@ const MoimListPage = () => {
               </SearchInputWrapper>
             </SearchLabel>
           </SearchSection>
-          <SectionTitle>추천 모임</SectionTitle>
+
+          {/* 고급 필터 토글 버튼 */}
+          <Button
+            variant="light"
+            size="small"
+            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+            style={{
+              width: "100%",
+              marginTop: "16px",
+              justifyContent: "space-between",
+              padding: "12px 16px",
+            }}
+          >
+            <span>고급 검색 옵션</span>
+            <ToggleIcon $isOpen={showAdvancedFilters}>▼</ToggleIcon>
+          </Button>
+
+          {/* 고급 필터 */}
+          {showAdvancedFilters && (
+            <AdvancedFiltersContainer>
+              <FilterRow>
+                <FilterGroup>
+                  <FilterLabel>모임 형태</FilterLabel>
+                  <FilterSelect
+                    value={onlineType}
+                    onChange={(e) => setOnlineType(e.target.value)}
+                  >
+                    <option value="all">전체</option>
+                    <option value="online">온라인</option>
+                    <option value="offline">오프라인</option>
+                  </FilterSelect>
+                </FilterGroup>
+
+                <FilterGroup>
+                  <FilterLabel>지역</FilterLabel>
+                  <FilterSelect
+                    value={selectedLocation}
+                    onChange={(e) => setSelectedLocation(e.target.value)}
+                  >
+                    <option value="all">전체 지역</option>
+                    {locations.map((location) => (
+                      <option key={location} value={location}>
+                        {location}
+                      </option>
+                    ))}
+                  </FilterSelect>
+                </FilterGroup>
+
+                <FilterGroup>
+                  <FilterLabel>정렬</FilterLabel>
+                  <FilterSelect
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                  >
+                    <option value="latest">최신순</option>
+                    <option value="popular">인기순</option>
+                    <option value="name">이름순</option>
+                  </FilterSelect>
+                </FilterGroup>
+              </FilterRow>
+
+              <FilterRow>
+                <FilterGroup>
+                  <FilterLabel>인원수 범위</FilterLabel>
+                  <RangeContainer>
+                    <RangeInput
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={memberRange.min}
+                      onChange={(e) =>
+                        setMemberRange((prev) => ({
+                          ...prev,
+                          min: parseInt(e.target.value) || 0,
+                        }))
+                      }
+                      placeholder="최소"
+                    />
+                    <RangeSeparator>~</RangeSeparator>
+                    <RangeInput
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={memberRange.max}
+                      onChange={(e) =>
+                        setMemberRange((prev) => ({
+                          ...prev,
+                          max: parseInt(e.target.value) || 100,
+                        }))
+                      }
+                      placeholder="최대"
+                    />
+                    <RangeUnit>명</RangeUnit>
+                  </RangeContainer>
+                </FilterGroup>
+              </FilterRow>
+            </AdvancedFiltersContainer>
+          )}
+
+          <SectionTitle>추천 모임 ({filteredMoims.length}개)</SectionTitle>
+
           <MoimGrid>
             {filteredMoims.slice(0, visibleCount).map((moim) => (
               <CardWrapper key={moim.id}>
@@ -137,6 +328,7 @@ const MoimListPage = () => {
               </CardWrapper>
             ))}
           </MoimGrid>
+
           {visibleCount < filteredMoims.length && (
             <LoadingContainer ref={loader}>
               {loading && <Spinner />}
@@ -144,6 +336,27 @@ const MoimListPage = () => {
           )}
         </ContentContainer>
       </LayoutContainer>
+
+      {/* 상단으로 이동 버튼 */}
+      <Button
+        variant="primary"
+        size="small"
+        onClick={handleScrollToTop}
+        style={{
+          position: "fixed",
+          bottom: "30px",
+          right: "30px",
+          width: "50px",
+          height: "50px",
+          borderRadius: "50%",
+          fontSize: "20px",
+          fontWeight: "bold",
+          boxShadow: "0 4px 12px rgba(59, 130, 246, 0.3)",
+          zIndex: 1000,
+        }}
+      >
+        ↑
+      </Button>
     </Container>
   );
 };
@@ -286,4 +499,94 @@ const Spinner = styled.div`
       transform: rotate(360deg);
     }
   }
-`; 
+`;
+
+const ToggleIcon = styled.span`
+  transition: transform 0.2s;
+  font-size: 12px;
+  ${({ $isOpen }) =>
+    $isOpen &&
+    `
+    transform: rotate(180deg);
+  `}
+`;
+
+const AdvancedFiltersContainer = styled.div`
+  padding: 20px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  margin-top: 8px;
+`;
+
+const FilterRow = styled.div`
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 16px;
+  }
+`;
+
+const FilterGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  min-width: 150px;
+`;
+
+const FilterLabel = styled.label`
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #374151;
+  font-size: 14px;
+`;
+
+const FilterSelect = styled.select`
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 14px;
+  color: #374151;
+  transition: border-color 0.2s;
+
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+  }
+`;
+
+const RangeContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const RangeInput = styled.input`
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  width: 80px;
+  font-size: 14px;
+  text-align: center;
+  transition: border-color 0.2s;
+
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+  }
+`;
+
+const RangeSeparator = styled.span`
+  font-weight: 500;
+  color: #6b7280;
+`;
+
+const RangeUnit = styled.span`
+  font-weight: 500;
+  color: #6b7280;
+  font-size: 14px;
+`;

@@ -23,7 +23,7 @@ const MoimDetailModal = ({ isOpen, onClose, moim }) => {
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalContainer>
         <ModalHeader>
-          <ModalImage src={moim.image} alt={moim.title} />
+          <ModalImage src={moim.thumbnail || moim.image} alt={moim.title} />
         </ModalHeader>
 
         <ModalContent>
@@ -40,11 +40,14 @@ const MoimDetailModal = ({ isOpen, onClose, moim }) => {
               )}
             </TitleGroup>
           </ModalTitleSection>
-          
+
           {moim.creator && (
             <CreatorSection>
               <CreatorInfo>
-                <CreatorImage src={moim.creator.profileImage} alt={moim.creator.name} />
+                <CreatorImage
+                  src={moim.creator.profileImage}
+                  alt={moim.creator.name}
+                />
                 <CreatorDetails>
                   <CreatorDate>{moim.creator.createdAt} 생성</CreatorDate>
                   <CreatorName>{moim.creator.name}</CreatorName>
@@ -52,6 +55,20 @@ const MoimDetailModal = ({ isOpen, onClose, moim }) => {
               </CreatorInfo>
             </CreatorSection>
           )}
+
+          {/* 모임 정보 */}
+          <InfoSection>
+            <InfoRow>
+              <InfoLabel>최대 인원</InfoLabel>
+              <InfoValue>{moim.maxMembers}명</InfoValue>
+            </InfoRow>
+            {moim.onlineType === "offline" && moim.location && (
+              <InfoRow>
+                <InfoLabel>활동 지역</InfoLabel>
+                <InfoValue>{moim.location}</InfoValue>
+              </InfoRow>
+            )}
+          </InfoSection>
 
           {/* 모임 소개 */}
           <Section>
@@ -103,8 +120,8 @@ const MoimDetailModal = ({ isOpen, onClose, moim }) => {
                   👉 전체 일정을 확인하려면 모임에 참여하세요!
                 </JoinGuide>
                 <ButtonGroup>
-                  <Button 
-                    variant="primary" 
+                  <Button
+                    variant="primary"
                     fullWidth
                     onClick={() => setJoined(true)}
                   >
@@ -114,8 +131,8 @@ const MoimDetailModal = ({ isOpen, onClose, moim }) => {
               </>
             ) : (
               <ButtonGroup>
-                <Button 
-                  variant="secondary" 
+                <Button
+                  variant="secondary"
                   fullWidth
                   onClick={() => setJoined(false)}
                 >
@@ -199,8 +216,8 @@ const ModalTitle = styled.h1`
 `;
 
 const OnlineStatus = styled.span`
-  color: ${props => props.$isOnline ? "#15803d" : "#b91c1c"};
-  background: ${props => props.$isOnline ? "#dcfce7" : "#fee2e2"};
+  color: ${(props) => (props.$isOnline ? "#15803d" : "#b91c1c")};
+  background: ${(props) => (props.$isOnline ? "#dcfce7" : "#fee2e2")};
   padding: 4px 8px;
   border-radius: 12px;
   font-size: 12px;
@@ -330,7 +347,7 @@ const RuleItem = styled.li`
   margin-bottom: 8px;
   padding-left: 16px;
   position: relative;
-  
+
   &:before {
     content: "•";
     position: absolute;
@@ -393,4 +410,4 @@ const ButtonGroup = styled.div`
   display: flex;
   flex-direction: column;
   gap: 12px;
-`; 
+`;

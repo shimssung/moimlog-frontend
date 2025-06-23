@@ -25,6 +25,8 @@ const MyMoimsPage = () => {
       members: 12,
       maxMembers: 20,
       role: "운영자",
+      onlineType: "offline",
+      location: "서울시 강남구",
     },
     {
       id: 2,
@@ -41,6 +43,8 @@ const MyMoimsPage = () => {
       members: 8,
       maxMembers: 15,
       role: "멤버",
+      onlineType: "online",
+      location: "",
     },
     {
       id: 3,
@@ -53,6 +57,8 @@ const MyMoimsPage = () => {
       members: 6,
       maxMembers: 12,
       role: "멤버",
+      onlineType: "offline",
+      location: "서울시 마포구",
     },
     {
       id: 4,
@@ -69,6 +75,8 @@ const MyMoimsPage = () => {
       members: 18,
       maxMembers: 22,
       role: "멤버",
+      onlineType: "offline",
+      location: "서울시 송파구",
     },
     {
       id: 5,
@@ -85,6 +93,8 @@ const MyMoimsPage = () => {
       members: 9,
       maxMembers: 15,
       role: "운영자",
+      onlineType: "offline",
+      location: "서울시 종로구",
     },
     {
       id: 6,
@@ -101,6 +111,8 @@ const MyMoimsPage = () => {
       members: 11,
       maxMembers: 18,
       role: "멤버",
+      onlineType: "offline",
+      location: "서울시 용산구",
     },
     {
       id: 7,
@@ -117,6 +129,8 @@ const MyMoimsPage = () => {
       members: 14,
       maxMembers: 20,
       role: "멤버",
+      onlineType: "offline",
+      location: "서울시 성동구",
     },
   ];
 
@@ -145,14 +159,23 @@ const MyMoimsPage = () => {
         </PageHeader>
 
         <TabContainer>
-          <Tab active={activeTab === "내 모임"} onClick={() => setActiveTab("내 모임")}>
+          <Tab
+            active={activeTab === "내 모임"}
+            onClick={() => setActiveTab("내 모임")}
+          >
             내 모임 ({myMoims.length})
           </Tab>
-          <Tab active={activeTab === "운영 중"} onClick={() => setActiveTab("운영 중")}>
-            운영 중 ({myMoims.filter(m => m.role === "운영자").length})
+          <Tab
+            active={activeTab === "운영 중"}
+            onClick={() => setActiveTab("운영 중")}
+          >
+            운영 중 ({myMoims.filter((m) => m.role === "운영자").length})
           </Tab>
-          <Tab active={activeTab === "참여 중"} onClick={() => setActiveTab("참여 중")}>
-            참여 중 ({myMoims.filter(m => m.role === "멤버").length})
+          <Tab
+            active={activeTab === "참여 중"}
+            onClick={() => setActiveTab("참여 중")}
+          >
+            참여 중 ({myMoims.filter((m) => m.role === "멤버").length})
           </Tab>
         </TabContainer>
 
@@ -165,17 +188,31 @@ const MyMoimsPage = () => {
                   <CardTitle>{moim.title}</CardTitle>
                   <CategoryTag>{moim.category}</CategoryTag>
                 </CardHeader>
-                
+
                 <CardInfo>
                   <InfoItem>
                     <InfoIcon>👥</InfoIcon>
-                    <InfoText>{moim.members}/{moim.maxMembers}명</InfoText>
+                    <InfoText>
+                      {moim.members}/{moim.maxMembers}명
+                    </InfoText>
                   </InfoItem>
                   <InfoItem>
                     <InfoIcon>🏷️</InfoIcon>
                     <InfoText>{moim.role}</InfoText>
                   </InfoItem>
+                  <InfoItem>
+                    <OnlineStatusBadge onlineType={moim.onlineType}>
+                      {moim.onlineType === "online" ? "온라인" : "오프라인"}
+                    </OnlineStatusBadge>
+                  </InfoItem>
                 </CardInfo>
+
+                {moim.onlineType === "offline" && moim.location && (
+                  <LocationInfo>
+                    <LocationIcon>📍</LocationIcon>
+                    <LocationText>{moim.location}</LocationText>
+                  </LocationInfo>
+                )}
 
                 {moim.nextEvent && (
                   <NextEvent>
@@ -183,7 +220,9 @@ const MyMoimsPage = () => {
                     <EventInfo>
                       <EventTitle>{moim.nextEvent.title}</EventTitle>
                       <EventDate>{formatDate(moim.nextEvent.date)}</EventDate>
-                      <EventLocation>📍 {moim.nextEvent.location}</EventLocation>
+                      <EventLocation>
+                        📍 {moim.nextEvent.location}
+                      </EventLocation>
                     </EventInfo>
                   </NextEvent>
                 )}
@@ -192,7 +231,9 @@ const MyMoimsPage = () => {
                   {moim.newMessages > 0 && (
                     <ActivityItem>
                       <ActivityIcon>💬</ActivityIcon>
-                      <ActivityText>새 메시지 {moim.newMessages}개</ActivityText>
+                      <ActivityText>
+                        새 메시지 {moim.newMessages}개
+                      </ActivityText>
                     </ActivityItem>
                   )}
                   {moim.newPosts > 0 && (
@@ -202,11 +243,6 @@ const MyMoimsPage = () => {
                     </ActivityItem>
                   )}
                 </ActivityInfo>
-
-                <ClickHint>
-                  <HintIcon>💬</HintIcon>
-                  <HintText>클릭하여 채팅 참여하기</HintText>
-                </ClickHint>
               </CardContent>
             </MoimCard>
           ))}
@@ -269,15 +305,18 @@ const Tab = styled.button`
   padding: 12px 24px;
   border: none;
   border-radius: 8px;
-  background: ${props => props.active ? "#3b82f6" : "#fff"};
-  color: ${props => props.active ? "#fff" : "#6b7280"};
+  background: ${(props) => (props.active ? "#3b82f6" : "#fff")};
+  color: ${(props) => (props.active ? "#fff" : "#6b7280")};
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: ${props => props.active ? "0 4px 12px rgba(59, 130, 246, 0.3)" : "0 1px 3px rgba(0, 0, 0, 0.1)"};
+  box-shadow: ${(props) =>
+    props.active
+      ? "0 4px 12px rgba(59, 130, 246, 0.3)"
+      : "0 1px 3px rgba(0, 0, 0, 0.1)"};
 
   &:hover {
-    background: ${props => props.active ? "#2563eb" : "#f3f4f6"};
+    background: ${(props) => (props.active ? "#2563eb" : "#f3f4f6")};
   }
 `;
 
@@ -453,4 +492,30 @@ const EmptyText = styled.p`
   font-size: 1.1rem;
   color: #6b7280;
   margin: 0 0 24px 0;
-`; 
+`;
+
+const OnlineStatusBadge = styled.span`
+  background: ${(props) =>
+    props.onlineType === "online" ? "#d1fae5" : "#fee2e2"};
+  color: ${(props) => (props.onlineType === "online" ? "#059669" : "#dc2626")};
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+`;
+
+const LocationInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+`;
+
+const LocationIcon = styled.span`
+  font-size: 1rem;
+`;
+
+const LocationText = styled.span`
+  font-size: 0.9rem;
+  color: #6b7280;
+`;
