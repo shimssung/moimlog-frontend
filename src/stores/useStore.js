@@ -197,6 +197,24 @@ export const useStore = create(
         }).catch(console.error);
       },
 
+      // 임시 로그인 (테스트용)
+      tempLogin: () => {
+        const userData = {
+          id: 1,
+          email: "test@example.com",
+          name: "테스트 사용자",
+          profileImage: "",
+          role: "user",
+        };
+
+        set({
+          user: userData,
+          isAuthenticated: true,
+        });
+
+        localStorage.setItem("token", "temp-token");
+      },
+
       // 사용자 정보 업데이트
       updateUser: (newUserData) => {
         set((state) => ({

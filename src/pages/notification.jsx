@@ -29,11 +29,52 @@ const dummyNotifications = [
     date: "2024-03-13T16:45:00",
     isRead: true,
   },
+  {
+    id: 4,
+    type: "moim_invite",
+    title: "모임 초대",
+    message: "웹개발 스터디에 초대되었습니다.",
+    date: "2024-03-12T09:15:00",
+    isRead: false,
+  },
+  {
+    id: 5,
+    type: "moim_schedule",
+    title: "모임 일정 변경",
+    message: "다음 주 모임 일정이 변경되었습니다.",
+    date: "2024-03-11T15:20:00",
+    isRead: true,
+  },
+  {
+    id: 6,
+    type: "moim_join",
+    title: "새로운 멤버 가입",
+    message: "박영희님이 러닝 크루에 가입했습니다.",
+    date: "2024-03-10T11:30:00",
+    isRead: true,
+  },
+  {
+    id: 7,
+    type: "moim_comment",
+    title: "새로운 댓글",
+    message: "최민수님이 공지사항에 댓글을 남겼습니다.",
+    date: "2024-03-09T14:15:00",
+    isRead: true,
+  },
+  {
+    id: 8,
+    type: "moim_invite",
+    title: "모임 초대",
+    message: "독서 모임에 초대되었습니다.",
+    date: "2024-03-08T16:45:00",
+    isRead: true,
+  },
 ];
 
 const Notification = () => {
   const { theme } = useTheme();
   const [notifications, setNotifications] = useState(dummyNotifications);
+  const [filter, setFilter] = useState("all"); // all, unread, read
 
   const markAsRead = (id) => {
     setNotifications((prev) =>
@@ -58,14 +99,33 @@ const Notification = () => {
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleString("ko-KR", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = Math.floor((now - date) / (1000 * 60 * 60));
+
+    if (diffInHours < 1) {
+      return "방금 전";
+    } else if (diffInHours < 24) {
+      return `${diffInHours}시간 전`;
+    } else {
+      return date.toLocaleDateString("ko-KR", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
   };
+
+  // 필터링된 알림
+  const filteredNotifications = notifications.filter((notification) => {
+    if (filter === "unread") return !notification.isRead;
+    if (filter === "read") return notification.isRead;
+    return true;
+  });
+
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
     <PageContainer theme={theme}>
@@ -73,17 +133,55 @@ const Notification = () => {
       <Container>
         <NotificationContainer theme={theme}>
           <NotificationHeader>
-            <NotificationTitle theme={theme}>알림</NotificationTitle>
-            <Button variant="light" size="small" onClick={markAllAsRead}>
-              모두 읽음 표시
-            </Button>
+            <HeaderLeft>
+              <NotificationTitle theme={theme}>알림</NotificationTitle>
+              <NotificationCount theme={theme}>
+                {unreadCount}개의 읽지 않은 알림
+              </NotificationCount>
+            </HeaderLeft>
+            <HeaderRight>
+              <FilterButtons>
+                <FilterButton
+                  active={filter === "all"}
+                  onClick={() => setFilter("all")}
+                  theme={theme}
+                >
+                  전체
+                </FilterButton>
+                <FilterButton
+                  active={filter === "unread"}
+                  onClick={() => setFilter("unread")}
+                  theme={theme}
+                >
+                  읽지 않음
+                </FilterButton>
+                <FilterButton
+                  active={filter === "read"}
+                  onClick={() => setFilter("read")}
+                  theme={theme}
+                >
+                  읽음
+                </FilterButton>
+              </FilterButtons>
+              {unreadCount > 0 && (
+                <Button variant="light" size="small" onClick={markAllAsRead}>
+                  모두 읽음 표시
+                </Button>
+              )}
+            </HeaderRight>
           </NotificationHeader>
 
           <NotificationList>
-            {notifications.length === 0 ? (
-              <EmptyState theme={theme}>알림이 없습니다.</EmptyState>
+            {filteredNotifications.length === 0 ? (
+              <EmptyState theme={theme}>
+                {filter === "all"
+                  ? "알림이 없습니다."
+                  : filter === "unread"
+                  ? "읽지 않은 알림이 없습니다."
+                  : "읽은 알림이 없습니다."}
+              </EmptyState>
             ) : (
-              notifications.map((notification) => (
+              filteredNotifications.map((notification) => (
                 <NotificationItem
                   key={notification.id}
                   isRead={notification.isRead}
@@ -154,8 +252,31 @@ const NotificationContainer = styled.div`
 const NotificationHeader = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 24px;
+  gap: 16px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+`;
+
+const HeaderLeft = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const HeaderRight = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
 `;
 
 const NotificationTitle = styled.h1`
@@ -164,6 +285,36 @@ const NotificationTitle = styled.h1`
   color: ${(props) => props.theme.textPrimary};
   margin: 0;
   transition: color 0.3s ease;
+`;
+
+const NotificationCount = styled.div`
+  font-size: 0.875rem;
+  color: ${(props) => props.theme.textSecondary};
+  transition: color 0.3s ease;
+`;
+
+const FilterButtons = styled.div`
+  display: flex;
+  gap: 8px;
+`;
+
+const FilterButton = styled.button`
+  background: ${(props) =>
+    props.active ? props.theme.buttonPrimary : props.theme.buttonSecondary};
+  color: ${(props) => (props.active ? "white" : props.theme.textSecondary)};
+  border: 1px solid
+    ${(props) =>
+      props.active ? props.theme.buttonPrimary : props.theme.border};
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${(props) =>
+      props.active ? props.theme.buttonHover : props.theme.borderLight};
+  }
 `;
 
 const NotificationList = styled.div`
@@ -185,6 +336,11 @@ const NotificationItem = styled.div`
 
   &:hover {
     background: ${(props) => props.theme.borderLight};
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 12px;
   }
 `;
 
@@ -212,6 +368,10 @@ const NotificationActions = styled.div`
   display: flex;
   gap: 8px;
   align-items: flex-start;
+
+  @media (max-width: 768px) {
+    justify-content: flex-end;
+  }
 `;
 
 const EmptyState = styled.div`

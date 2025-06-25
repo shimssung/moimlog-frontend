@@ -10,7 +10,7 @@ import { useStore } from "../stores/useStore";
 import { mockMoims } from "../utils/mockData";
 
 const MoimMainPage = () => {
-  const { theme } = useStore();
+  const { theme, isAuthenticated, tempLogin, logout } = useStore();
   const [selectedMoim, setSelectedMoim] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -47,6 +47,17 @@ const MoimMainPage = () => {
                   모임 만들기
                 </Button>
               </ButtonGroup>
+              <TestButtonGroup>
+                {isAuthenticated ? (
+                  <TestButton onClick={logout} theme={theme}>
+                    임시 로그아웃
+                  </TestButton>
+                ) : (
+                  <TestButton onClick={tempLogin} theme={theme}>
+                    임시 로그인 (알림 테스트)
+                  </TestButton>
+                )}
+              </TestButtonGroup>
             </HeroText>
             <HeroImage>
               <img src="/img9.jpg" alt="모임 이미지" />
@@ -194,5 +205,26 @@ const CardWrapper = styled.div`
 
   &:hover {
     transform: translateY(-4px);
+  }
+`;
+
+const TestButtonGroup = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+`;
+
+const TestButton = styled.button`
+  background: ${(props) => props.theme.buttonPrimary};
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background: ${(props) => props.theme.buttonHover};
   }
 `;

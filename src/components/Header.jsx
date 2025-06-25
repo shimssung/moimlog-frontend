@@ -1,16 +1,38 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import Button from "./Button";
 import Link from "next/link";
 import { useStore } from "../stores/useStore";
+import NotificationDropdown from "./NotificationDropdown";
 
 const Header = () => {
-  const { theme, isDarkMode, toggleTheme, mounted } = useStore();
+  const { theme, isDarkMode, toggleTheme, mounted, isAuthenticated, user } =
+    useStore();
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = useRef(null);
 
   const handleThemeToggle = () => {
     console.log("Header: Theme toggle button clicked");
     console.log("Header: Current isDarkMode:", isDarkMode);
     toggleTheme();
+  };
+
+  // 사용자 메뉴 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const toggleUserMenu = () => {
+    setIsUserMenuOpen(!isUserMenuOpen);
   };
 
   return (
@@ -26,9 +48,6 @@ const Header = () => {
             <NavLink href="/" theme={theme}>
               홈
             </NavLink>
-            <NavLink href="/my-moims" theme={theme}>
-              내 모임
-            </NavLink>
             <NavLink href="/moim-list" theme={theme}>
               모임 찾기
             </NavLink>
@@ -40,9 +59,49 @@ const Header = () => {
             <Button href="/moim-create" variant="light" size="small">
               모임 만들기
             </Button>
-            <Button href="/login" variant="light" size="small">
-              로그인 <UserIcon theme={theme} />
-            </Button>
+
+            {/* 로그인된 경우 알림 드롭다운과 사용자 메뉴 표시 */}
+            {isAuthenticated ? (
+              <>
+                <NotificationDropdown theme={theme} />
+                <UserMenu ref={userMenuRef}>
+                  <UserButton onClick={toggleUserMenu} theme={theme}>
+                    <UserAvatar theme={theme}>
+                      {user.profileImage ? (
+                        <img src={user.profileImage} alt={user.name} />
+                      ) : (
+                        <UserInitial>
+                          {user.name ? user.name.charAt(0) : "U"}
+                        </UserInitial>
+                      )}
+                    </UserAvatar>
+                    <UserName theme={theme}>{user.name || "사용자"}</UserName>
+                    <ChevronDownIcon theme={theme} isOpen={isUserMenuOpen} />
+                  </UserButton>
+                  {isUserMenuOpen && (
+                    <UserDropdown theme={theme}>
+                      <UserDropdownItem href="/MyPage" theme={theme}>
+                        마이페이지
+                      </UserDropdownItem>
+                      <UserDropdownItem href="/settings" theme={theme}>
+                        설정
+                      </UserDropdownItem>
+                      <UserDropdownDivider theme={theme} />
+                      <UserDropdownItem
+                        onClick={() => useStore.getState().logout()}
+                        theme={theme}
+                      >
+                        로그아웃
+                      </UserDropdownItem>
+                    </UserDropdown>
+                  )}
+                </UserMenu>
+              </>
+            ) : (
+              <Button href="/login" variant="light" size="small">
+                로그인 <UserIcon theme={theme} />
+              </Button>
+            )}
           </ButtonGroup>
         </Nav>
       </HeaderContent>
@@ -142,6 +201,122 @@ const ThemeToggleButton = styled.button`
     height: 18px;
   }
 `;
+
+const UserMenu = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+`;
+
+const UserButton = styled.button`
+  background: ${(props) => props.theme.buttonSecondary};
+  border: 1px solid ${(props) => props.theme.border};
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  color: ${(props) => props.theme.textSecondary};
+
+  &:hover {
+    background: ${(props) => props.theme.borderLight};
+    border-color: ${(props) => props.theme.border};
+  }
+`;
+
+const UserAvatar = styled.div`
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: ${(props) => props.theme.buttonPrimary};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+`;
+
+const UserInitial = styled.span`
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+`;
+
+const UserName = styled.span`
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: ${(props) => props.theme.textPrimary};
+`;
+
+const UserDropdown = styled.div`
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 160px;
+  background: ${(props) => props.theme.surface};
+  border: 1px solid ${(props) => props.theme.borderLight};
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  margin-top: 8px;
+  overflow: hidden;
+  animation: slideDown 0.2s ease;
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+`;
+
+const UserDropdownItem = styled.a`
+  display: block;
+  padding: 12px 16px;
+  color: ${(props) => props.theme.textPrimary};
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+
+  &:hover {
+    background: ${(props) => props.theme.borderLight};
+  }
+`;
+
+const UserDropdownDivider = styled.div`
+  height: 1px;
+  background: ${(props) => props.theme.borderLight};
+  margin: 4px 0;
+`;
+
+const ChevronDownIcon = ({ theme, isOpen }) => (
+  <svg
+    width="14"
+    height="14"
+    fill="none"
+    stroke={theme.textSecondary}
+    strokeWidth="2"
+    viewBox="0 0 24 24"
+    style={{
+      transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+      transition: "transform 0.2s ease",
+    }}
+  >
+    <polyline points="6,9 12,15 18,9" />
+  </svg>
+);
 
 const UserIcon = ({ theme }) => (
   <svg
