@@ -3,7 +3,6 @@ import styled from "styled-components";
 import Button from "./Button";
 import Link from "next/link";
 import { useStore } from "../stores/useStore";
-import NotificationDropdown from "./NotificationDropdown";
 
 const Header = () => {
   const { theme, isDarkMode, toggleTheme, mounted, isAuthenticated, user } =
@@ -60,10 +59,13 @@ const Header = () => {
               모임 만들기
             </Button>
 
-            {/* 로그인된 경우 알림 드롭다운과 사용자 메뉴 표시 */}
+            {/* 로그인된 경우 알림 버튼과 사용자 메뉴 표시 */}
             {isAuthenticated ? (
               <>
-                <NotificationDropdown theme={theme} />
+                <NotificationButton href="/notification" theme={theme}>
+                  <BellIcon theme={theme} />
+                  <NotificationBadge theme={theme}>3</NotificationBadge>
+                </NotificationButton>
                 <UserMenu ref={userMenuRef}>
                   <UserButton onClick={toggleUserMenu} theme={theme}>
                     <UserAvatar theme={theme}>
@@ -363,5 +365,61 @@ const MoonIcon = () => (
     viewBox="0 0 24 24"
   >
     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+  </svg>
+);
+
+const NotificationButton = styled(Link)`
+  background: ${(props) => props.theme.buttonSecondary};
+  border: 1px solid ${(props) => props.theme.border};
+  border-radius: 6px;
+  padding: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.2s ease;
+  color: ${(props) => props.theme.textSecondary};
+  text-decoration: none;
+
+  &:hover {
+    background: ${(props) => props.theme.borderLight};
+    border-color: ${(props) => props.theme.border};
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+`;
+
+const NotificationBadge = styled.span`
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: ${(props) => props.theme.error};
+  color: white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
+  border: 2px solid ${(props) => props.theme.background};
+`;
+
+const BellIcon = ({ theme }) => (
+  <svg
+    width="18"
+    height="18"
+    fill="none"
+    stroke={theme.textSecondary}
+    strokeWidth="2"
+    viewBox="0 0 24 24"
+  >
+    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
   </svg>
 );

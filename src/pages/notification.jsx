@@ -188,9 +188,9 @@ const Notification = () => {
                   theme={theme}
                 >
                   <NotificationContent>
-                    <NotificationTitle theme={theme}>
+                    <NotificationItemTitle theme={theme}>
                       {notification.title}
-                    </NotificationTitle>
+                    </NotificationItemTitle>
                     <NotificationMessage theme={theme}>
                       {notification.message}
                     </NotificationMessage>
@@ -379,5 +379,12 @@ const EmptyState = styled.div`
   padding: 48px 0;
   color: ${(props) => props.theme.textTertiary};
   font-size: 0.875rem;
+  transition: color 0.3s ease;
+`;
+
+const NotificationItemTitle = styled.div`
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: ${(props) => props.theme.textPrimary};
   transition: color 0.3s ease;
 `;
