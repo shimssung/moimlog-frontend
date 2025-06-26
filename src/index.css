@@ -59,24 +59,25 @@ body.dark-mode * {
     border-color 0.3s ease;
 }
 
-/* 다크모드에서 특정 요소들 강제 스타일링 */
-body.dark-mode div[data-styled] {
+/* 다크모드에서 특정 요소들 강제 스타일링 - 에러 페이지 제외 */
+body.dark-mode div[data-styled]:not([class*="Error"]) {
   background-color: #1f2937 !important;
   color: #f9fafb !important;
 }
 
-body.dark-mode h1,
-body.dark-mode h2,
-body.dark-mode h3,
-body.dark-mode h4,
-body.dark-mode h5,
-body.dark-mode h6 {
+/* 에러 페이지가 아닌 경우에만 다크모드 색상 적용 */
+body.dark-mode:not(.error-page) h1,
+body.dark-mode:not(.error-page) h2,
+body.dark-mode:not(.error-page) h3,
+body.dark-mode:not(.error-page) h4,
+body.dark-mode:not(.error-page) h5,
+body.dark-mode:not(.error-page) h6 {
   color: #f9fafb !important;
 }
 
-body.dark-mode p,
-body.dark-mode span,
-body.dark-mode div {
+body.dark-mode:not(.error-page) p,
+body.dark-mode:not(.error-page) span,
+body.dark-mode:not(.error-page) div {
   color: #d1d5db !important;
 }
 
@@ -95,4 +96,29 @@ body.dark-mode div {
     color: #f9fafb;
     background-color: #111827;
   }
+}
+
+/* 에러페이지 전용 텍스트 색상 고정 */
+body.error-page .error-page-h1 {
+  color: #3b82f6 !important;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+body.error-page .error-page-h2 {
+  color: #0f172a !important;
+  font-weight: 600;
+}
+body.error-page .error-page-p {
+  color: #334155 !important;
+}
+
+body.error-page .error-page-red-h1 {
+  color: #dc2626 !important;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+body.error-page .error-page-red-h2 {
+  color: #b91c1c !important;
+  font-weight: 600;
+}
+body.error-page .error-page-red-p {
+  color: #334155 !important;
 }
