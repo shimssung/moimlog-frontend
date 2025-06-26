@@ -47,25 +47,42 @@ const Header = () => {
             <NavLink href="/" theme={theme}>
               홈
             </NavLink>
-            <NavLink href="/moim-list" theme={theme}>
-              모임 찾기
-            </NavLink>
+            {/* 관리자가 아닌 경우에만 모임 찾기 표시 */}
+            {user.role !== "admin" && (
+              <NavLink href="/moim-list" theme={theme}>
+                모임 찾기
+              </NavLink>
+            )}
           </NavLinks>
           <ButtonGroup>
             <ThemeToggleButton onClick={handleThemeToggle} theme={theme}>
               {mounted && (isDarkMode ? <SunIcon /> : <MoonIcon />)}
             </ThemeToggleButton>
-            <Button href="/moim-create" variant="light" size="small">
-              모임 만들기
-            </Button>
+            {/* 관리자가 아닌 경우에만 모임 만들기 버튼 표시 */}
+            {user.role !== "admin" && (
+              <Button href="/moim-create" variant="light" size="small">
+                모임 만들기
+              </Button>
+            )}
 
             {/* 로그인된 경우 알림 버튼과 사용자 메뉴 표시 */}
             {isAuthenticated ? (
               <>
-                <NotificationButton href="/notification" theme={theme}>
-                  <BellIcon theme={theme} />
-                  <NotificationBadge theme={theme}>3</NotificationBadge>
-                </NotificationButton>
+                {/* 관리자가 아닌 경우에만 알림 버튼 표시 */}
+                {user.role !== "admin" && (
+                  <NotificationButton href="/notification" theme={theme}>
+                    <BellIcon theme={theme} />
+                    <NotificationBadge theme={theme}>3</NotificationBadge>
+                  </NotificationButton>
+                )}
+                
+                {/* 관리자 버튼 */}
+                {user.role === "admin" && (
+                  <AdminButton href="/admin/dashboard" theme={theme}>
+                    관리
+                  </AdminButton>
+                )}
+                
                 <UserMenu ref={userMenuRef}>
                   <UserButton onClick={toggleUserMenu} theme={theme}>
                     <UserAvatar theme={theme}>
@@ -82,9 +99,12 @@ const Header = () => {
                   </UserButton>
                   {isUserMenuOpen && (
                     <UserDropdown theme={theme}>
-                      <UserDropdownItem href="/MyPage" theme={theme}>
-                        마이페이지
-                      </UserDropdownItem>
+                      {/* 관리자가 아닌 경우에만 마이페이지 표시 */}
+                      {user.role !== "admin" && (
+                        <UserDropdownItem href="/MyPage" theme={theme}>
+                          마이페이지
+                        </UserDropdownItem>
+                      )}
                       <UserDropdownItem href="/settings" theme={theme}>
                         설정
                       </UserDropdownItem>
@@ -421,5 +441,38 @@ const BellIcon = ({ theme }) => (
   >
     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
     <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+  </svg>
+);
+
+const AdminButton = styled(Link)`
+  background: ${(props) => props.theme.buttonSecondary};
+  border: 1px solid ${(props) => props.theme.border};
+  border-radius: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  color: ${(props) => props.theme.textSecondary};
+  text-decoration: none;
+  margin-left: 0.5rem;
+
+  &:hover {
+    background: ${(props) => props.theme.borderLight};
+    border-color: ${(props) => props.theme.border};
+  }
+`;
+
+const AdminIcon = ({ theme }) => (
+  <svg
+    width="18"
+    height="18"
+    fill="none"
+    stroke={theme.textPrimary}
+    strokeWidth="1.7"
+    viewBox="0 0 24 24"
+  >
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8-8zm4-8c0 2.21-1.79 4-4 4s-4-1.79-4-4 1.79-4 4-4 4 1.79 4 4 4zm2 9c0 2.21-1.79 4-4 4s-4-1.79-4-4 1.79-4 4-4 4 1.79 4 4 4" />
   </svg>
 );

@@ -11,7 +11,7 @@ import AuthLayout from "../components/AuthLayout";
 import toast from "react-hot-toast";
 
 const LoginPage = () => {
-  const { theme, login, isLoading } = useStore();
+  const { theme, login, isLoading, tempLogin, tempAdminLogin } = useStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
@@ -29,6 +29,18 @@ const LoginPage = () => {
     } else {
       toast.error(result.error || "로그인에 실패했습니다.");
     }
+  };
+
+  const handleTempLogin = () => {
+    tempLogin();
+    toast.success("임시 사용자로 로그인되었습니다!");
+    router.push("/");
+  };
+
+  const handleTempAdminLogin = () => {
+    tempAdminLogin();
+    toast.success("임시 관리자로 로그인되었습니다!");
+    router.push("/admin/dashboard");
   };
 
   const footerContent = (
@@ -86,6 +98,19 @@ const LoginPage = () => {
           이메일로 회원가입
         </Button>
         <SocialLogin />
+        
+        {/* 임시 로그인 버튼들 */}
+        <TempLoginSection>
+          <TempLoginTitle theme={theme}>테스트용 임시 로그인</TempLoginTitle>
+          <TempLoginButtons>
+            <TempLoginButton onClick={handleTempLogin} theme={theme}>
+              임시 사용자 로그인
+            </TempLoginButton>
+            <TempLoginButton onClick={handleTempAdminLogin} theme={theme}>
+              임시 관리자 로그인
+            </TempLoginButton>
+          </TempLoginButtons>
+        </TempLoginSection>
       </Form>
     </AuthLayout>
   );
@@ -117,6 +142,38 @@ const FooterText = styled.p`
   margin-bottom: 0;
   font-size: 0.875rem;
   color: ${({ theme }) => theme.textSecondary};
+`;
+
+const TempLoginSection = styled.div`
+  margin-top: 1rem;
+  text-align: center;
+`;
+
+const TempLoginTitle = styled.h3`
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: ${({ theme }) => theme.textPrimary};
+`;
+
+const TempLoginButtons = styled.div`
+  display: flex;
+  gap: 0.5rem;
+`;
+
+const TempLoginButton = styled.button`
+  padding: 0.75rem 1rem;
+  background-color: ${({ theme }) => theme.buttonSecondary};
+  color: ${({ theme }) => theme.textPrimary};
+  border: none;
+  border-radius: 0.25rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: ${({ theme }) => theme.buttonSecondaryHover};
+  }
 `;
 
 export default LoginPage;

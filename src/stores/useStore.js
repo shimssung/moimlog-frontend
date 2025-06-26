@@ -215,6 +215,24 @@ export const useStore = create(
         localStorage.setItem("token", "temp-token");
       },
 
+      // 임시 관리자 로그인 (테스트용)
+      tempAdminLogin: () => {
+        const userData = {
+          id: 1,
+          email: "admin@example.com",
+          name: "관리자",
+          profileImage: "",
+          role: "admin",
+        };
+
+        set({
+          user: userData,
+          isAuthenticated: true,
+        });
+
+        localStorage.setItem("token", "temp-admin-token");
+      },
+
       // 사용자 정보 업데이트
       updateUser: (newUserData) => {
         set((state) => ({
