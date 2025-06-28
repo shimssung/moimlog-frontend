@@ -12,7 +12,6 @@ const MoimMembersPage = () => {
   const [moimInfo, setMoimInfo] = useState(null);
   const [members, setMembers] = useState([]);
   const [activeTab, setActiveTab] = useState("all");
-  const [showInviteModal, setShowInviteModal] = useState(false);
 
   // 더미 데이터
   useEffect(() => {
@@ -201,10 +200,6 @@ const MoimMembersPage = () => {
               {moimInfo?.title}의 멤버를 관리하세요
             </PageSubtitle>
           </HeaderInfo>
-          <InviteButton onClick={() => setShowInviteModal(true)} theme={theme}>
-            <ButtonIcon>👥</ButtonIcon>
-            멤버 초대
-          </InviteButton>
         </PageHeader>
 
         <StatsContainer>
@@ -309,51 +304,8 @@ const MoimMembersPage = () => {
           <EmptyState>
             <EmptyIcon>👥</EmptyIcon>
             <EmptyTitle theme={theme}>멤버가 없습니다</EmptyTitle>
-            <EmptyText theme={theme}>멤버를 초대해보세요!</EmptyText>
+            <EmptyText theme={theme}>아직 가입한 멤버가 없습니다.</EmptyText>
           </EmptyState>
-        )}
-
-        {showInviteModal && (
-          <ModalOverlay onClick={() => setShowInviteModal(false)}>
-            <ModalContent onClick={(e) => e.stopPropagation()} theme={theme}>
-              <ModalHeader theme={theme}>
-                <ModalTitle theme={theme}>멤버 초대</ModalTitle>
-                <CloseButton
-                  onClick={() => setShowInviteModal(false)}
-                  theme={theme}
-                >
-                  ✕
-                </CloseButton>
-              </ModalHeader>
-              <ModalBody>
-                <FormGroup>
-                  <Label theme={theme}>이메일 주소</Label>
-                  <Input
-                    type="email"
-                    placeholder="초대할 이메일을 입력하세요"
-                    theme={theme}
-                  />
-                </FormGroup>
-                <FormGroup>
-                  <Label theme={theme}>초대 메시지 (선택사항)</Label>
-                  <Textarea
-                    placeholder="초대 메시지를 입력하세요"
-                    rows={3}
-                    theme={theme}
-                  />
-                </FormGroup>
-              </ModalBody>
-              <ModalFooter theme={theme}>
-                <Button
-                  variant="light"
-                  onClick={() => setShowInviteModal(false)}
-                >
-                  취소
-                </Button>
-                <Button variant="primary">초대하기</Button>
-              </ModalFooter>
-            </ModalContent>
-          </ModalOverlay>
         )}
       </MainContent>
     </PageContainer>
@@ -404,29 +356,6 @@ const PageSubtitle = styled.p`
   color: ${(props) => props.theme.textSecondary};
   margin: 0;
   transition: color 0.3s ease;
-`;
-
-const InviteButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: ${(props) => props.theme.buttonPrimary};
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 12px 20px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: ${(props) => props.theme.buttonHover};
-  }
-`;
-
-const ButtonIcon = styled.span`
-  font-size: 1rem;
 `;
 
 const StatsContainer = styled.div`
@@ -641,126 +570,4 @@ const EmptyText = styled.p`
   color: ${(props) => props.theme.textSecondary};
   margin: 0;
   transition: color 0.3s ease;
-`;
-
-const ModalOverlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-`;
-
-const ModalContent = styled.div`
-  background: ${(props) => props.theme.surface};
-  border-radius: 12px;
-  width: 90%;
-  max-width: 500px;
-  max-height: 90vh;
-  overflow-y: auto;
-  border: 1px solid ${(props) => props.theme.borderLight};
-  transition: all 0.3s ease;
-`;
-
-const ModalHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 24px;
-  border-bottom: 1px solid ${(props) => props.theme.borderLight};
-  transition: border-color 0.3s ease;
-`;
-
-const ModalTitle = styled.h2`
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: ${(props) => props.theme.textPrimary};
-  margin: 0;
-  transition: color 0.3s ease;
-`;
-
-const CloseButton = styled.button`
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  color: ${(props) => props.theme.textTertiary};
-  cursor: pointer;
-  padding: 4px;
-  transition: color 0.3s ease;
-
-  &:hover {
-    color: ${(props) => props.theme.textPrimary};
-  }
-`;
-
-const ModalBody = styled.div`
-  padding: 24px;
-`;
-
-const ModalFooter = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  padding: 24px;
-  border-top: 1px solid ${(props) => props.theme.borderLight};
-  transition: border-color 0.3s ease;
-`;
-
-const FormGroup = styled.div`
-  margin-bottom: 20px;
-`;
-
-const Label = styled.label`
-  display: block;
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: ${(props) => props.theme.textPrimary};
-  margin-bottom: 6px;
-  transition: color 0.3s ease;
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid ${(props) => props.theme.borderLight};
-  border-radius: 6px;
-  font-size: 0.9rem;
-  outline: none;
-  background: ${(props) => props.theme.surfaceSecondary};
-  color: ${(props) => props.theme.textPrimary};
-  transition: all 0.2s ease;
-
-  &:focus {
-    border-color: ${(props) => props.theme.buttonPrimary};
-  }
-
-  &::placeholder {
-    color: ${(props) => props.theme.textTertiary};
-  }
-`;
-
-const Textarea = styled.textarea`
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid ${(props) => props.theme.borderLight};
-  border-radius: 6px;
-  font-size: 0.9rem;
-  outline: none;
-  resize: vertical;
-  background: ${(props) => props.theme.surfaceSecondary};
-  color: ${(props) => props.theme.textPrimary};
-  transition: all 0.2s ease;
-
-  &:focus {
-    border-color: ${(props) => props.theme.buttonPrimary};
-  }
-
-  &::placeholder {
-    color: ${(props) => props.theme.textTertiary};
-  }
 `;
