@@ -116,6 +116,7 @@ export const useStore = create(
       },
 
       // 마운트 상태 설정
+      // 서버와 클라이언트 간의 렌더링 불일치를 방지하기 위한 안전장치
       setMounted: (mounted) => set({ mounted }),
 
       // 테마 초기화 (로컬스토리지에서 가져온 후)

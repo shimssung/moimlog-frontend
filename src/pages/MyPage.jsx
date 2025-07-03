@@ -343,9 +343,9 @@ const Avatar = styled.div`
   width: 128px;
   height: 128px;
   border-radius: 50%;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  background-size: cover; // cover: 배경 이미지를 요소의 너비와 높이에 맞게 조절
+  background-position: center; /* 배경 이미지 위치 조절 */
+  background-repeat: no-repeat; /* 배경 이미지 반복 방지 */
   background-color: ${(props) => props.theme.surfaceSecondary};
   transition: background-color 0.3s ease;
 `;

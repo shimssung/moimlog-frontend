@@ -225,15 +225,6 @@ const MoimSettingsPage = () => {
                   </PrivacyInfo>
                   <ToggleSwitch defaultChecked={moimInfo?.isPublic} />
                 </PrivacyItem>
-                <PrivacyItem theme={theme}>
-                  <PrivacyInfo>
-                    <PrivacyLabel theme={theme}>멤버 초대 허용</PrivacyLabel>
-                    <PrivacyDesc theme={theme}>
-                      멤버가 다른 사람을 초대할 수 있습니다
-                    </PrivacyDesc>
-                  </PrivacyInfo>
-                  <ToggleSwitch defaultChecked={moimInfo?.allowInvite} />
-                </PrivacyItem>
                 <SaveButton onClick={handleSaveSettings} theme={theme}>
                   개인정보 설정 저장
                 </SaveButton>

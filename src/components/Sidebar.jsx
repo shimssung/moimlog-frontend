@@ -45,7 +45,7 @@ const Sidebar = ({ moimId, moimRole = "멤버", activeMenu = "chat" }) => {
       <SidebarHeader theme={theme}>
         <BackButton onClick={() => router.push("/MyPage")} theme={theme}>
           <BackIcon>←</BackIcon>
-          <BackText theme={theme}>내 모임</BackText>
+          <BackText theme={theme}>돌아가기</BackText>
         </BackButton>
       </SidebarHeader>
 

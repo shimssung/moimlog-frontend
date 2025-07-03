@@ -49,14 +49,31 @@ const ProfileEdit = () => {
   }, []);
 
   useEffect(() => {
+    // 1. useEffect: 컴포넌트가 마운트되거나 의존성이 변경될 때 실행되는 React 훅
     if (selectedFile && typeof window !== "undefined") {
+      // 2. selectedFile: 파일이 선택되었는지 확인 (null이 아닌지 체크)
+      // 3. typeof window !== "undefined": Next.js SSR에서 브라우저 환경인지 확인
+
       const reader = new FileReader();
+      // 4. FileReader 객체 생성: 파일을 읽고 Base64로 변환하는 브라우저 API
+
       reader.onloadend = () => {
+        // 5. onloadend: 파일 읽기가 완료되면 실행될 콜백 함수를 설정(알람 설정을 미리 해두고 파일 읽기 - readAsDataURL 실행)
         setPreviewImage(reader.result);
+        // 6. setPreviewImage: React 상태 업데이트 함수로 미리보기 이미지 설정
+        // 7. reader.result: FileReader가 읽은 파일의 Base64 문자열 (data:image/jpeg;base64,...)
       };
+
       reader.readAsDataURL(selectedFile);
+      // 8. readAsDataURL: 파일을 Base64 문자열로 변환하는 메서드 호출
+      // 9. selectedFile: 변환할 파일 객체를 전달
     }
   }, [selectedFile]);
+  // 10. [selectedFile]: 의존성 배열 - selectedFile이 변경될 때만 useEffect 실행
+
+  // Base64로 변환하는 이유:
+  // 브라우저는 파일 객체 자체를 <img>에 바로 넣을 수 없기 때문에,
+  // FileReader를 사용해 파일을 Base64 문자열로 변환하여 <img src="..." />로 보여줍니다.
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
