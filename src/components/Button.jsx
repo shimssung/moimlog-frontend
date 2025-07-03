@@ -47,6 +47,8 @@ const Button = ({
 
 export default Button;
 
+// withConfig로 DOM 속성으로 전달되지 않을 props 필터링
+// shouldForwardProp: fullWidth와 theme은 DOM 속성으로 추가되지 않지만, CSS props로는 여전히 사용 가능
 const ButtonBase = styled.button.withConfig({
   shouldForwardProp: (prop) => !["fullWidth", "theme"].includes(prop),
 })`

@@ -43,7 +43,7 @@ const Sidebar = ({ moimId, moimRole = "멤버", activeMenu = "chat" }) => {
   return (
     <SidebarContainer theme={theme}>
       <SidebarHeader theme={theme}>
-        <BackButton onClick={() => router.push("/my-moims")} theme={theme}>
+        <BackButton onClick={() => router.push("/MyPage")} theme={theme}>
           <BackIcon>←</BackIcon>
           <BackText theme={theme}>내 모임</BackText>
         </BackButton>
@@ -75,14 +75,14 @@ export default Sidebar;
 
 const SidebarContainer = styled.div`
   width: 250px;
-  height: 100vh;
+  height: calc(100vh - 80px); // 헤더 높이를 뺀 높이
   background: ${(props) => props.theme.surface};
   border-right: 1px solid ${(props) => props.theme.borderLight};
   display: flex;
   flex-direction: column;
   position: fixed;
   left: 0;
-  top: 0;
+  top: 80px; // 헤더 높이만큼 아래로 이동
   z-index: 50;
   transition: all 0.3s ease;
 
@@ -90,6 +90,7 @@ const SidebarContainer = styled.div`
     width: 100%;
     height: auto;
     position: relative;
+    top: 0;
     border-right: none;
     border-bottom: 1px solid ${(props) => props.theme.borderLight};
   }

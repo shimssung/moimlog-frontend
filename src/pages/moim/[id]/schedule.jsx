@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import { useRouter } from "next/router";
 import Sidebar from "../../../components/Sidebar";
+import Header from "../../../components/Header";
 import Button from "../../../components/Button";
 import { useTheme } from "../../../utils/ThemeContext";
 
@@ -135,13 +136,15 @@ const MoimSchedulePage = () => {
 
   return (
     <PageContainer theme={theme}>
-      <Sidebar
-        moimId={moimId}
-        moimRole={moimInfo?.role}
-        activeMenu="schedule"
-      />
+      <Header />
+      <ContentContainer>
+        <Sidebar
+          moimId={moimId}
+          moimRole={moimInfo?.role}
+          activeMenu="schedule"
+        />
 
-      <MainContent theme={theme}>
+        <MainContent theme={theme}>
         <PageHeader>
           <HeaderInfo>
             <PageTitle theme={theme}>일정 관리</PageTitle>
@@ -273,6 +276,7 @@ const MoimSchedulePage = () => {
           </ModalOverlay>
         )}
       </MainContent>
+      </ContentContainer>
     </PageContainer>
   );
 };
@@ -281,9 +285,20 @@ export default MoimSchedulePage;
 
 const PageContainer = styled.div`
   display: flex;
-  min-height: 100vh;
+  flex-direction: column;
+  height: 100vh;
   background: ${(props) => props.theme.background};
   transition: background-color 0.3s ease;
+`;
+
+const ContentContainer = styled.div`
+  display: flex;
+  flex: 1;
+  height: calc(100vh - 80px); // 헤더 높이를 뺀 높이
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
 `;
 
 const MainContent = styled.div`
@@ -291,7 +306,7 @@ const MainContent = styled.div`
   margin-left: 250px;
   padding: 24px;
   overflow-y: auto;
-  min-height: 100vh;
+  height: calc(100vh - 80px); // 헤더 높이를 뺀 높이
 
   @media (max-width: 768px) {
     margin-left: 0;
