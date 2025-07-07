@@ -35,7 +35,7 @@ const Divider = styled.div`
   display: flex;
   align-items: center;
   text-align: center;
-  margin: 1.5rem 0;
+  margin: 1rem 0;
   color: ${(props) => props.theme.textTertiary};
 
   &::before,
@@ -49,12 +49,22 @@ const Divider = styled.div`
     margin: 0 0.75rem;
     font-size: 0.875rem;
   }
+
+  /* 반응형: 작은 화면에서 마진 축소 */
+  @media (max-width: 480px) {
+    margin: 0.75rem 0;
+  }
 `;
 
 const SocialLoginContainer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.5rem;
+
+  /* 반응형: 작은 화면에서 간격 축소 */
+  @media (max-width: 480px) {
+    gap: 0.4rem;
+  }
 `;
 
 const SocialLoginButton = styled(Button)`
@@ -63,7 +73,13 @@ const SocialLoginButton = styled(Button)`
   justify-content: center;
   gap: 12px;
   font-size: 0.875rem;
-  height: 44px;
+  height: 40px;
+
+  /* 반응형: 작은 화면에서 높이 축소 */
+  @media (max-width: 480px) {
+    height: 36px;
+    font-size: 0.8rem;
+  }
 
   ${(props) =>
     props.variant === "kakao" &&

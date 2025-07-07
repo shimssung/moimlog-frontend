@@ -46,20 +46,22 @@ export default AuthLayout;
 
 const PageWrap = styled.div`
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
   background: ${(props) => props.theme.background};
   justify-content: center;
   align-items: center;
-  padding: 96px 32px 32px 32px;
+  padding: 64px 32px 32px 32px;
   gap: 48px;
   transition: background-color 0.3s ease;
+  overflow: hidden;
 
   /* 반응형: 1230px 이하에서는 세로로 쌓이고, 패딩/정렬 변경 */
   @media (max-width: 1230px) {
     flex-direction: column; // 좌우 → 상하로 쌓임
     gap: 0;
-    padding: 88px 0 0 0; // 상단 패딩만 남김
+    padding: 64px 16px 16px 16px; // 패딩 축소
     align-items: stretch; // stretch로 영역 확장
+    overflow-y: auto; // 세로 스크롤 허용 (필요한 경우만)
   }
 `;
 
@@ -71,13 +73,13 @@ const LeftSection = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: flex-start;
-  padding: 48px 0 48px 48px;
-  gap: 32px;
+  padding: 32px 0 32px 32px;
+  gap: 24px;
 
   /* 반응형: 1230px 이하에서 패딩/정렬/텍스트 중앙 정렬로 변경 */
   @media (max-width: 1230px) {
     flex: none;
-    padding: 32px 16px 32px 16px; // 패딩 축소
+    padding: 24px 16px 24px 16px; // 패딩 축소
     align-items: center; // 중앙 정렬
     text-align: center; // 텍스트 중앙 정렬
   }
@@ -129,13 +131,18 @@ const FormContainer = styled.div`
   background-color: ${(props) => props.theme.surface};
   border-radius: 0.75rem;
   box-shadow: ${(props) => props.theme.cardShadow};
-  padding: 2.5rem 2rem;
+  padding: 2rem 1.5rem;
   width: 100%;
   max-width: 28rem;
   position: relative;
   top: 0;
   border: 1px solid ${(props) => props.theme.borderLight};
   transition: all 0.3s ease;
+
+  /* 반응형: 작은 화면에서 패딩 축소 */
+  @media (max-width: 480px) {
+    padding: 1.5rem 1rem;
+  }
 `;
 
 const Title = styled.h2`
@@ -143,19 +150,31 @@ const Title = styled.h2`
   font-weight: 700;
   color: ${(props) => props.theme.textPrimary};
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   transition: color 0.3s ease;
+
+  /* 반응형: 작은 화면에서 폰트 크기 축소 */
+  @media (max-width: 480px) {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+  }
 `;
 
 const Footer = styled.div`
-  margin-top: 1.5rem;
+  margin-top: 1rem;
   text-align: center;
   font-size: 0.875rem;
   color: ${(props) => props.theme.textTertiary};
   transition: color 0.3s ease;
 
   p {
-    margin: 0.5rem 0;
+    margin: 0.25rem 0;
+  }
+
+  /* 반응형: 작은 화면에서 마진 축소 */
+  @media (max-width: 480px) {
+    margin-top: 0.75rem;
+    font-size: 0.8rem;
   }
 `;
 

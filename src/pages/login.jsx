@@ -9,9 +9,10 @@ import Input from "../components/Input";
 import SocialLogin from "../components/SocialLogin";
 import AuthLayout from "../components/AuthLayout";
 import toast from "react-hot-toast";
+import { authAPI } from "../api/auth";
 
 const LoginPage = () => {
-  const { theme, login, isLoading, tempLogin, tempAdminLogin } = useStore();
+  const { theme, login, isLoading } = useStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
@@ -22,26 +23,39 @@ const LoginPage = () => {
       toast.error("이메일과 비밀번호를 입력해주세요.");
       return;
     }
-    const result = await login(email, password);
-    if (result.success) {
-      toast.success("로그인 성공!");
-      router.push("/");
-    } else {
-      toast.error(result.error || "로그인에 실패했습니다.");
+    
+    try {
+      const response = await authAPI.login({ email, password });
+      
+      if (response.success) {
+        // 토큰 저장
+        localStorage.setItem("accessToken", response.accessToken);
+        localStorage.setItem("refreshToken", response.refreshToken);
+        
+        // 사용자 정보 저장
+        const userData = {
+          id: response.userId,
+          email: response.email,
+          name: response.name,
+          nickname: response.nickname,
+          role: "user"
+        };
+        
+        // 스토어에 사용자 정보 저장
+        login(userData);
+        
+        toast.success("로그인 성공!");
+        router.push("/");
+      } else {
+        toast.error(response.message || "로그인에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("로그인 오류:", error);
+      toast.error(error.message || "로그인에 실패했습니다.");
     }
   };
 
-  const handleTempLogin = () => {
-    tempLogin();
-    toast.success("임시 사용자로 로그인되었습니다!");
-    router.push("/");
-  };
 
-  const handleTempAdminLogin = () => {
-    tempAdminLogin();
-    toast.success("임시 관리자로 로그인되었습니다!");
-    router.push("/admin/dashboard");
-  };
 
   const footerContent = (
     <FooterText theme={theme}>
@@ -98,19 +112,6 @@ const LoginPage = () => {
           이메일로 회원가입
         </Button>
         <SocialLogin />
-        
-        {/* 임시 로그인 버튼들 */}
-        <TempLoginSection>
-          <TempLoginTitle theme={theme}>테스트용 임시 로그인</TempLoginTitle>
-          <TempLoginButtons>
-            <TempLoginButton onClick={handleTempLogin} theme={theme}>
-              임시 사용자 로그인
-            </TempLoginButton>
-            <TempLoginButton onClick={handleTempAdminLogin} theme={theme}>
-              임시 관리자 로그인
-            </TempLoginButton>
-          </TempLoginButtons>
-        </TempLoginSection>
       </Form>
     </AuthLayout>
   );
@@ -120,7 +121,12 @@ const Form = styled.form`
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1rem;
+
+  /* 반응형: 작은 화면에서 간격 축소 */
+  @media (max-width: 480px) {
+    gap: 0.75rem;
+  }
 `;
 
 const FormGroup = styled.div`
@@ -144,36 +150,6 @@ const FooterText = styled.p`
   color: ${({ theme }) => theme.textSecondary};
 `;
 
-const TempLoginSection = styled.div`
-  margin-top: 1rem;
-  text-align: center;
-`;
 
-const TempLoginTitle = styled.h3`
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-  color: ${({ theme }) => theme.textPrimary};
-`;
-
-const TempLoginButtons = styled.div`
-  display: flex;
-  gap: 0.5rem;
-`;
-
-const TempLoginButton = styled.button`
-  padding: 0.75rem 1rem;
-  background-color: ${({ theme }) => theme.buttonSecondary};
-  color: ${({ theme }) => theme.textPrimary};
-  border: none;
-  border-radius: 0.25rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s;
-
-  &:hover {
-    background-color: ${({ theme }) => theme.buttonSecondaryHover};
-  }
-`;
 
 export default LoginPage;

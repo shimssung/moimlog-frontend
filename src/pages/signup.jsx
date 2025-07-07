@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import styled from "styled-components";
 import Button from "../components/Button";
 import Input from "../components/Input";
@@ -7,15 +7,24 @@ import { FaCheckCircle, FaTimesCircle, FaRegCircle } from "react-icons/fa";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { useTheme } from "../utils/ThemeContext";
+import { authAPI } from "../api/auth";
+import { useRouter } from "next/router";
 
 function SignupPage() {
   const { theme } = useTheme();
+  const router = useRouter();
   const [form, setForm] = useState({
-    email: "",
+    emailId: "",
+    emailDomain: "",
     password: "",
     password2: "",
   });
   const [error, setError] = useState("");
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [emailError, setEmailError] = useState("");
+  const [customDomain, setCustomDomain] = useState("");
+  const [showCustomDomain, setShowCustomDomain] = useState(false);
   const [pwChecks, setPwChecks] = useState({
     rule1: false, // 영문/숫자/특수문자 2종 이상
     rule2: false, // 8~32자
@@ -23,9 +32,75 @@ function SignupPage() {
   });
   const [pwTouched, setPwTouched] = useState(false);
 
+  // refs for focus
+  const emailIdRef = useRef(null);
+  const emailDomainRef = useRef(null);
+
+  // 이메일 도메인 옵션
+  const emailDomains = [
+    "gmail.com",
+    "naver.com",
+    "daum.net",
+    "kakao.com",
+    "outlook.com",
+    "yahoo.com",
+    "직접입력"
+  ];
+
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setError("");
+    setEmailError("");
+  };
+
+  // 이메일 필드 포커스 아웃 시 중복 확인
+  const handleEmailBlur = async () => {
+    const fullEmail = getFullEmail();
+    if (!fullEmail || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(fullEmail)) {
+      return; // 이메일이 완성되지 않았거나 형식이 틀리면 확인하지 않음
+    }
+
+    setEmailError("");
+
+    try {
+      const emailCheck = await authAPI.checkEmailDuplicate(fullEmail);
+      if (emailCheck.duplicate) {
+        setEmailError("이미 사용 중인 이메일입니다.");
+      } else {
+        setEmailError("");
+      }
+    } catch (error) {
+      setEmailError("이메일 중복 확인 중 오류가 발생했습니다.");
+    }
+  };
+
+  // 도메인 선택 처리
+  const handleDomainChange = (e) => {
+    const value = e.target.value;
+    if (value === "직접입력") {
+      setShowCustomDomain(true);
+      setForm({ ...form, emailDomain: "" });
+    } else {
+      setShowCustomDomain(false);
+      setCustomDomain("");
+      setForm({ ...form, emailDomain: value });
+    }
+    setEmailError("");
+  };
+
+  // 직접 입력 도메인 처리
+  const handleCustomDomainChange = (e) => {
+    setCustomDomain(e.target.value);
+    setForm({ ...form, emailDomain: e.target.value });
+    setEmailError("");
+  };
+
+
+
+  // 전체 이메일 주소 생성
+  const getFullEmail = () => {
+    if (!form.emailId || !form.emailDomain) return "";
+    return `${form.emailId}@${form.emailDomain}`;
   };
 
   const handlePasswordChange = (e) => {
@@ -43,8 +118,11 @@ function SignupPage() {
   };
 
   const validate = () => {
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email))
+    const fullEmail = getFullEmail();
+    if (!fullEmail) return "이메일을 입력해주세요.";
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(fullEmail))
       return "이메일 형식이 올바르지 않습니다.";
+    if (emailError) return "이메일 중복 확인을 해주세요.";
     if (
       !/^(?=.*[a-zA-Z])(?=.*[0-9!@#$%^&*()_+\-={};':"\\|,.<>/?]).{8,32}$/.test(
         form.password
@@ -58,12 +136,56 @@ function SignupPage() {
     return "";
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // 회원가입 버튼 클릭 시 이메일 중복 재확인
+    const fullEmail = getFullEmail();
+    if (fullEmail && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(fullEmail)) {
+      try {
+        const emailCheck = await authAPI.checkEmailDuplicate(fullEmail);
+        if (emailCheck.duplicate) {
+          setEmailError("이미 사용 중인 이메일입니다.");
+          // 이메일 필드로 포커스 이동
+          if (emailIdRef.current) {
+            emailIdRef.current.focus();
+          }
+          return;
+        }
+      } catch (error) {
+        setEmailError("이메일 중복 확인 중 오류가 발생했습니다.");
+        if (emailIdRef.current) {
+          emailIdRef.current.focus();
+        }
+        return;
+      }
+    }
+    
     const err = validate();
     if (err) return setError(err);
-    toast.success("회원가입이 완료되었습니다!");
-    setForm({ email: "", password: "", password2: "" });
+    
+    setIsLoading(true);
+    setError("");
+    
+    try {
+      // 회원가입 API 호출
+      const response = await authAPI.signup({
+        email: getFullEmail(),
+        password: form.password
+      });
+      
+      if (response.success) {
+        toast.success("회원가입이 완료되었습니다!");
+        router.push("/login");
+      } else {
+        setError(response.message || "회원가입에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("회원가입 오류:", error);
+      setError(error.message || "회원가입 중 오류가 발생했습니다.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const footerContent = (
@@ -90,13 +212,59 @@ function SignupPage() {
     >
       <FormBox onSubmit={handleSubmit}>
         <Label theme={theme}>이메일</Label>
-        <Input
-          name="email"
-          placeholder="example@inflab.com"
-          value={form.email}
-          onChange={handleChange}
-          required
-        />
+        <EmailContainer>
+          <EmailInputGroup>
+            <Input
+              ref={emailIdRef}
+              name="emailId"
+              placeholder="아이디"
+              value={form.emailId}
+              onChange={handleChange}
+              onBlur={handleEmailBlur}
+              style={{
+                borderColor: emailError ? "#ef4444" : undefined,
+              }}
+              required
+            />
+            <AtSymbol>@</AtSymbol>
+            {!showCustomDomain ? (
+              <Select
+                ref={emailDomainRef}
+                name="emailDomain"
+                value={form.emailDomain}
+                onChange={handleDomainChange}
+                onBlur={handleEmailBlur}
+                style={{
+                  borderColor: emailError ? "#ef4444" : undefined,
+                }}
+                required
+              >
+                <option value="">도메인 선택</option>
+                {emailDomains.slice(0, -1).map((domain) => (
+                  <option key={domain} value={domain}>
+                    {domain}
+                  </option>
+                ))}
+                <option value="직접입력">직접입력</option>
+              </Select>
+            ) : (
+              <Input
+                ref={emailDomainRef}
+                name="emailDomain"
+                placeholder="도메인 직접 입력 (예: example.com)"
+                value={customDomain}
+                onChange={handleCustomDomainChange}
+                onBlur={handleEmailBlur}
+                style={{
+                  borderColor: emailError ? "#ef4444" : undefined,
+                }}
+                required
+              />
+            )}
+          </EmailInputGroup>
+        </EmailContainer>
+        {emailError && <ErrorMsg>{emailError}</ErrorMsg>}
+        {error && <ErrorMsg>{error}</ErrorMsg>}
         <Label theme={theme}>비밀번호</Label>
         <Input
           name="password"
@@ -159,8 +327,9 @@ function SignupPage() {
           fullWidth
           variant="primary"
           style={{ margin: "24px 0 0 0" }}
+          disabled={isLoading}
         >
-          가입하기
+          {isLoading ? "가입 중..." : "가입하기"}
         </Button>
       </FormBox>
     </AuthLayout>
@@ -175,6 +344,48 @@ const FormBox = styled.form`
   gap: 0;
   align-items: stretch;
 `;
+
+const EmailContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const EmailInputGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const AtSymbol = styled.span`
+  font-size: 16px;
+  font-weight: 500;
+  color: ${(props) => props.theme.textSecondary};
+  user-select: none;
+`;
+
+const Select = styled.select`
+  flex: 1;
+  padding: 12px 16px;
+  border: 1px solid ${(props) => props.theme.border};
+  border-radius: 8px;
+  font-size: 14px;
+  background-color: ${(props) => props.theme.surface};
+  color: ${(props) => props.theme.textPrimary};
+  transition: border-color 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: ${(props) => props.theme.buttonPrimary};
+  }
+
+  &:disabled {
+    background-color: ${(props) => props.theme.surfaceSecondary};
+    color: ${(props) => props.theme.textTertiary};
+  }
+`;
+
+
 
 const Label = styled.label`
   font-size: 15px;
@@ -209,7 +420,7 @@ const PwDesc = styled.ul`
 `;
 
 const ErrorMsg = styled.div`
-  color: #ef4444;
+  color: #ef4444 !important;
   font-size: 14px;
   text-align: center;
   margin: 8px 0 -8px;
