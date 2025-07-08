@@ -1,10 +1,9 @@
 import React, { createContext, useContext, useEffect } from "react";
-import { createGlobalStyle } from "styled-components";
 import { useStore } from "../stores/useStore";
 
 const ThemeContext = createContext();
 
-// 테마 색상 정의
+// 테마 색상 정의 (CSS 변수와 동일하게 유지)
 export const lightTheme = {
   // 배경색
   background: "#f9fafb",
@@ -83,19 +82,6 @@ export const darkTheme = {
   warning: "#f59e0b",
 };
 
-// 전역 스타일 컴포넌트
-const GlobalStyle = createGlobalStyle`
-  body {
-    background-color: ${(props) => props.theme.background} !important;
-    color: ${(props) => props.theme.textPrimary} !important;
-    transition: background-color 0.3s ease, color 0.3s ease;
-  }
-
-  * {
-    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-  }
-`;
-
 export const ThemeProvider = ({ children }) => {
   const {
     isDarkMode,
@@ -118,24 +104,23 @@ export const ThemeProvider = ({ children }) => {
     }
   }, [mounted, initializeTheme]);
 
-  // 다크모드 상태 변경 시 body 클래스 적용
+  // 다크모드 상태 변경 시 data-theme 속성 적용
   useEffect(() => {
     if (mounted) {
       console.log("ThemeContext: isDarkMode changed to", isDarkMode);
-      // body 클래스에 다크모드 적용
+      // document.documentElement에 data-theme 속성 적용
       if (isDarkMode) {
-        document.body.classList.add("dark-mode");
-        console.log("ThemeContext: Added dark-mode class to body");
+        document.documentElement.setAttribute('data-theme', 'dark');
+        console.log("ThemeContext: Set data-theme to dark");
       } else {
-        document.body.classList.remove("dark-mode");
-        console.log("ThemeContext: Removed dark-mode class from body");
+        document.documentElement.setAttribute('data-theme', 'light');
+        console.log("ThemeContext: Set data-theme to light");
       }
     }
   }, [isDarkMode, mounted]);
 
   return (
     <ThemeContext.Provider value={{ theme, isDarkMode, toggleTheme, mounted }}>
-      <GlobalStyle theme={theme} />
       {children}
     </ThemeContext.Provider>
   );

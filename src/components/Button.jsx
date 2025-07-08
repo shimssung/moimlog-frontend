@@ -1,57 +1,8 @@
 import React from "react";
-import styled, { css } from "styled-components";
 import Link from "next/link";
-import { useStore } from "../stores/useStore";
+import styled from "styled-components";
 
-const Button = ({
-  children,
-  variant = "primary",
-  size = "medium",
-  fullWidth = false,
-  type = "button",
-  href,
-  ...props
-}) => {
-  const { theme } = useStore();
-
-  if (href) {
-    // Next.js의 Link로 감싸서 SPA 라우팅 지원
-    return (
-      <Link href={href} passHref>
-        <ButtonBase
-          variant={variant}
-          size={size}
-          fullWidth={fullWidth}
-          theme={theme}
-          {...props}
-        >
-          {children}
-        </ButtonBase>
-      </Link>
-    );
-  }
-  // 일반 버튼
-  return (
-    <ButtonBase
-      variant={variant}
-      size={size}
-      fullWidth={fullWidth}
-      type={type}
-      theme={theme}
-      {...props}
-    >
-      {children}
-    </ButtonBase>
-  );
-};
-
-export default Button;
-
-// withConfig로 DOM 속성으로 전달되지 않을 props 필터링
-// shouldForwardProp: fullWidth와 theme은 DOM 속성으로 추가되지 않지만, CSS props로는 여전히 사용 가능
-const ButtonBase = styled.button.withConfig({
-  shouldForwardProp: (prop) => !["fullWidth", "theme"].includes(prop),
-})`
+const StyledButton = styled.button`
   padding: 0.75rem 1rem;
   font-weight: 600;
   border-radius: 0.5rem;
@@ -63,7 +14,6 @@ const ButtonBase = styled.button.withConfig({
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  width: ${(props) => (props.fullWidth ? "100%" : "auto")};
   text-decoration: none;
 
   &:disabled {
@@ -71,63 +21,72 @@ const ButtonBase = styled.button.withConfig({
     cursor: not-allowed;
   }
 
-  ${(props) =>
-    props.variant === "primary" &&
-    css`
-      background-color: ${props.theme.buttonPrimary};
-      color: #fff;
-      border: none;
-      &:hover:not(:disabled),
-      &:active:not(:disabled) {
-        background-color: ${props.theme.buttonHover};
-        color: #fff;
-        border: none;
-        cursor: pointer;
-      }
-    `}
+  ${props => props.fullWidth && `
+    width: 100%;
+  `}
 
-  ${(props) =>
-    props.variant === "secondary" &&
-    css`
-      background-color: ${props.theme.surfaceSecondary};
-      color: ${props.theme.textPrimary};
-      border: 1px solid ${props.theme.border};
-      &:hover:not(:disabled),
-      &:active:not(:disabled) {
-        background-color: ${props.theme.borderLight};
-        color: ${props.theme.textPrimary};
-        border: 1px solid ${props.theme.border};
-        cursor: pointer;
-      }
-    `}
+  ${props => props.size === 'small' && `
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    height: 40px;
+  `}
 
-  ${(props) =>
-    props.variant === "light" &&
-    css`
-      background-color: ${props.theme.buttonSecondary};
-      color: ${props.theme.textSecondary};
-      border: 1px solid ${props.theme.border};
-      &:hover:not(:disabled),
-      &:active:not(:disabled) {
-        background-color: ${props.theme.borderLight};
-        color: ${props.theme.textPrimary};
-        border: 1px solid ${props.theme.border};
-        cursor: pointer;
-      }
-    `}
-
-  ${(props) =>
-    props.size === "small" &&
-    css`
-      padding: 0.5rem 0.75rem;
-      font-size: 0.75rem;
-      height: 40px;
-    `}
-
-  ${(props) =>
-    props.size === "large" &&
-    css`
-      padding: 1rem 1.5rem;
-      font-size: 1rem;
-    `}
+  ${props => props.size === 'large' && `
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+  `}
 `;
+
+const Button = ({
+  children,
+  variant = "primary",
+  size = "medium",
+  fullWidth = false,
+  type = "button",
+  href,
+  className = "",
+  ...props
+}) => {
+  // CSS 클래스로 variant 스타일 적용
+  const variantClasses = {
+    primary: "button--primary",
+    secondary: "button--secondary", 
+    light: "button--light"
+  };
+
+  const buttonClasses = [
+    variantClasses[variant],
+    className
+  ].filter(Boolean).join(" ");
+
+  if (href) {
+    // Next.js의 Link로 감싸서 SPA 라우팅 지원
+    return (
+      <Link href={href} passHref>
+        <StyledButton
+          size={size}
+          fullWidth={fullWidth}
+          className={buttonClasses}
+          {...props}
+        >
+          {children}
+        </StyledButton>
+      </Link>
+    );
+  }
+  
+  // 일반 버튼
+  return (
+    <StyledButton
+      size={size}
+      fullWidth={fullWidth}
+      type={type}
+      className={buttonClasses}
+      {...props}
+    >
+      {children}
+    </StyledButton>
+  );
+};
+
+export default Button;
