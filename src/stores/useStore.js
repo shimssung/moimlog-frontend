@@ -124,6 +124,14 @@ export const useStore = create(
         const currentState = get();
         const newTheme = currentState.isDarkMode ? darkTheme : lightTheme;
         set({ theme: newTheme });
+        
+        // CSS 변수 방식에서는 theme 객체는 참조용으로만 사용
+        // 실제 스타일은 CSS 변수로 적용됨
+        
+        // data-theme 속성도 동기화
+        if (typeof document !== 'undefined') {
+          document.documentElement.setAttribute('data-theme', currentState.isDarkMode ? 'dark' : 'light');
+        }
       },
 
       // ===== 인증 관련 상태 =====
