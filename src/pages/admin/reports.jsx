@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from "react";
-import styled from "styled-components";
 import Header from "../../components/Header";
 import Button from "../../components/Button";
-import { useTheme } from "../../utils/ThemeContext";
 import { useStore } from "../../stores/useStore";
 import { useRouter } from "next/router";
 
 const AdminReports = () => {
-  const { theme } = useTheme();
   const { user } = useStore();
   const router = useRouter();
   const [reports, setReports] = useState([]);
@@ -161,60 +158,56 @@ const AdminReports = () => {
   };
 
   return (
-    <PageContainer theme={theme}>
+    <div className="admin-reports-page-container">
       <Header />
-      <Container>
-        <PageHeader>
-          <HeaderInfo>
-            <PageTitle theme={theme}>신고 관리</PageTitle>
-            <PageSubtitle theme={theme}>
+      <div className="admin-reports-container">
+        <div className="admin-reports-page-header">
+          <div className="admin-reports-header-info">
+            <h1 className="admin-reports-page-title">신고 관리</h1>
+            <p className="admin-reports-page-subtitle">
               사용자 신고를 처리하고 관리하세요
-            </PageSubtitle>
-          </HeaderInfo>
-          <BackButton onClick={() => router.push("/admin/dashboard")} theme={theme}>
+            </p>
+          </div>
+          <button className="admin-reports-back-button" onClick={() => router.push("/admin/dashboard")}>
             ← 대시보드로 돌아가기
-          </BackButton>
-        </PageHeader>
+          </button>
+        </div>
 
-        <Controls>
-          <FilterSection>
-            <FilterButton
-              active={filter === "all"}
+        <div className="admin-reports-controls">
+          <div className="admin-reports-filter-section">
+            <button
+              className={`admin-reports-filter-button ${filter === "all" ? "active" : ""}`}
               onClick={() => setFilter("all")}
-              theme={theme}
             >
               전체 ({reports.length})
-            </FilterButton>
-            <FilterButton
-              active={filter === "pending"}
+            </button>
+            <button
+              className={`admin-reports-filter-button ${filter === "pending" ? "active" : ""}`}
               onClick={() => setFilter("pending")}
-              theme={theme}
             >
               대기중 ({reports.filter((r) => r.status === "pending").length})
-            </FilterButton>
-            <FilterButton
-              active={filter === "resolved"}
+            </button>
+            <button
+              className={`admin-reports-filter-button ${filter === "resolved" ? "active" : ""}`}
               onClick={() => setFilter("resolved")}
-              theme={theme}
             >
               처리완료 ({reports.filter((r) => r.status === "resolved").length})
-            </FilterButton>
-            <FilterButton
-              active={filter === "dismissed"}
+            </button>
+            <button
+              className={`admin-reports-filter-button ${filter === "dismissed" ? "active" : ""}`}
               onClick={() => setFilter("dismissed")}
-              theme={theme}
             >
               기각 ({reports.filter((r) => r.status === "dismissed").length})
-            </FilterButton>
-          </FilterSection>
-        </Controls>
+            </button>
+          </div>
+        </div>
 
         {selectedReports.length > 0 && (
-          <BulkActions>
-            <BulkInfo theme={theme}>
+          <div className="admin-reports-bulk-actions">
+            <div className="admin-reports-bulk-info">
               {selectedReports.length}건 선택됨
-            </BulkInfo>
-            <BulkButtons>
+            </div>
+            <div className="admin-reports-bulk-buttons">
               <Button
                 variant="light"
                 size="small"
@@ -229,394 +222,113 @@ const AdminReports = () => {
               >
                 선택 기각
               </Button>
-            </BulkButtons>
-          </BulkActions>
+            </div>
+          </div>
         )}
 
-        <ReportList>
+        <div className="admin-reports-list">
           {filteredReports.map((report) => (
-            <ReportCard key={report.id} theme={theme}>
-              <CardHeader>
-                <HeaderLeft>
-                  <Checkbox
+            <div key={report.id} className="admin-reports-card">
+              <div className="admin-reports-card-header">
+                <div className="admin-reports-header-left">
+                  <input
                     type="checkbox"
+                    className="admin-reports-checkbox"
                     checked={selectedReports.includes(report.id)}
                     onChange={() => handleSelectReport(report.id)}
-                    theme={theme}
                   />
-                  <ReportType theme={theme}>
+                  <div className="admin-reports-type">
                     {report.type === "user" ? "👤 사용자" : "🏠 모임"}
-                  </ReportType>
-                  <PriorityBadge priority={report.priority} theme={theme}>
+                  </div>
+                  <span className={`admin-reports-priority-badge ${report.priority}`}>
                     {report.priority === "high" ? "높음" : 
                      report.priority === "medium" ? "보통" : "낮음"}
-                  </PriorityBadge>
-                </HeaderLeft>
-                <StatusBadge status={report.status} theme={theme}>
+                  </span>
+                </div>
+                <span className={`admin-reports-status-badge ${report.status}`}>
                   {report.status === "pending" ? "대기중" : 
                    report.status === "resolved" ? "처리완료" : "기각"}
-                </StatusBadge>
-              </CardHeader>
+                </span>
+              </div>
 
-              <CardContent>
-                <ReportInfo>
-                  <InfoRow>
-                    <InfoLabel theme={theme}>신고 대상:</InfoLabel>
-                    <InfoValue theme={theme}>{report.targetName}</InfoValue>
-                  </InfoRow>
-                  <InfoRow>
-                    <InfoLabel theme={theme}>신고자:</InfoLabel>
-                    <InfoValue theme={theme}>{report.reporterName}</InfoValue>
-                  </InfoRow>
-                  <InfoRow>
-                    <InfoLabel theme={theme}>신고 사유:</InfoLabel>
-                    <InfoValue theme={theme}>{report.reason}</InfoValue>
-                  </InfoRow>
-                  <InfoRow>
-                    <InfoLabel theme={theme}>신고 내용:</InfoLabel>
-                    <InfoValue theme={theme}>{report.description}</InfoValue>
-                  </InfoRow>
-                  <InfoRow>
-                    <InfoLabel theme={theme}>신고일시:</InfoLabel>
-                    <InfoValue theme={theme}>{formatDate(report.createdAt)}</InfoValue>
-                  </InfoRow>
+              <div className="admin-reports-card-content">
+                <div className="admin-reports-info">
+                  <div className="admin-reports-info-row">
+                    <span className="admin-reports-info-label">신고 대상:</span>
+                    <span className="admin-reports-info-value">{report.targetName}</span>
+                  </div>
+                  <div className="admin-reports-info-row">
+                    <span className="admin-reports-info-label">신고자:</span>
+                    <span className="admin-reports-info-value">{report.reporterName}</span>
+                  </div>
+                  <div className="admin-reports-info-row">
+                    <span className="admin-reports-info-label">신고 사유:</span>
+                    <span className="admin-reports-info-value">{report.reason}</span>
+                  </div>
+                  <div className="admin-reports-info-row">
+                    <span className="admin-reports-info-label">신고 내용:</span>
+                    <span className="admin-reports-info-value">{report.description}</span>
+                  </div>
+                  <div className="admin-reports-info-row">
+                    <span className="admin-reports-info-label">신고일시:</span>
+                    <span className="admin-reports-info-value">{formatDate(report.createdAt)}</span>
+                  </div>
                   {report.status === "resolved" && (
-                    <InfoRow>
-                      <InfoLabel theme={theme}>처리 결과:</InfoLabel>
-                      <InfoValue theme={theme}>{report.resolution}</InfoValue>
-                    </InfoRow>
+                    <div className="admin-reports-info-row">
+                      <span className="admin-reports-info-label">처리 결과:</span>
+                      <span className="admin-reports-info-value">{report.resolution}</span>
+                    </div>
                   )}
                   {report.status === "dismissed" && (
-                    <InfoRow>
-                      <InfoLabel theme={theme}>기각 사유:</InfoLabel>
-                      <InfoValue theme={theme}>{report.dismissReason}</InfoValue>
-                    </InfoRow>
+                    <div className="admin-reports-info-row">
+                      <span className="admin-reports-info-label">기각 사유:</span>
+                      <span className="admin-reports-info-value">{report.dismissReason}</span>
+                    </div>
                   )}
-                </ReportInfo>
-              </CardContent>
+                </div>
+              </div>
 
               {report.status === "pending" && (
-                <CardActions>
-                  <ActionButton
+                <div className="admin-reports-card-actions">
+                  <button
+                    className="admin-reports-action-button"
                     onClick={() => handleReportAction(report.id, "resolve", "경고 조치")}
-                    theme={theme}
                   >
                     경고 조치
-                  </ActionButton>
-                  <ActionButton
+                  </button>
+                  <button
+                    className="admin-reports-action-button"
                     onClick={() => handleReportAction(report.id, "resolve", "계정 정지")}
-                    theme={theme}
                   >
                     계정 정지
-                  </ActionButton>
-                  <ActionButton
-                    danger
+                  </button>
+                  <button
+                    className="admin-reports-action-button danger"
                     onClick={() => handleReportAction(report.id, "dismiss", "신고 내용이 근거가 없음")}
-                    theme={theme}
                   >
                     기각
-                  </ActionButton>
-                </CardActions>
+                  </button>
+                </div>
               )}
-            </ReportCard>
+            </div>
           ))}
-        </ReportList>
+        </div>
 
         {filteredReports.length === 0 && (
-          <EmptyState>
-            <EmptyIcon>⚠️</EmptyIcon>
-            <EmptyTitle theme={theme}>신고가 없습니다</EmptyTitle>
-            <EmptyText theme={theme}>
+          <div className="admin-reports-empty-state">
+            <div className="admin-reports-empty-icon">⚠️</div>
+            <h3 className="admin-reports-empty-title">신고가 없습니다</h3>
+            <p className="admin-reports-empty-text">
               {filter === "pending" ? "처리 대기 중인 신고가 없습니다." : 
                filter === "resolved" ? "처리 완료된 신고가 없습니다." :
                filter === "dismissed" ? "기각된 신고가 없습니다." : 
                "등록된 신고가 없습니다."}
-            </EmptyText>
-          </EmptyState>
+            </p>
+          </div>
         )}
-      </Container>
-    </PageContainer>
+      </div>
+    </div>
   );
 };
 
-export default AdminReports;
-
-const PageContainer = styled.div`
-  min-height: 100vh;
-  background: ${(props) => props.theme.background};
-  transition: background-color 0.3s ease;
-`;
-
-const Container = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 40px 16px 60px 16px;
-`;
-
-const PageHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 32px;
-  gap: 16px;
-`;
-
-const HeaderInfo = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const PageTitle = styled.h1`
-  font-size: 2rem;
-  font-weight: 700;
-  color: ${(props) => props.theme.textPrimary};
-  margin: 0;
-  transition: color 0.3s ease;
-`;
-
-const PageSubtitle = styled.p`
-  font-size: 1rem;
-  color: ${(props) => props.theme.textSecondary};
-  margin: 0;
-  transition: color 0.3s ease;
-`;
-
-const BackButton = styled.button`
-  background: ${(props) => props.theme.buttonSecondary};
-  border: 1px solid ${(props) => props.theme.border};
-  border-radius: 6px;
-  padding: 8px 16px;
-  cursor: pointer;
-  color: ${(props) => props.theme.textSecondary};
-  font-size: 0.875rem;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: ${(props) => props.theme.borderLight};
-  }
-`;
-
-const Controls = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  gap: 16px;
-`;
-
-const FilterSection = styled.div`
-  display: flex;
-  gap: 8px;
-`;
-
-const FilterButton = styled.button`
-  background: ${(props) =>
-    props.active ? props.theme.buttonPrimary : props.theme.buttonSecondary};
-  color: ${(props) => (props.active ? "white" : props.theme.textSecondary)};
-  border: 1px solid
-    ${(props) =>
-      props.active ? props.theme.buttonPrimary : props.theme.border};
-  border-radius: 6px;
-  padding: 6px 12px;
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: ${(props) =>
-      props.active ? props.theme.buttonHover : props.theme.borderLight};
-  }
-`;
-
-const BulkActions = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px;
-  background: ${(props) => props.theme.surface};
-  border: 1px solid ${(props) => props.theme.borderLight};
-  border-radius: 8px;
-  margin-bottom: 24px;
-`;
-
-const BulkInfo = styled.div`
-  font-size: 0.875rem;
-  color: ${(props) => props.theme.textSecondary};
-`;
-
-const BulkButtons = styled.div`
-  display: flex;
-  gap: 8px;
-`;
-
-const ReportList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-`;
-
-const ReportCard = styled.div`
-  background: ${(props) => props.theme.surface};
-  border: 1px solid ${(props) => props.theme.borderLight};
-  border-radius: 12px;
-  overflow: hidden;
-  transition: all 0.3s ease;
-  box-shadow: ${(props) => props.theme.cardShadow};
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-  }
-`;
-
-const CardHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px;
-  border-bottom: 1px solid ${(props) => props.theme.borderLight};
-`;
-
-const HeaderLeft = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-`;
-
-const Checkbox = styled.input`
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-`;
-
-const ReportType = styled.div`
-  font-size: 0.875rem;
-  color: ${(props) => props.theme.textSecondary};
-  font-weight: 500;
-`;
-
-const PriorityBadge = styled.span`
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  background: ${(props) => {
-    switch (props.priority) {
-      case "high": return "#ef444420";
-      case "medium": return "#f59e0b20";
-      case "low": return "#10b98120";
-      default: return "#6b728020";
-    }
-  }};
-  color: ${(props) => {
-    switch (props.priority) {
-      case "high": return "#ef4444";
-      case "medium": return "#f59e0b";
-      case "low": return "#10b981";
-      default: return "#6b7280";
-    }
-  }};
-`;
-
-const StatusBadge = styled.span`
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  background: ${(props) => {
-    switch (props.status) {
-      case "pending": return "#f59e0b20";
-      case "resolved": return "#10b98120";
-      case "dismissed": return "#6b728020";
-      default: return "#6b728020";
-    }
-  }};
-  color: ${(props) => {
-    switch (props.status) {
-      case "pending": return "#f59e0b";
-      case "resolved": return "#10b981";
-      case "dismissed": return "#6b7280";
-      default: return "#6b7280";
-    }
-  }};
-`;
-
-const CardContent = styled.div`
-  padding: 16px;
-`;
-
-const ReportInfo = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-`;
-
-const InfoRow = styled.div`
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-`;
-
-const InfoLabel = styled.span`
-  font-size: 0.875rem;
-  color: ${(props) => props.theme.textSecondary};
-  font-weight: 500;
-  min-width: 80px;
-`;
-
-const InfoValue = styled.span`
-  font-size: 0.875rem;
-  color: ${(props) => props.theme.textPrimary};
-  flex: 1;
-`;
-
-const CardActions = styled.div`
-  display: flex;
-  gap: 8px;
-  padding: 16px;
-  border-top: 1px solid ${(props) => props.theme.borderLight};
-`;
-
-const ActionButton = styled.button`
-  flex: 1;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  cursor: pointer;
-  background: ${(props) =>
-    props.danger ? props.theme.error + "20" : props.theme.buttonSecondary};
-  color: ${(props) =>
-    props.danger ? props.theme.error : props.theme.textSecondary};
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: ${(props) =>
-      props.danger ? props.theme.error : props.theme.borderLight};
-    color: ${(props) => (props.danger ? "white" : props.theme.textPrimary)};
-  }
-`;
-
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 48px 0;
-`;
-
-const EmptyIcon = styled.div`
-  font-size: 3rem;
-  margin-bottom: 16px;
-`;
-
-const EmptyTitle = styled.h3`
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: ${(props) => props.theme.textPrimary};
-  margin: 0 0 8px 0;
-`;
-
-const EmptyText = styled.p`
-  font-size: 0.875rem;
-  color: ${(props) => props.theme.textSecondary};
-  margin: 0;
-`; 
+export default AdminReports; 

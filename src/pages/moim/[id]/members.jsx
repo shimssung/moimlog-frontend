@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from "react";
-import styled from "styled-components";
 import { useRouter } from "next/router";
 import Sidebar from "../../../components/Sidebar";
 import Header from "../../../components/Header";
 import Button from "../../../components/Button";
-import { useTheme } from "../../../utils/ThemeContext";
 
 const MoimMembersPage = () => {
-  const { theme } = useTheme();
   const router = useRouter();
   const { id: moimId } = router.query;
   const [moimInfo, setMoimInfo] = useState(null);
@@ -190,399 +187,105 @@ const MoimMembersPage = () => {
   };
 
   return (
-    <PageContainer theme={theme}>
+    <div className="moim-members-page">
       <Header />
-      <ContentContainer>
+      <div className="moim-members-content">
         <Sidebar moimId={moimId} moimRole={moimInfo?.role} activeMenu="members" />
 
-        <MainContent>
-        <PageHeader>
-          <HeaderInfo>
-            <PageTitle theme={theme}>멤버 관리</PageTitle>
-            <PageSubtitle theme={theme}>
-              {moimInfo?.title}의 멤버를 관리하세요
-            </PageSubtitle>
-          </HeaderInfo>
-        </PageHeader>
+        <div className="moim-members-main">
+          <div className="page-header">
+            <div className="header-info">
+              <h1 className="page-title">멤버 관리</h1>
+              <p className="page-subtitle">
+                {moimInfo?.title}의 멤버들을 관리하세요
+              </p>
+            </div>
+            <div className="header-actions">
+              <button className="export-button" onClick={handleExportMembers}>
+                <span className="button-icon">📊</span>
+                멤버 목록 내보내기
+              </button>
+            </div>
+          </div>
 
-        <StatsContainer>
-          <StatCard theme={theme}>
-            <StatNumber theme={theme}>{members.length}</StatNumber>
-            <StatLabel theme={theme}>전체 멤버</StatLabel>
-          </StatCard>
-          <StatCard theme={theme}>
-            <StatNumber theme={theme}>
-              {members.filter((m) => m.status === "online").length}
-            </StatNumber>
-            <StatLabel theme={theme}>온라인</StatLabel>
-          </StatCard>
-          <StatCard theme={theme}>
-            <StatNumber theme={theme}>
-              {members.filter((m) => m.role === "운영자").length}
-            </StatNumber>
-            <StatLabel theme={theme}>운영자</StatLabel>
-          </StatCard>
-        </StatsContainer>
-
-        <TabContainer theme={theme}>
-          {[
-            { key: "all", label: "전체", count: members.length },
-            {
-              key: "online",
-              label: "온라인",
-              count: members.filter((m) => m.status === "online").length,
-            },
-            {
-              key: "offline",
-              label: "오프라인",
-              count: members.filter((m) => m.status === "offline").length,
-            },
-            {
-              key: "admin",
-              label: "운영자",
-              count: members.filter((m) => m.role === "운영자").length,
-            },
-          ].map((tab) => (
-            <Tab
-              key={tab.key}
-              $active={activeTab === tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              theme={theme}
+          <div className="tab-container">
+            <button
+              className={`tab ${activeTab === "all" ? "active" : ""}`}
+              onClick={() => setActiveTab("all")}
             >
-              {tab.label} ({tab.count})
-            </Tab>
-          ))}
-        </TabContainer>
+              전체 ({members.length})
+            </button>
+            <button
+              className={`tab ${activeTab === "online" ? "active" : ""}`}
+              onClick={() => setActiveTab("online")}
+            >
+              온라인 ({members.filter((m) => m.status === "online").length})
+            </button>
+            <button
+              className={`tab ${activeTab === "offline" ? "active" : ""}`}
+              onClick={() => setActiveTab("offline")}
+            >
+              오프라인 ({members.filter((m) => m.status === "offline").length})
+            </button>
+            <button
+              className={`tab ${activeTab === "admin" ? "active" : ""}`}
+              onClick={() => setActiveTab("admin")}
+            >
+              운영자 ({members.filter((m) => m.role === "운영자").length})
+            </button>
+          </div>
 
-        <ActionBar>
-          <SearchInput type="text" placeholder="멤버 검색..." theme={theme} />
-          <Button variant="light" onClick={handleExportMembers}>
-            📊 내보내기
-          </Button>
-        </ActionBar>
-
-        <MemberList>
-          {getFilteredMembers().map((member) => (
-            <MemberCard key={member.id} theme={theme}>
-              <MemberInfo>
-                <MemberAvatar
-                  src={member.image}
-                  alt={member.name}
-                  $status={member.status}
-                />
-                <MemberDetails>
-                  <MemberName theme={theme}>{member.name}</MemberName>
-                  <MemberEmail theme={theme}>{member.email}</MemberEmail>
-                  <MemberMeta>
-                    <JoinDate theme={theme}>
-                      가입일: {formatDate(member.joinDate)}
-                    </JoinDate>
-                    <LastActive theme={theme}>
-                      마지막 활동: {formatLastActive(member.lastActive)}
-                    </LastActive>
-                  </MemberMeta>
-                </MemberDetails>
-              </MemberInfo>
-              <MemberActions>
-                <RoleSelect
-                  value={member.role}
-                  onChange={(e) => handleRoleChange(member.id, e.target.value)}
-                  theme={theme}
-                >
-                  <option value="멤버">멤버</option>
-                  <option value="운영자">운영자</option>
-                </RoleSelect>
-                <RemoveButton
-                  onClick={() => handleRemoveMember(member.id)}
-                  theme={theme}
-                >
-                  제거
-                </RemoveButton>
-              </MemberActions>
-            </MemberCard>
-          ))}
-        </MemberList>
-
-        {getFilteredMembers().length === 0 && (
-          <EmptyState>
-            <EmptyIcon>👥</EmptyIcon>
-            <EmptyTitle theme={theme}>멤버가 없습니다</EmptyTitle>
-            <EmptyText theme={theme}>아직 가입한 멤버가 없습니다.</EmptyText>
-          </EmptyState>
-        )}
-      </MainContent>
-      </ContentContainer>
-    </PageContainer>
+          <div className="members-grid">
+            {getFilteredMembers().map((member) => (
+              <div key={member.id} className="member-card">
+                <div className="member-header">
+                  <div className="member-avatar">
+                    <img src={member.image} alt={member.name} />
+                    <span className={`status-dot ${member.status}`}></span>
+                  </div>
+                  <div className="member-info">
+                    <h3 className="member-name">{member.name}</h3>
+                    <p className="member-email">{member.email}</p>
+                    <span className={`role-badge ${member.role}`}>
+                      {member.role}
+                    </span>
+                  </div>
+                </div>
+                <div className="member-details">
+                  <div className="detail-item">
+                    <span className="detail-label">가입일:</span>
+                    <span className="detail-value">{formatDate(member.joinDate)}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="detail-label">마지막 활동:</span>
+                    <span className="detail-value">{formatLastActive(member.lastActive)}</span>
+                  </div>
+                </div>
+                {moimInfo?.role === "운영자" && member.role !== "운영자" && (
+                  <div className="member-actions">
+                    <select
+                      className="role-select"
+                      value={member.role}
+                      onChange={(e) => handleRoleChange(member.id, e.target.value)}
+                    >
+                      <option value="멤버">멤버</option>
+                      <option value="운영자">운영자</option>
+                    </select>
+                    <button
+                      className="remove-button"
+                      onClick={() => handleRemoveMember(member.id)}
+                    >
+                      제거
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
 export default MoimMembersPage;
-
-const PageContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  background: ${(props) => props.theme.background};
-  transition: background-color 0.3s ease;
-`;
-
-const ContentContainer = styled.div`
-  display: flex;
-  flex: 1;
-  height: calc(100vh - 80px); // 헤더 높이를 뺀 높이
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-  }
-`;
-
-const MainContent = styled.div`
-  flex: 1;
-  margin-left: 250px;
-  padding: 24px;
-  overflow-y: auto;
-  height: calc(100vh - 80px); // 헤더 높이를 뺀 높이
-
-  @media (max-width: 768px) {
-    margin-left: 0;
-    padding: 16px;
-  }
-`;
-
-const PageHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 32px;
-`;
-
-const HeaderInfo = styled.div``;
-
-const PageTitle = styled.h1`
-  font-size: 2rem;
-  font-weight: 700;
-  color: ${(props) => props.theme.textPrimary};
-  margin: 0 0 8px 0;
-  transition: color 0.3s ease;
-`;
-
-const PageSubtitle = styled.p`
-  font-size: 1rem;
-  color: ${(props) => props.theme.textSecondary};
-  margin: 0;
-  transition: color 0.3s ease;
-`;
-
-const StatsContainer = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
-`;
-
-const StatCard = styled.div`
-  background: ${(props) => props.theme.surface};
-  border: 1px solid ${(props) => props.theme.borderLight};
-  border-radius: 12px;
-  padding: 20px;
-  text-align: center;
-  transition: all 0.3s ease;
-`;
-
-const StatNumber = styled.div`
-  font-size: 2rem;
-  font-weight: 700;
-  color: ${(props) => props.theme.textPrimary};
-  margin-bottom: 8px;
-  transition: color 0.3s ease;
-`;
-
-const StatLabel = styled.div`
-  font-size: 0.9rem;
-  color: ${(props) => props.theme.textSecondary};
-  transition: color 0.3s ease;
-`;
-
-const TabContainer = styled.div`
-  display: flex;
-  gap: 8px;
-  margin-bottom: 24px;
-  border-bottom: 1px solid ${(props) => props.theme.borderLight};
-  transition: border-color 0.3s ease;
-`;
-
-const Tab = styled.button`
-  background: none;
-  border: none;
-  padding: 12px 16px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: ${({ $active, theme }) =>
-    $active ? theme.textPrimary : theme.textSecondary};
-  cursor: pointer;
-  border-bottom: 2px solid
-    ${({ $active, theme }) => ($active ? theme.buttonPrimary : "transparent")};
-  transition: all 0.2s ease;
-
-  &:hover {
-    color: ${(props) => props.theme.textPrimary};
-  }
-`;
-
-const ActionBar = styled.div`
-  display: flex;
-  gap: 16px;
-  margin-bottom: 24px;
-  align-items: center;
-`;
-
-const SearchInput = styled.input`
-  flex: 1;
-  max-width: 300px;
-  padding: 10px 12px;
-  border: 1px solid ${(props) => props.theme.borderLight};
-  border-radius: 8px;
-  font-size: 0.9rem;
-  background: ${(props) => props.theme.surfaceSecondary};
-  color: ${(props) => props.theme.textPrimary};
-  transition: all 0.2s ease;
-
-  &:focus {
-    outline: none;
-    border-color: ${(props) => props.theme.buttonPrimary};
-  }
-
-  &::placeholder {
-    color: ${(props) => props.theme.textTertiary};
-  }
-`;
-
-const MemberList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-`;
-
-const MemberCard = styled.div`
-  background: ${(props) => props.theme.surface};
-  border: 1px solid ${(props) => props.theme.borderLight};
-  border-radius: 12px;
-  padding: 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  transition: all 0.3s ease;
-`;
-
-const MemberInfo = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex: 1;
-`;
-
-const MemberAvatar = styled.img`
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid
-    ${(props) =>
-      props.$status === "online" ? "#10b981" : props.theme.borderLight};
-`;
-
-const MemberDetails = styled.div`
-  flex: 1;
-`;
-
-const MemberName = styled.div`
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: ${(props) => props.theme.textPrimary};
-  margin-bottom: 4px;
-  transition: color 0.3s ease;
-`;
-
-const MemberEmail = styled.div`
-  font-size: 0.9rem;
-  color: ${(props) => props.theme.textSecondary};
-  margin-bottom: 8px;
-  transition: color 0.3s ease;
-`;
-
-const MemberMeta = styled.div`
-  display: flex;
-  gap: 16px;
-  font-size: 0.8rem;
-`;
-
-const JoinDate = styled.span`
-  color: ${(props) => props.theme.textTertiary};
-  transition: color 0.3s ease;
-`;
-
-const LastActive = styled.span`
-  color: ${(props) => props.theme.textTertiary};
-  transition: color 0.3s ease;
-`;
-
-const MemberActions = styled.div`
-  display: flex;
-  gap: 12px;
-  align-items: center;
-`;
-
-const RoleSelect = styled.select`
-  padding: 8px 12px;
-  border: 1px solid ${(props) => props.theme.borderLight};
-  border-radius: 6px;
-  font-size: 0.9rem;
-  background: ${(props) => props.theme.surfaceSecondary};
-  color: ${(props) => props.theme.textPrimary};
-  transition: all 0.2s ease;
-
-  &:focus {
-    outline: none;
-    border-color: ${(props) => props.theme.buttonPrimary};
-  }
-`;
-
-const RemoveButton = styled.button`
-  padding: 8px 12px;
-  background: #ef4444;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: #dc2626;
-  }
-`;
-
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 80px 20px;
-`;
-
-const EmptyIcon = styled.div`
-  font-size: 4rem;
-  margin-bottom: 16px;
-`;
-
-const EmptyTitle = styled.h3`
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: ${(props) => props.theme.textPrimary};
-  margin: 0 0 8px 0;
-  transition: color 0.3s ease;
-`;
-
-const EmptyText = styled.p`
-  font-size: 1.1rem;
-  color: ${(props) => props.theme.textSecondary};
-  margin: 0;
-  transition: color 0.3s ease;
-`;

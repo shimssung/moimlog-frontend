@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from "react";
-import styled from "styled-components";
 import Header from "../../components/Header";
 import Button from "../../components/Button";
-import { useTheme } from "../../utils/ThemeContext";
 import { useStore } from "../../stores/useStore";
 import { useRouter } from "next/router";
 
 const AdminUsers = () => {
-  const { theme } = useTheme();
   const { user } = useStore();
   const router = useRouter();
   const [users, setUsers] = useState([]);
@@ -161,70 +158,66 @@ const AdminUsers = () => {
   };
 
   return (
-    <PageContainer theme={theme}>
+    <div className="admin-users-page-container">
       <Header />
-      <Container>
-        <PageHeader>
-          <HeaderInfo>
-            <PageTitle theme={theme}>사용자 관리</PageTitle>
-            <PageSubtitle theme={theme}>
+      <div className="admin-users-container">
+        <div className="admin-users-page-header">
+          <div className="admin-users-header-info">
+            <h1 className="admin-users-page-title">사용자 관리</h1>
+            <p className="admin-users-page-subtitle">
               전체 사용자를 조회하고 관리하세요
-            </PageSubtitle>
-          </HeaderInfo>
-          <BackButton onClick={() => router.push("/admin/dashboard")} theme={theme}>
+            </p>
+          </div>
+          <button className="admin-users-back-button" onClick={() => router.push("/admin/dashboard")}>
             ← 대시보드로 돌아가기
-          </BackButton>
-        </PageHeader>
+          </button>
+        </div>
 
-        <Controls>
-          <FilterSection>
-            <FilterButton
-              active={filter === "all"}
+        <div className="admin-users-controls">
+          <div className="admin-users-filter-section">
+            <button
+              className={`admin-users-filter-button ${filter === "all" ? "active" : ""}`}
               onClick={() => setFilter("all")}
-              theme={theme}
             >
               전체 ({users.length})
-            </FilterButton>
-            <FilterButton
-              active={filter === "active"}
+            </button>
+            <button
+              className={`admin-users-filter-button ${filter === "active" ? "active" : ""}`}
               onClick={() => setFilter("active")}
-              theme={theme}
             >
               활성 ({users.filter((u) => u.status === "active").length})
-            </FilterButton>
-            <FilterButton
-              active={filter === "suspended"}
+            </button>
+            <button
+              className={`admin-users-filter-button ${filter === "suspended" ? "active" : ""}`}
               onClick={() => setFilter("suspended")}
-              theme={theme}
             >
               정지 ({users.filter((u) => u.status === "suspended").length})
-            </FilterButton>
-            <FilterButton
-              active={filter === "reported"}
+            </button>
+            <button
+              className={`admin-users-filter-button ${filter === "reported" ? "active" : ""}`}
               onClick={() => setFilter("reported")}
-              theme={theme}
             >
               신고됨 ({users.filter((u) => u.reportCount > 0).length})
-            </FilterButton>
-          </FilterSection>
+            </button>
+          </div>
 
-          <SearchSection>
-            <SearchInput
+          <div className="admin-users-search-section">
+            <input
               type="text"
+              className="admin-users-search-input"
               placeholder="사용자 검색..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              theme={theme}
             />
-          </SearchSection>
-        </Controls>
+          </div>
+        </div>
 
         {selectedUsers.length > 0 && (
-          <BulkActions>
-            <BulkInfo theme={theme}>
+          <div className="admin-users-bulk-actions">
+            <div className="admin-users-bulk-info">
               {selectedUsers.length}명 선택됨
-            </BulkInfo>
-            <BulkButtons>
+            </div>
+            <div className="admin-users-bulk-buttons">
               <Button
                 variant="light"
                 size="small"
@@ -246,378 +239,95 @@ const AdminUsers = () => {
               >
                 선택 삭제
               </Button>
-            </BulkButtons>
-          </BulkActions>
+            </div>
+          </div>
         )}
 
-        <UserTable>
-          <TableHeader>
-            <Checkbox
+        <div className="admin-users-table">
+          <div className="admin-users-table-header">
+            <input
               type="checkbox"
+              className="admin-users-checkbox"
               checked={selectedUsers.length === filteredUsers.length}
               onChange={handleSelectAll}
-              theme={theme}
             />
-            <HeaderCell theme={theme}>사용자</HeaderCell>
-            <HeaderCell theme={theme}>가입일</HeaderCell>
-            <HeaderCell theme={theme}>마지막 활동</HeaderCell>
-            <HeaderCell theme={theme}>모임 수</HeaderCell>
-            <HeaderCell theme={theme}>신고 수</HeaderCell>
-            <HeaderCell theme={theme}>상태</HeaderCell>
-            <HeaderCell theme={theme}>작업</HeaderCell>
-          </TableHeader>
+            <div className="admin-users-header-cell">사용자</div>
+            <div className="admin-users-header-cell">가입일</div>
+            <div className="admin-users-header-cell">마지막 활동</div>
+            <div className="admin-users-header-cell">모임 수</div>
+            <div className="admin-users-header-cell">신고 수</div>
+            <div className="admin-users-header-cell">상태</div>
+            <div className="admin-users-header-cell">작업</div>
+          </div>
 
-          <TableBody>
+          <div className="admin-users-table-body">
             {filteredUsers.map((user) => (
-              <TableRow key={user.id} theme={theme}>
-                <TableCell>
-                  <Checkbox
+              <div key={user.id} className="admin-users-table-row">
+                <div className="admin-users-table-cell">
+                  <input
                     type="checkbox"
+                    className="admin-users-checkbox"
                     checked={selectedUsers.includes(user.id)}
                     onChange={() => handleSelectUser(user.id)}
-                    theme={theme}
                   />
-                </TableCell>
-                <TableCell>
-                  <UserInfo>
-                    <UserName theme={theme}>{user.name}</UserName>
-                    <UserEmail theme={theme}>{user.email}</UserEmail>
-                  </UserInfo>
-                </TableCell>
-                <TableCell theme={theme}>{formatDate(user.joinDate)}</TableCell>
-                <TableCell theme={theme}>{formatLastActive(user.lastActive)}</TableCell>
-                <TableCell theme={theme}>{user.moimCount}개</TableCell>
-                <TableCell theme={theme}>{user.reportCount}건</TableCell>
-                <TableCell>
-                  <StatusBadge status={user.status} theme={theme}>
+                </div>
+                <div className="admin-users-table-cell">
+                  <div className="admin-users-user-info">
+                    <div className="admin-users-user-name">{user.name}</div>
+                    <div className="admin-users-user-email">{user.email}</div>
+                  </div>
+                </div>
+                <div className="admin-users-table-cell">{formatDate(user.joinDate)}</div>
+                <div className="admin-users-table-cell">{formatLastActive(user.lastActive)}</div>
+                <div className="admin-users-table-cell">{user.moimCount}개</div>
+                <div className="admin-users-table-cell">{user.reportCount}건</div>
+                <div className="admin-users-table-cell">
+                  <span className={`admin-users-status-badge ${user.status}`}>
                     {user.status === "active" ? "활성" : "정지"}
-                  </StatusBadge>
-                </TableCell>
-                <TableCell>
-                  <ActionButtons>
+                  </span>
+                </div>
+                <div className="admin-users-table-cell">
+                  <div className="admin-users-action-buttons">
                     {user.status === "active" ? (
-                      <ActionButton
+                      <button
+                        className="admin-users-action-button"
                         onClick={() => handleUserAction(user.id, "suspend")}
-                        theme={theme}
                       >
                         정지
-                      </ActionButton>
+                      </button>
                     ) : (
-                      <ActionButton
+                      <button
+                        className="admin-users-action-button"
                         onClick={() => handleUserAction(user.id, "activate")}
-                        theme={theme}
                       >
                         활성화
-                      </ActionButton>
+                      </button>
                     )}
-                    <ActionButton
-                      danger
+                    <button
+                      className="admin-users-action-button danger"
                       onClick={() => handleUserAction(user.id, "delete")}
-                      theme={theme}
                     >
                       삭제
-                    </ActionButton>
-                  </ActionButtons>
-                </TableCell>
-              </TableRow>
+                    </button>
+                  </div>
+                </div>
+              </div>
             ))}
-          </TableBody>
-        </UserTable>
+          </div>
+        </div>
 
         {filteredUsers.length === 0 && (
-          <EmptyState>
-            <EmptyIcon>👥</EmptyIcon>
-            <EmptyTitle theme={theme}>사용자가 없습니다</EmptyTitle>
-            <EmptyText theme={theme}>
+          <div className="admin-users-empty-state">
+            <div className="admin-users-empty-icon">👥</div>
+            <h3 className="admin-users-empty-title">사용자가 없습니다</h3>
+            <p className="admin-users-empty-text">
               {searchTerm ? "검색 결과가 없습니다." : "등록된 사용자가 없습니다."}
-            </EmptyText>
-          </EmptyState>
+            </p>
+          </div>
         )}
-      </Container>
-    </PageContainer>
+      </div>
+    </div>
   );
 };
 
-export default AdminUsers;
-
-const PageContainer = styled.div`
-  min-height: 100vh;
-  background: ${(props) => props.theme.background};
-  transition: background-color 0.3s ease;
-`;
-
-const Container = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 40px 16px 60px 16px;
-`;
-
-const PageHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 32px;
-  gap: 16px;
-`;
-
-const HeaderInfo = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const PageTitle = styled.h1`
-  font-size: 2rem;
-  font-weight: 700;
-  color: ${(props) => props.theme.textPrimary};
-  margin: 0;
-  transition: color 0.3s ease;
-`;
-
-const PageSubtitle = styled.p`
-  font-size: 1rem;
-  color: ${(props) => props.theme.textSecondary};
-  margin: 0;
-  transition: color 0.3s ease;
-`;
-
-const BackButton = styled.button`
-  background: ${(props) => props.theme.buttonSecondary};
-  border: 1px solid ${(props) => props.theme.border};
-  border-radius: 6px;
-  padding: 8px 16px;
-  cursor: pointer;
-  color: ${(props) => props.theme.textSecondary};
-  font-size: 0.875rem;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: ${(props) => props.theme.borderLight};
-  }
-`;
-
-const Controls = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  gap: 16px;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: stretch;
-  }
-`;
-
-const FilterSection = styled.div`
-  display: flex;
-  gap: 8px;
-`;
-
-const FilterButton = styled.button`
-  background: ${(props) =>
-    props.active ? props.theme.buttonPrimary : props.theme.buttonSecondary};
-  color: ${(props) => (props.active ? "white" : props.theme.textSecondary)};
-  border: 1px solid
-    ${(props) =>
-      props.active ? props.theme.buttonPrimary : props.theme.border};
-  border-radius: 6px;
-  padding: 6px 12px;
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: ${(props) =>
-      props.active ? props.theme.buttonHover : props.theme.borderLight};
-  }
-`;
-
-const SearchSection = styled.div`
-  flex: 1;
-  max-width: 300px;
-`;
-
-const SearchInput = styled.input`
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid ${(props) => props.theme.border};
-  border-radius: 6px;
-  background: ${(props) => props.theme.surface};
-  color: ${(props) => props.theme.textPrimary};
-  font-size: 0.875rem;
-  transition: all 0.2s ease;
-
-  &:focus {
-    outline: none;
-    border-color: ${(props) => props.theme.buttonPrimary};
-  }
-
-  &::placeholder {
-    color: ${(props) => props.theme.textTertiary};
-  }
-`;
-
-const BulkActions = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px;
-  background: ${(props) => props.theme.surface};
-  border: 1px solid ${(props) => props.theme.borderLight};
-  border-radius: 8px;
-  margin-bottom: 24px;
-`;
-
-const BulkInfo = styled.div`
-  font-size: 0.875rem;
-  color: ${(props) => props.theme.textSecondary};
-`;
-
-const BulkButtons = styled.div`
-  display: flex;
-  gap: 8px;
-`;
-
-const UserTable = styled.div`
-  background: ${(props) => props.theme.surface};
-  border: 1px solid ${(props) => props.theme.borderLight};
-  border-radius: 8px;
-  overflow: hidden;
-`;
-
-const TableHeader = styled.div`
-  display: grid;
-  grid-template-columns: 50px 2fr 1fr 1fr 1fr 1fr 1fr 1fr;
-  gap: 16px;
-  padding: 16px;
-  background: ${(props) => props.theme.borderLight};
-  border-bottom: 1px solid ${(props) => props.theme.borderLight};
-  font-weight: 600;
-  font-size: 0.875rem;
-  color: ${(props) => props.theme.textPrimary};
-
-  @media (max-width: 768px) {
-    grid-template-columns: 50px 1fr;
-    gap: 8px;
-  }
-`;
-
-const HeaderCell = styled.div`
-  color: ${(props) => props.theme.textPrimary};
-  font-weight: 600;
-  font-size: 0.875rem;
-`;
-
-const TableBody = styled.div``;
-
-const TableRow = styled.div`
-  display: grid;
-  grid-template-columns: 50px 2fr 1fr 1fr 1fr 1fr 1fr 1fr;
-  gap: 16px;
-  padding: 16px;
-  border-bottom: 1px solid ${(props) => props.theme.borderLight};
-  transition: background-color 0.2s ease;
-
-  &:hover {
-    background: ${(props) => props.theme.borderLight};
-  }
-
-  &:last-child {
-    border-bottom: none;
-  }
-
-  @media (max-width: 768px) {
-    grid-template-columns: 50px 1fr;
-    gap: 8px;
-  }
-`;
-
-const TableCell = styled.div`
-  display: flex;
-  align-items: center;
-  color: ${(props) => props.theme.textPrimary};
-  font-size: 0.875rem;
-`;
-
-const Checkbox = styled.input`
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-`;
-
-const UserInfo = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-`;
-
-const UserName = styled.div`
-  font-weight: 500;
-  color: ${(props) => props.theme.textPrimary};
-`;
-
-const UserEmail = styled.div`
-  font-size: 0.75rem;
-  color: ${(props) => props.theme.textSecondary};
-`;
-
-const StatusBadge = styled.span`
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  background: ${(props) =>
-    props.status === "active"
-      ? props.theme.success + "20"
-      : props.theme.error + "20"};
-  color: ${(props) =>
-    props.status === "active" ? props.theme.success : props.theme.error};
-`;
-
-const ActionButtons = styled.div`
-  display: flex;
-  gap: 4px;
-`;
-
-const ActionButton = styled.button`
-  padding: 4px 8px;
-  border: none;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  cursor: pointer;
-  background: ${(props) =>
-    props.danger ? props.theme.error + "20" : props.theme.buttonSecondary};
-  color: ${(props) =>
-    props.danger ? props.theme.error : props.theme.textSecondary};
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: ${(props) =>
-      props.danger ? props.theme.error : props.theme.borderLight};
-    color: ${(props) => (props.danger ? "white" : props.theme.textPrimary)};
-  }
-`;
-
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 48px 0;
-`;
-
-const EmptyIcon = styled.div`
-  font-size: 3rem;
-  margin-bottom: 16px;
-`;
-
-const EmptyTitle = styled.h3`
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: ${(props) => props.theme.textPrimary};
-  margin: 0 0 8px 0;
-`;
-
-const EmptyText = styled.p`
-  font-size: 0.875rem;
-  color: ${(props) => props.theme.textSecondary};
-  margin: 0;
-`; 
+export default AdminUsers; 

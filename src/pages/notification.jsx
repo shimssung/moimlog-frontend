@@ -1,8 +1,6 @@
 import React, { useState } from "react";
-import styled from "styled-components";
 import Header from "../components/Header";
 import Button from "../components/Button";
-import { useTheme } from "../utils/ThemeContext";
 
 const dummyNotifications = [
   {
@@ -72,7 +70,6 @@ const dummyNotifications = [
 ];
 
 const Notification = () => {
-  const { theme } = useTheme();
   const [notifications, setNotifications] = useState(dummyNotifications);
   const [filter, setFilter] = useState("all"); // all, unread, read
 
@@ -128,263 +125,96 @@ const Notification = () => {
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
-    <PageContainer theme={theme}>
+    <div className="notification-page">
       <Header />
-      <Container>
-        <NotificationContainer theme={theme}>
-          <NotificationHeader>
-            <HeaderLeft>
-              <NotificationTitle theme={theme}>알림</NotificationTitle>
-              <NotificationCount theme={theme}>
+      <div className="notification-container">
+        <div className="notification-content">
+          <div className="notification-header">
+            <div className="header-left">
+              <h1 className="notification-title">알림</h1>
+              <p className="notification-count">
                 {unreadCount}개의 읽지 않은 알림
-              </NotificationCount>
-            </HeaderLeft>
-            <HeaderRight>
-              <FilterButtons>
-                <FilterButton
-                  active={filter === "all"}
+              </p>
+            </div>
+            <div className="header-right">
+              <div className="filter-buttons">
+                <button
+                  className={`filter-button ${filter === "all" ? "active" : ""}`}
                   onClick={() => setFilter("all")}
-                  theme={theme}
                 >
                   전체
-                </FilterButton>
-                <FilterButton
-                  active={filter === "unread"}
+                </button>
+                <button
+                  className={`filter-button ${filter === "unread" ? "active" : ""}`}
                   onClick={() => setFilter("unread")}
-                  theme={theme}
                 >
                   읽지 않음
-                </FilterButton>
-                <FilterButton
-                  active={filter === "read"}
+                </button>
+                <button
+                  className={`filter-button ${filter === "read" ? "active" : ""}`}
                   onClick={() => setFilter("read")}
-                  theme={theme}
                 >
                   읽음
-                </FilterButton>
-              </FilterButtons>
+                </button>
+              </div>
               {unreadCount > 0 && (
                 <Button variant="light" size="small" onClick={markAllAsRead}>
                   모두 읽음 표시
                 </Button>
               )}
-            </HeaderRight>
-          </NotificationHeader>
+            </div>
+          </div>
 
-          <NotificationList>
+          <div className="notification-list">
             {filteredNotifications.length === 0 ? (
-              <EmptyState theme={theme}>
+              <div className="empty-state">
                 {filter === "all"
                   ? "알림이 없습니다."
                   : filter === "unread"
                   ? "읽지 않은 알림이 없습니다."
                   : "읽은 알림이 없습니다."}
-              </EmptyState>
+              </div>
             ) : (
               filteredNotifications.map((notification) => (
-                <NotificationItem
+                <div
                   key={notification.id}
-                  isRead={notification.isRead}
-                  theme={theme}
+                  className={`notification-item ${notification.isRead ? "read" : "unread"}`}
                 >
-                  <NotificationContent>
-                    <NotificationItemTitle theme={theme}>
+                  <div className="notification-content">
+                    <h3 className="notification-item-title">
                       {notification.title}
-                    </NotificationItemTitle>
-                    <NotificationMessage theme={theme}>
+                    </h3>
+                    <p className="notification-message">
                       {notification.message}
-                    </NotificationMessage>
-                    <NotificationDate theme={theme}>
+                    </p>
+                    <p className="notification-date">
                       {formatDate(notification.date)}
-                    </NotificationDate>
-                  </NotificationContent>
-                  <NotificationActions>
+                    </p>
+                  </div>
+                  <div className="notification-actions">
                     {!notification.isRead && (
-                      <Button
-                        variant="light"
-                        size="small"
+                      <button
+                        className="action-button"
                         onClick={() => markAsRead(notification.id)}
                       >
                         읽음 표시
-                      </Button>
+                      </button>
                     )}
-                    <Button
-                      variant="light"
-                      size="small"
+                    <button
+                      className="action-button delete"
                       onClick={() => deleteNotification(notification.id)}
                     >
                       삭제
-                    </Button>
-                  </NotificationActions>
-                </NotificationItem>
+                    </button>
+                  </div>
+                </div>
               ))
             )}
-          </NotificationList>
-        </NotificationContainer>
-      </Container>
-    </PageContainer>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
 export default Notification;
-
-const PageContainer = styled.div`
-  min-height: 100vh;
-  background: ${(props) => props.theme.background};
-  transition: background-color 0.3s ease;
-`;
-
-const Container = styled.div`
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 40px 16px 60px 16px;
-`;
-
-const NotificationContainer = styled.div`
-  background: ${(props) => props.theme.surface};
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: ${(props) => props.theme.cardShadow};
-  border: 1px solid ${(props) => props.theme.borderLight};
-  transition: all 0.3s ease;
-`;
-
-const NotificationHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 24px;
-  gap: 16px;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: stretch;
-  }
-`;
-
-const HeaderLeft = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-`;
-
-const HeaderRight = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 16px;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: stretch;
-  }
-`;
-
-const NotificationTitle = styled.h1`
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: ${(props) => props.theme.textPrimary};
-  margin: 0;
-  transition: color 0.3s ease;
-`;
-
-const NotificationCount = styled.div`
-  font-size: 0.875rem;
-  color: ${(props) => props.theme.textSecondary};
-  transition: color 0.3s ease;
-`;
-
-const FilterButtons = styled.div`
-  display: flex;
-  gap: 8px;
-`;
-
-const FilterButton = styled.button`
-  background: ${(props) =>
-    props.active ? props.theme.buttonPrimary : props.theme.buttonSecondary};
-  color: ${(props) => (props.active ? "white" : props.theme.textSecondary)};
-  border: 1px solid
-    ${(props) =>
-      props.active ? props.theme.buttonPrimary : props.theme.border};
-  border-radius: 6px;
-  padding: 6px 12px;
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: ${(props) =>
-      props.active ? props.theme.buttonHover : props.theme.borderLight};
-  }
-`;
-
-const NotificationList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-`;
-
-const NotificationItem = styled.div`
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 16px;
-  border-radius: 8px;
-  background: ${(props) =>
-    props.isRead ? props.theme.surface : props.theme.surfaceSecondary};
-  border: 1px solid ${(props) => props.theme.borderLight};
-  transition: all 0.2s;
-
-  &:hover {
-    background: ${(props) => props.theme.borderLight};
-  }
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    gap: 12px;
-  }
-`;
-
-const NotificationContent = styled.div`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-`;
-
-const NotificationMessage = styled.div`
-  font-size: 0.875rem;
-  color: ${(props) => props.theme.textSecondary};
-  transition: color 0.3s ease;
-`;
-
-const NotificationDate = styled.div`
-  font-size: 0.75rem;
-  color: ${(props) => props.theme.textTertiary};
-  margin-top: 4px;
-  transition: color 0.3s ease;
-`;
-
-const NotificationActions = styled.div`
-  display: flex;
-  gap: 8px;
-  align-items: flex-start;
-
-  @media (max-width: 768px) {
-    justify-content: flex-end;
-  }
-`;
-
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 48px 0;
-  color: ${(props) => props.theme.textTertiary};
-  font-size: 0.875rem;
-  transition: color 0.3s ease;
-`;
-
-const NotificationItemTitle = styled.div`
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: ${(props) => props.theme.textPrimary};
-  transition: color 0.3s ease;
-`;

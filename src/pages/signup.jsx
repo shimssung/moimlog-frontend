@@ -1,17 +1,14 @@
 import React, { useState, useRef } from "react";
-import styled from "styled-components";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import AuthLayout from "../components/AuthLayout";
 import { FaCheckCircle, FaTimesCircle, FaRegCircle } from "react-icons/fa";
 import Link from "next/link";
 import toast from "react-hot-toast";
-import { useTheme } from "../utils/ThemeContext";
 import { authAPI } from "../api/auth";
 import { useRouter } from "next/router";
 
 function SignupPage() {
-  const { theme } = useTheme();
   const router = useRouter();
   const [form, setForm] = useState({
     emailId: "",
@@ -94,8 +91,6 @@ function SignupPage() {
     setForm({ ...form, emailDomain: e.target.value });
     setEmailError("");
   };
-
-
 
   // 전체 이메일 주소 생성
   const getFullEmail = () => {
@@ -191,8 +186,8 @@ function SignupPage() {
   const footerContent = (
     <p>
       이미 회원이신가요?{" "}
-      <Link href="/login">
-        <StyledLink theme={theme}>로그인</StyledLink>
+      <Link href="/login" className="signup-footer-link">
+        로그인
       </Link>
     </p>
   );
@@ -210,10 +205,10 @@ function SignupPage() {
       formTitle="회원가입"
       footerContent={footerContent}
     >
-      <FormBox onSubmit={handleSubmit}>
-        <Label theme={theme}>이메일</Label>
-        <EmailContainer>
-          <EmailInputGroup>
+      <form className="signup-form" onSubmit={handleSubmit}>
+        <label className="form-label">이메일</label>
+        <div className="email-container">
+          <div className="email-input-group">
             <Input
               ref={emailIdRef}
               name="emailId"
@@ -226,14 +221,15 @@ function SignupPage() {
               }}
               required
             />
-            <AtSymbol>@</AtSymbol>
+            <span className="at-symbol">@</span>
             {!showCustomDomain ? (
-              <Select
+              <select
                 ref={emailDomainRef}
                 name="emailDomain"
                 value={form.emailDomain}
                 onChange={handleDomainChange}
                 onBlur={handleEmailBlur}
+                className="domain-select"
                 style={{
                   borderColor: emailError ? "#ef4444" : undefined,
                 }}
@@ -246,7 +242,7 @@ function SignupPage() {
                   </option>
                 ))}
                 <option value="직접입력">직접입력</option>
-              </Select>
+              </select>
             ) : (
               <Input
                 ref={emailDomainRef}
@@ -261,11 +257,11 @@ function SignupPage() {
                 required
               />
             )}
-          </EmailInputGroup>
-        </EmailContainer>
-        {emailError && <ErrorMsg>{emailError}</ErrorMsg>}
-        {error && <ErrorMsg>{error}</ErrorMsg>}
-        <Label theme={theme}>비밀번호</Label>
+          </div>
+        </div>
+        {emailError && <div className="error-message">{emailError}</div>}
+        {error && <div className="error-message">{error}</div>}
+        <label className="form-label">비밀번호</label>
         <Input
           name="password"
           type="password"
@@ -280,7 +276,7 @@ function SignupPage() {
           }}
           required
         />
-        <PwDesc theme={theme}>
+        <ul className="password-desc">
           <li className={!pwTouched ? "" : pwChecks.rule1 ? "pass" : "fail"}>
             {!pwTouched ? (
               <FaRegCircle />
@@ -311,8 +307,8 @@ function SignupPage() {
             )}
             연속 3자 이상 동일한 문자/숫자 제외
           </li>
-        </PwDesc>
-        <Label theme={theme}>비밀번호 확인</Label>
+        </ul>
+        <label className="form-label">비밀번호 확인</label>
         <Input
           name="password2"
           type="password"
@@ -321,7 +317,7 @@ function SignupPage() {
           onChange={handleChange}
           required
         />
-        {error && <ErrorMsg>{error}</ErrorMsg>}
+        {error && <div className="error-message">{error}</div>}
         <Button
           type="submit"
           fullWidth
@@ -331,108 +327,9 @@ function SignupPage() {
         >
           {isLoading ? "가입 중..." : "가입하기"}
         </Button>
-      </FormBox>
+      </form>
     </AuthLayout>
   );
 }
 
 export default SignupPage;
-
-const FormBox = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  align-items: stretch;
-`;
-
-const EmailContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const EmailInputGroup = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const AtSymbol = styled.span`
-  font-size: 16px;
-  font-weight: 500;
-  color: ${(props) => props.theme.textSecondary};
-  user-select: none;
-`;
-
-const Select = styled.select`
-  flex: 1;
-  padding: 12px 16px;
-  border: 1px solid ${(props) => props.theme.border};
-  border-radius: 8px;
-  font-size: 14px;
-  background-color: ${(props) => props.theme.surface};
-  color: ${(props) => props.theme.textPrimary};
-  transition: border-color 0.2s ease;
-
-  &:focus {
-    outline: none;
-    border-color: ${(props) => props.theme.buttonPrimary};
-  }
-
-  &:disabled {
-    background-color: ${(props) => props.theme.surfaceSecondary};
-    color: ${(props) => props.theme.textTertiary};
-  }
-`;
-
-
-
-const Label = styled.label`
-  font-size: 15px;
-  color: ${(props) => props.theme.textPrimary};
-  margin: 12px 0 4px 2px;
-  font-weight: 500;
-  transition: color 0.3s ease;
-`;
-
-const PwDesc = styled.ul`
-  margin: 6px 0 0 0;
-  padding: 0 0 0 0;
-  font-size: 13px;
-  line-height: 1.7;
-  list-style: none;
-  li {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: ${(props) => props.theme.textTertiary};
-    transition: color 0.3s ease;
-    &.fail {
-      color: #ef4444;
-    }
-    &.pass {
-      color: #22c55e;
-    }
-    svg {
-      font-size: 16px;
-    }
-  }
-`;
-
-const ErrorMsg = styled.div`
-  color: #ef4444 !important;
-  font-size: 14px;
-  text-align: center;
-  margin: 8px 0 -8px;
-`;
-
-const StyledLink = styled.span`
-  color: ${(props) => props.theme.buttonPrimary};
-  text-decoration: underline;
-  cursor: pointer;
-  transition: color 0.3s ease;
-
-  &:hover {
-    color: ${(props) => props.theme.buttonHover};
-  }
-`;

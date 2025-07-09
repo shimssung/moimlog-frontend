@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import styled from "styled-components";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useStore } from "../stores/useStore";
@@ -12,7 +11,7 @@ import toast from "react-hot-toast";
 import { authAPI } from "../api/auth";
 
 const LoginPage = () => {
-  const { theme, login, isLoading } = useStore();
+  const { login, isLoading } = useStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
@@ -55,15 +54,13 @@ const LoginPage = () => {
     }
   };
 
-
-
   const footerContent = (
-    <FooterText theme={theme}>
+    <p className="footer-text">
       비밀번호를 잊으셨나요?{" "}
-      <StyledLink href="/forgot-password" theme={theme}>
+      <Link href="/forgot-password" className="footer-link">
         비밀번호 찾기
-      </StyledLink>
-    </FooterText>
+      </Link>
+    </p>
   );
 
   return (
@@ -79,8 +76,8 @@ const LoginPage = () => {
       formTitle="로그인"
       footerContent={footerContent}
     >
-      <Form onSubmit={handleSubmit}>
-        <FormGroup>
+      <form className="login-form" onSubmit={handleSubmit}>
+        <div className="form-group">
           <Input
             type="email"
             placeholder="이메일"
@@ -89,8 +86,8 @@ const LoginPage = () => {
             required
             disabled={isLoading}
           />
-        </FormGroup>
-        <FormGroup>
+        </div>
+        <div className="form-group">
           <Input
             type="password"
             placeholder="비밀번호"
@@ -99,7 +96,7 @@ const LoginPage = () => {
             required
             disabled={isLoading}
           />
-        </FormGroup>
+        </div>
         <Button type="submit" variant="primary" fullWidth disabled={isLoading}>
           {isLoading ? "로그인 중..." : "로그인"}
         </Button>
@@ -112,44 +109,9 @@ const LoginPage = () => {
           이메일로 회원가입
         </Button>
         <SocialLogin />
-      </Form>
+      </form>
     </AuthLayout>
   );
 };
-
-const Form = styled.form`
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-
-  /* 반응형: 작은 화면에서 간격 축소 */
-  @media (max-width: 480px) {
-    gap: 0.75rem;
-  }
-`;
-
-const FormGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const StyledLink = styled(Link)`
-  font-weight: 600;
-  color: ${({ theme }) => theme.buttonPrimary};
-  &:hover {
-    text-decoration: underline;
-  }
-`;
-
-const FooterText = styled.p`
-  text-align: center;
-  margin-top: 1rem;
-  margin-bottom: 0;
-  font-size: 0.875rem;
-  color: ${({ theme }) => theme.textSecondary};
-`;
-
-
 
 export default LoginPage;

@@ -1,15 +1,12 @@
 import { useState, useEffect } from "react";
-import styled from "styled-components";
 import Header from "../components/Header";
 import Input from "../components/Input";
 import Button from "../components/Button";
 import Textarea from "../components/Textarea";
 import Modal from "../components/Modal";
 import { sanitizeFormData, sanitizeInput } from "../utils/sanitize";
-import { useTheme } from "../utils/ThemeContext";
 
 const ProfileEdit = () => {
-  const { theme } = useTheme();
   const [userData, setUserData] = useState({
     name: "",
     email: "",
@@ -178,17 +175,17 @@ const ProfileEdit = () => {
   };
 
   return (
-    <PageContainer theme={theme}>
+    <div className="profile-edit-page">
       <Header />
-      <MainContent>
-        <LayoutContainer>
-          <MainSection>
-            <Title theme={theme}>프로필 수정</Title>
+      <main className="profile-edit-main">
+        <div className="profile-edit-layout">
+          <div className="profile-edit-main-section">
+            <h1 className="profile-edit-title">프로필 수정</h1>
 
-            {error && <ErrorMessage>{error}</ErrorMessage>}
-            {success && <SuccessMessage>{success}</SuccessMessage>}
+            {error && <div className="profile-edit-error-message">{error}</div>}
+            {success && <div className="profile-edit-success-message">{success}</div>}
 
-            <FormSection>
+            <div className="profile-edit-form-section">
               <Input
                 label="이메일"
                 name="email"
@@ -211,11 +208,11 @@ const ProfileEdit = () => {
                 onChange={handleInputChange}
                 rows={4}
               />
-            </FormSection>
+            </div>
 
-            <Section>
-              <SectionTitle theme={theme}>관심사</SectionTitle>
-              <InterestTags theme={theme}>
+            <div className="profile-edit-section">
+              <h2 className="profile-edit-section-title">관심사</h2>
+              <div className="profile-edit-interest-tags">
                 {[
                   "등산",
                   "요리",
@@ -228,52 +225,53 @@ const ProfileEdit = () => {
                   "영화",
                   "게임",
                 ].map((interest) => (
-                  <InterestTag key={interest} theme={theme}>
+                  <div key={interest} className="profile-edit-interest-tag">
                     {interest}
-                  </InterestTag>
+                  </div>
                 ))}
-              </InterestTags>
-            </Section>
+              </div>
+            </div>
 
-            <Section>
-              <SectionTitle theme={theme}>알림 설정</SectionTitle>
-              <NotificationItem theme={theme}>
-                <NotificationLabel theme={theme}>이메일 알림</NotificationLabel>
-                <ToggleSwitch>
+            <div className="profile-edit-section">
+              <h2 className="profile-edit-section-title">알림 설정</h2>
+              <div className="profile-edit-notification-item">
+                <p className="profile-edit-notification-label">이메일 알림</p>
+                <label className="profile-edit-toggle-switch">
                   <input
                     type="checkbox"
                     checked={userData.notificationSettings.email}
                     onChange={() => handleNotificationChange("email")}
                   />
                   <span className="slider" />
-                </ToggleSwitch>
-              </NotificationItem>
-            </Section>
+                </label>
+              </div>
+            </div>
 
-            <ButtonContainer>
+            <div className="profile-edit-button-container">
               <Button onClick={handleSubmit} variant="primary">
                 저장하기
               </Button>
-            </ButtonContainer>
-          </MainSection>
+            </div>
+          </div>
 
-          <SideSection>
-            <PreviewContainer theme={theme}>
-              <ProfileImagePreview
+          <div className="profile-edit-side-section">
+            <div className="profile-edit-preview-container">
+              <img
+                className="profile-edit-image-preview"
                 src={previewImage || "/default-profile.png"}
                 alt="프로필 이미지"
               />
-              <PreviewText theme={theme}>미리보기</PreviewText>
-            </PreviewContainer>
-            <UploadButton
+              <p className="profile-edit-preview-text">미리보기</p>
+            </div>
+            <button
+              className="profile-edit-upload-button"
               onClick={() => {
                 const fileInput = document.getElementById("profileImage");
                 if (fileInput) fileInput.click();
               }}
-              theme={theme}
             >
               이미지 업로드/변경
-            </UploadButton>
+            </button>
             <input
               type="file"
               id="profileImage"
@@ -281,16 +279,16 @@ const ProfileEdit = () => {
               className="hidden"
               onChange={handleImageChange}
             />
-          </SideSection>
-        </LayoutContainer>
-      </MainContent>
+          </div>
+        </div>
+      </main>
 
       <Modal
         isOpen={showPasswordModal}
         onClose={() => setShowPasswordModal(false)}
         title="비밀번호 변경"
       >
-        <PasswordForm onSubmit={handlePasswordSubmit}>
+        <form className="profile-edit-password-form" onSubmit={handlePasswordSubmit}>
           <Input
             label="현재 비밀번호"
             name="currentPassword"
@@ -315,7 +313,7 @@ const ProfileEdit = () => {
             onChange={handlePasswordChange}
             required
           />
-          <ModalButtonGroup>
+          <div className="profile-edit-modal-button-group">
             <Button
               type="button"
               variant="light"
@@ -326,248 +324,11 @@ const ProfileEdit = () => {
             <Button type="submit" variant="primary">
               변경하기
             </Button>
-          </ModalButtonGroup>
-        </PasswordForm>
+          </div>
+        </form>
       </Modal>
-    </PageContainer>
+    </div>
   );
 };
 
 export default ProfileEdit;
-
-const PageContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  background-color: ${(props) => props.theme.background};
-  font-family: "Manrope", "Noto Sans", sans-serif;
-  transition: background-color 0.3s ease;
-`;
-
-const MainContent = styled.main`
-  flex: 1;
-  padding: 20px;
-  display: flex;
-  justify-content: center;
-`;
-
-const LayoutContainer = styled.div`
-  display: flex;
-  gap: 24px;
-  max-width: 1280px;
-  width: 100%;
-`;
-
-const MainSection = styled.div`
-  flex: 1;
-  max-width: 920px;
-`;
-
-const SideSection = styled.div`
-  width: 360px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-`;
-
-const Title = styled.h1`
-  color: ${(props) => props.theme.textPrimary};
-  font-size: 32px;
-  font-weight: bold;
-  margin-bottom: 24px;
-  transition: color 0.3s ease;
-`;
-
-const FormSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 32px;
-`;
-
-const Section = styled.div`
-  margin-bottom: 32px;
-`;
-
-const SectionTitle = styled.h2`
-  color: ${(props) => props.theme.textPrimary};
-  font-size: 22px;
-  font-weight: bold;
-  margin-bottom: 16px;
-  transition: color 0.3s ease;
-`;
-
-const InterestTags = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  padding: 12px;
-`;
-
-const InterestTag = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px 16px;
-  background-color: ${(props) => props.theme.surfaceSecondary};
-  border-radius: 12px;
-  color: ${(props) => props.theme.textPrimary};
-  font-size: 14px;
-  font-weight: 500;
-  border: 1px solid ${(props) => props.theme.borderLight};
-  transition: all 0.3s ease;
-`;
-
-const NotificationItem = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px;
-  background-color: ${(props) => props.theme.surface};
-  min-height: 56px;
-  border: 1px solid ${(props) => props.theme.borderLight};
-  border-radius: 12px;
-  transition: all 0.3s ease;
-`;
-
-const NotificationLabel = styled.p`
-  color: ${(props) => props.theme.textPrimary};
-  font-size: 16px;
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  transition: color 0.3s ease;
-`;
-
-const ToggleSwitch = styled.label`
-  position: relative;
-  display: inline-block;
-  width: 51px;
-  height: 31px;
-  cursor: pointer;
-
-  input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-  }
-
-  .slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: ${(props) => props.theme.borderLight};
-    transition: 0.4s;
-    border-radius: 34px;
-    padding: 4px;
-  }
-
-  .slider:before {
-    position: absolute;
-    content: "";
-    height: 23px;
-    width: 23px;
-    left: 4px;
-    bottom: 4px;
-    background-color: ${(props) => props.theme.surface};
-    transition: 0.4s;
-    border-radius: 50%;
-    box-shadow: rgba(0, 0, 0, 0.15) 0px 3px 8px, rgba(0, 0, 0, 0.06) 0px 3px 1px;
-  }
-
-  input:checked + .slider {
-    background-color: ${(props) => props.theme.buttonPrimary};
-  }
-
-  input:checked + .slider:before {
-    transform: translateX(20px);
-  }
-`;
-
-const ButtonContainer = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  padding: 12px 16px;
-`;
-
-const PreviewContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  padding: 16px;
-`;
-
-const ProfileImagePreview = styled.img`
-  width: 128px;
-  height: 128px;
-  border-radius: 50%;
-  object-fit: cover;
-`;
-
-const PreviewText = styled.p`
-  color: ${(props) => props.theme.textPrimary};
-  font-size: 22px;
-  font-weight: bold;
-  text-align: center;
-  transition: color 0.3s ease;
-`;
-
-const UploadButton = styled.button`
-  min-width: 84px;
-  max-width: 480px;
-  height: 40px;
-  padding: 0 16px;
-  background-color: ${(props) => props.theme.surfaceSecondary};
-  color: ${(props) => props.theme.textPrimary};
-  font-size: 14px;
-  font-weight: bold;
-  border-radius: 12px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  margin: 0 auto;
-  border: 1px solid ${(props) => props.theme.borderLight};
-  transition: all 0.3s ease;
-
-  &:hover {
-    background-color: ${(props) => props.theme.borderLight};
-  }
-`;
-
-const PasswordForm = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-`;
-
-const ModalButtonGroup = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  gap: 16px;
-  margin-top: 24px;
-`;
-
-const ErrorMessage = styled.div`
-  background-color: #fee2e2;
-  border: 1px solid #fecaca;
-  color: #dc2626;
-  padding: 0.75rem 1rem;
-  border-radius: 0.5rem;
-  margin-bottom: 1rem;
-`;
-
-const SuccessMessage = styled.div`
-  background-color: #dcfce7;
-  border: 1px solid #bbf7d0;
-  color: #16a34a;
-  padding: 0.75rem 1rem;
-  border-radius: 0.5rem;
-  margin-bottom: 1rem;
-`;

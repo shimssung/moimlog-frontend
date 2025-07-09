@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from "react";
-import styled from "styled-components";
 import { useRouter } from "next/router";
 import Sidebar from "../../../components/Sidebar";
 import Header from "../../../components/Header";
 import Button from "../../../components/Button";
-import { useTheme } from "../../../utils/ThemeContext";
 
 const MoimBoardPage = () => {
-  const { theme } = useTheme();
   const router = useRouter();
   const { id: moimId } = router.query;
   const [moimInfo, setMoimInfo] = useState(null);
@@ -140,530 +137,72 @@ const MoimBoardPage = () => {
   };
 
   return (
-    <PageContainer theme={theme}>
+    <div className="moim-board-page">
       <Header />
-      <ContentContainer>
+      <div className="moim-board-content">
         <Sidebar moimId={moimId} moimRole={moimInfo?.role} activeMenu="board" />
 
-        <MainContent>
-        <PageHeader>
-          <HeaderInfo>
-            <PageTitle theme={theme}>게시판</PageTitle>
-            <PageSubtitle theme={theme}>
-              {moimInfo?.title}의 소식을 확인하세요
-            </PageSubtitle>
-          </HeaderInfo>
-          <CreateButton onClick={() => setShowCreateModal(true)} theme={theme}>
-            <ButtonIcon>✏️</ButtonIcon>
-            글쓰기
-          </CreateButton>
-        </PageHeader>
+        <div className="moim-board-main">
+          <div className="page-header">
+            <div className="header-info">
+              <h1 className="page-title">게시판</h1>
+              <p className="page-subtitle">
+                {moimInfo?.title}의 소식을 확인하세요
+              </p>
+            </div>
+            <button className="create-button" onClick={() => setShowCreateModal(true)}>
+              <span className="button-icon">✏️</span>
+              글쓰기
+            </button>
+          </div>
 
-        <TabContainer theme={theme}>
-          {["notice", "free", "photo"].map((tab) => (
-            <Tab
-              key={tab}
-              $active={activeTab === tab}
-              onClick={() => setActiveTab(tab)}
-              theme={theme}
-            >
-              <TabIcon>{getTabIcon(tab)}</TabIcon>
-              {getTabLabel(tab)}
-            </Tab>
-          ))}
-        </TabContainer>
+          <div className="tab-container">
+            {["notice", "free", "photo"].map((tab) => (
+              <button
+                key={tab}
+                className={`tab ${activeTab === tab ? 'active' : ''}`}
+                onClick={() => setActiveTab(tab)}
+              >
+                <span className="tab-icon">{getTabIcon(tab)}</span>
+                {getTabLabel(tab)}
+              </button>
+            ))}
+          </div>
 
-        <PostList>
-          {getFilteredPosts().map((post) => (
-            <PostCard key={post.id} theme={theme}>
-              {post.isPinned && (
-                <PinnedBadge theme={theme}>📌 고정</PinnedBadge>
-              )}
-              <PostHeader>
-                <PostTitle theme={theme}>{post.title}</PostTitle>
-                <PostMeta>
-                  <Author theme={theme}>{post.author}</Author>
-                  <Date theme={theme}>{formatDate(post.date)}</Date>
-                </PostMeta>
-              </PostHeader>
-              <PostContent theme={theme}>{post.content}</PostContent>
-              {post.image && <PostImage src={post.image} alt="게시글 이미지" />}
-              <PostFooter>
-                <PostActions>
-                  <ActionButton theme={theme}>
-                    <ActionIcon>👍</ActionIcon>
-                    {post.likes}
-                  </ActionButton>
-                  <ActionButton theme={theme}>
-                    <ActionIcon>💬</ActionIcon>
-                    {post.comments}
-                  </ActionButton>
-                </PostActions>
-              </PostFooter>
-            </PostCard>
-          ))}
-        </PostList>
-
-        {getFilteredPosts().length === 0 && (
-          <EmptyState>
-            <EmptyIcon>📝</EmptyIcon>
-            <EmptyTitle theme={theme}>아직 게시글이 없어요</EmptyTitle>
-            <EmptyText theme={theme}>첫 번째 게시글을 작성해보세요!</EmptyText>
-          </EmptyState>
-        )}
-
-        {showCreateModal && (
-          <ModalOverlay onClick={() => setShowCreateModal(false)}>
-            <ModalContent onClick={(e) => e.stopPropagation()} theme={theme}>
-              <ModalHeader theme={theme}>
-                <ModalTitle theme={theme}>새 게시글 작성</ModalTitle>
-                <CloseButton
-                  onClick={() => setShowCreateModal(false)}
-                  theme={theme}
-                >
-                  ✕
-                </CloseButton>
-              </ModalHeader>
-              <ModalBody>
-                <FormGroup>
-                  <Label theme={theme}>제목</Label>
-                  <Input theme={theme} placeholder="제목을 입력하세요" />
-                </FormGroup>
-                <FormGroup>
-                  <Label theme={theme}>게시판</Label>
-                  <Select theme={theme}>
-                    <option value="notice">공지사항</option>
-                    <option value="free">자유게시판</option>
-                    <option value="photo">사진게시판</option>
-                  </Select>
-                </FormGroup>
-                <FormGroup>
-                  <Label theme={theme}>내용</Label>
-                  <Textarea
-                    theme={theme}
-                    rows={6}
-                    placeholder="내용을 입력하세요"
-                  />
-                </FormGroup>
-                <FormGroup>
-                  <Label theme={theme}>이미지 첨부</Label>
-                  <FileInput theme={theme} type="file" accept="image/*" />
-                </FormGroup>
-              </ModalBody>
-              <ModalFooter theme={theme}>
-                <Button
-                  variant="light"
-                  onClick={() => setShowCreateModal(false)}
-                >
-                  취소
-                </Button>
-                <Button variant="primary">작성하기</Button>
-              </ModalFooter>
-            </ModalContent>
-          </ModalOverlay>
-        )}
-      </MainContent>
-      </ContentContainer>
-    </PageContainer>
+          <div className="post-list">
+            {getFilteredPosts().map((post) => (
+              <div key={post.id} className="post-card">
+                {post.isPinned && (
+                  <div className="pinned-badge">📌 고정</div>
+                )}
+                <div className="post-header">
+                  <h3 className="post-title">{post.title}</h3>
+                  <div className="post-meta">
+                    <span className="author">{post.author}</span>
+                    <span className="date">{formatDate(post.date)}</span>
+                  </div>
+                </div>
+                <div className="post-content">{post.content}</div>
+                {post.image && <img className="post-image" src={post.image} alt="게시글 이미지" />}
+                <div className="post-footer">
+                  <div className="post-actions">
+                    <button className="action-button">
+                      <span className="action-icon">👍</span>
+                      {post.likes}
+                    </button>
+                    <button className="action-button">
+                      <span className="action-icon">💬</span>
+                      {post.comments}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
 export default MoimBoardPage;
-
-const PageContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  background: ${(props) => props.theme.background};
-  transition: background-color 0.3s ease;
-`;
-
-const ContentContainer = styled.div`
-  display: flex;
-  flex: 1;
-  height: calc(100vh - 80px); // 헤더 높이를 뺀 높이
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-  }
-`;
-
-const MainContent = styled.div`
-  flex: 1;
-  margin-left: 250px;
-  padding: 24px;
-  overflow-y: auto;
-  height: calc(100vh - 80px); // 헤더 높이를 뺀 높이
-
-  @media (max-width: 768px) {
-    margin-left: 0;
-    padding: 16px;
-  }
-`;
-
-const PageHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 32px;
-`;
-
-const HeaderInfo = styled.div``;
-
-const PageTitle = styled.h1`
-  font-size: 2rem;
-  font-weight: 700;
-  color: ${(props) => props.theme.textPrimary};
-  margin: 0 0 8px 0;
-  transition: color 0.3s ease;
-`;
-
-const PageSubtitle = styled.p`
-  font-size: 1rem;
-  color: ${(props) => props.theme.textSecondary};
-  margin: 0;
-  transition: color 0.3s ease;
-`;
-
-const CreateButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: ${(props) => props.theme.buttonPrimary};
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 12px 20px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: ${(props) => props.theme.buttonHover};
-  }
-`;
-
-const ButtonIcon = styled.span`
-  font-size: 1rem;
-`;
-
-const TabContainer = styled.div`
-  display: flex;
-  gap: 8px;
-  margin-bottom: 24px;
-  border-bottom: 1px solid ${(props) => props.theme.borderLight};
-  transition: border-color 0.3s ease;
-`;
-
-const Tab = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: none;
-  border: none;
-  padding: 12px 16px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: ${({ $active, theme }) =>
-    $active ? theme.textPrimary : theme.textSecondary};
-  cursor: pointer;
-  border-bottom: 2px solid
-    ${({ $active, theme }) => ($active ? theme.buttonPrimary : "transparent")};
-  transition: all 0.2s ease;
-
-  &:hover {
-    color: ${(props) => props.theme.textPrimary};
-  }
-`;
-
-const TabIcon = styled.span`
-  font-size: 1rem;
-`;
-
-const PostList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-`;
-
-const PostCard = styled.div`
-  background: ${(props) => props.theme.surface};
-  border: 1px solid ${(props) => props.theme.borderLight};
-  border-radius: 12px;
-  padding: 20px;
-  position: relative;
-  transition: all 0.3s ease;
-`;
-
-const PinnedBadge = styled.div`
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: ${(props) => props.theme.buttonPrimary};
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 500;
-`;
-
-const PostHeader = styled.div`
-  margin-bottom: 12px;
-`;
-
-const PostTitle = styled.h3`
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: ${(props) => props.theme.textPrimary};
-  margin: 0 0 8px 0;
-  transition: color 0.3s ease;
-`;
-
-const PostMeta = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 0.85rem;
-`;
-
-const Author = styled.span`
-  color: ${(props) => props.theme.textSecondary};
-  font-weight: 500;
-  transition: color 0.3s ease;
-`;
-
-const Date = styled.span`
-  font-size: 0.8rem;
-  color: ${(props) => props.theme.textTertiary};
-  transition: color 0.3s ease;
-`;
-
-const PostContent = styled.div`
-  font-size: 0.95rem;
-  line-height: 1.6;
-  color: ${(props) => props.theme.textSecondary};
-  margin-bottom: 16px;
-  transition: color 0.3s ease;
-`;
-
-const PostImage = styled.img`
-  width: 100%;
-  max-width: 400px;
-  height: auto;
-  border-radius: 8px;
-  margin-bottom: 16px;
-`;
-
-const PostFooter = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`;
-
-const PostActions = styled.div`
-  display: flex;
-  gap: 16px;
-`;
-
-const ActionButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: none;
-  border: none;
-  color: ${(props) => props.theme.textTertiary};
-  font-size: 0.9rem;
-  cursor: pointer;
-  padding: 6px 12px;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: ${(props) => props.theme.surfaceSecondary};
-    color: ${(props) => props.theme.textPrimary};
-  }
-`;
-
-const ActionIcon = styled.span`
-  font-size: 1rem;
-`;
-
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 80px 20px;
-`;
-
-const EmptyIcon = styled.div`
-  font-size: 4rem;
-  margin-bottom: 16px;
-`;
-
-const EmptyTitle = styled.h3`
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: ${(props) => props.theme.textPrimary};
-  margin: 0 0 8px 0;
-  transition: color 0.3s ease;
-`;
-
-const EmptyText = styled.p`
-  font-size: 1.1rem;
-  color: ${(props) => props.theme.textSecondary};
-  margin: 0;
-  transition: color 0.3s ease;
-`;
-
-const ModalOverlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-`;
-
-const ModalContent = styled.div`
-  background: ${(props) => props.theme.surface};
-  border-radius: 12px;
-  width: 90%;
-  max-width: 600px;
-  max-height: 90vh;
-  overflow-y: auto;
-  border: 1px solid ${(props) => props.theme.borderLight};
-  transition: all 0.3s ease;
-`;
-
-const ModalHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 24px;
-  border-bottom: 1px solid ${(props) => props.theme.borderLight};
-  transition: border-color 0.3s ease;
-`;
-
-const ModalTitle = styled.h2`
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: ${(props) => props.theme.textPrimary};
-  margin: 0;
-  transition: color 0.3s ease;
-`;
-
-const CloseButton = styled.button`
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  color: ${(props) => props.theme.textTertiary};
-  cursor: pointer;
-  padding: 4px;
-  transition: color 0.3s ease;
-
-  &:hover {
-    color: ${(props) => props.theme.textPrimary};
-  }
-`;
-
-const ModalBody = styled.div`
-  padding: 24px;
-`;
-
-const ModalFooter = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  padding: 24px;
-  border-top: 1px solid ${(props) => props.theme.borderLight};
-  transition: border-color 0.3s ease;
-`;
-
-const FormGroup = styled.div`
-  margin-bottom: 20px;
-`;
-
-const Label = styled.label`
-  display: block;
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: ${(props) => props.theme.textPrimary};
-  margin-bottom: 6px;
-  transition: color 0.3s ease;
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid ${(props) => props.theme.borderLight};
-  border-radius: 6px;
-  font-size: 0.9rem;
-  outline: none;
-  background: ${(props) => props.theme.surfaceSecondary};
-  color: ${(props) => props.theme.textPrimary};
-  transition: all 0.2s ease;
-
-  &:focus {
-    border-color: ${(props) => props.theme.buttonPrimary};
-  }
-
-  &::placeholder {
-    color: ${(props) => props.theme.textTertiary};
-  }
-`;
-
-const Select = styled.select`
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid ${(props) => props.theme.borderLight};
-  border-radius: 6px;
-  font-size: 0.9rem;
-  outline: none;
-  background: ${(props) => props.theme.surfaceSecondary};
-  color: ${(props) => props.theme.textPrimary};
-  transition: all 0.2s ease;
-
-  &:focus {
-    border-color: ${(props) => props.theme.buttonPrimary};
-  }
-`;
-
-const Textarea = styled.textarea`
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid ${(props) => props.theme.borderLight};
-  border-radius: 6px;
-  font-size: 0.9rem;
-  outline: none;
-  resize: vertical;
-  background: ${(props) => props.theme.surfaceSecondary};
-  color: ${(props) => props.theme.textPrimary};
-  transition: all 0.2s ease;
-
-  &:focus {
-    border-color: ${(props) => props.theme.buttonPrimary};
-  }
-
-  &::placeholder {
-    color: ${(props) => props.theme.textTertiary};
-  }
-`;
-
-const FileInput = styled.input`
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid ${(props) => props.theme.borderLight};
-  border-radius: 6px;
-  font-size: 0.9rem;
-  outline: none;
-  background: ${(props) => props.theme.surfaceSecondary};
-  color: ${(props) => props.theme.textPrimary};
-  transition: all 0.2s ease;
-
-  &:focus {
-    border-color: ${(props) => props.theme.buttonPrimary};
-  }
-`;

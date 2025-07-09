@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from "react";
-import styled from "styled-components";
 import Header from "../../components/Header";
 import Button from "../../components/Button";
-import { useTheme } from "../../utils/ThemeContext";
 import { useStore } from "../../stores/useStore";
 import { useRouter } from "next/router";
 
 const AdminMoims = () => {
-  const { theme } = useTheme();
   const { user } = useStore();
   const router = useRouter();
   const [moims, setMoims] = useState([]);
@@ -172,70 +169,66 @@ const AdminMoims = () => {
   };
 
   return (
-    <PageContainer theme={theme}>
+    <div className="admin-moims-page-container">
       <Header />
-      <Container>
-        <PageHeader>
-          <HeaderInfo>
-            <PageTitle theme={theme}>모임 관리</PageTitle>
-            <PageSubtitle theme={theme}>
+      <div className="admin-moims-container">
+        <div className="admin-moims-page-header">
+          <div className="admin-moims-header-info">
+            <h1 className="admin-moims-page-title">모임 관리</h1>
+            <p className="admin-moims-page-subtitle">
               전체 모임을 조회하고 관리하세요
-            </PageSubtitle>
-          </HeaderInfo>
-          <BackButton onClick={() => router.push("/admin/dashboard")} theme={theme}>
+            </p>
+          </div>
+          <button className="admin-moims-back-button" onClick={() => router.push("/admin/dashboard")}>
             ← 대시보드로 돌아가기
-          </BackButton>
-        </PageHeader>
+          </button>
+        </div>
 
-        <Controls>
-          <FilterSection>
-            <FilterButton
-              active={filter === "all"}
+        <div className="admin-moims-controls">
+          <div className="admin-moims-filter-section">
+            <button
+              className={`admin-moims-filter-button ${filter === "all" ? "active" : ""}`}
               onClick={() => setFilter("all")}
-              theme={theme}
             >
               전체 ({moims.length})
-            </FilterButton>
-            <FilterButton
-              active={filter === "active"}
+            </button>
+            <button
+              className={`admin-moims-filter-button ${filter === "active" ? "active" : ""}`}
               onClick={() => setFilter("active")}
-              theme={theme}
             >
               활성 ({moims.filter((m) => m.status === "active").length})
-            </FilterButton>
-            <FilterButton
-              active={filter === "suspended"}
+            </button>
+            <button
+              className={`admin-moims-filter-button ${filter === "suspended" ? "active" : ""}`}
               onClick={() => setFilter("suspended")}
-              theme={theme}
             >
               정지 ({moims.filter((m) => m.status === "suspended").length})
-            </FilterButton>
-            <FilterButton
-              active={filter === "reported"}
+            </button>
+            <button
+              className={`admin-moims-filter-button ${filter === "reported" ? "active" : ""}`}
               onClick={() => setFilter("reported")}
-              theme={theme}
             >
               신고됨 ({moims.filter((m) => m.reportCount > 0).length})
-            </FilterButton>
-          </FilterSection>
+            </button>
+          </div>
 
-          <SearchSection>
-            <SearchInput
+          <div className="admin-moims-search-section">
+            <input
               type="text"
+              className="admin-moims-search-input"
               placeholder="모임 검색..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              theme={theme}
             />
-          </SearchSection>
-        </Controls>
+          </div>
+        </div>
 
         {selectedMoims.length > 0 && (
-          <BulkActions>
-            <BulkInfo theme={theme}>
+          <div className="admin-moims-bulk-actions">
+            <div className="admin-moims-bulk-info">
               {selectedMoims.length}개 선택됨
-            </BulkInfo>
-            <BulkButtons>
+            </div>
+            <div className="admin-moims-bulk-buttons">
               <Button
                 variant="light"
                 size="small"
@@ -257,408 +250,106 @@ const AdminMoims = () => {
               >
                 선택 삭제
               </Button>
-            </BulkButtons>
-          </BulkActions>
+            </div>
+          </div>
         )}
 
-        <SelectAllSection>
-          <SelectAllCheckbox
+        <div className="admin-moims-select-all-section">
+          <input
             type="checkbox"
+            className="admin-moims-select-all-checkbox"
             checked={selectedMoims.length === filteredMoims.length && filteredMoims.length > 0}
             onChange={handleSelectAll}
-            theme={theme}
           />
-          <SelectAllLabel theme={theme}>
+          <span className="admin-moims-select-all-label">
             전체 선택 ({selectedMoims.length}/{filteredMoims.length})
-          </SelectAllLabel>
-        </SelectAllSection>
+          </span>
+        </div>
 
-        <MoimGrid>
+        <div className="admin-moims-grid">
           {filteredMoims.map((moim) => (
-            <MoimCard key={moim.id} theme={theme}>
-              <CardHeader>
-                <Checkbox
+            <div key={moim.id} className="admin-moims-card">
+              <div className="admin-moims-card-header">
+                <input
                   type="checkbox"
+                  className="admin-moims-checkbox"
                   checked={selectedMoims.includes(moim.id)}
                   onChange={() => handleSelectMoim(moim.id)}
-                  theme={theme}
                 />
-                <StatusBadge status={moim.status} theme={theme}>
+                <span className={`admin-moims-status-badge ${moim.status}`}>
                   {moim.status === "active" ? "활성" : "정지"}
-                </StatusBadge>
-              </CardHeader>
+                </span>
+              </div>
 
-              <MoimImage src={moim.image} alt={moim.title} />
+              <img className="admin-moims-image" src={moim.image} alt={moim.title} />
               
-              <CardContent>
-                <MoimTitle theme={theme}>{moim.title}</MoimTitle>
-                <MoimCategory theme={theme}>{moim.category}</MoimCategory>
+              <div className="admin-moims-card-content">
+                <h3 className="admin-moims-title">{moim.title}</h3>
+                <div className="admin-moims-category">{moim.category}</div>
                 
-                <MoimInfo>
-                  <InfoItem theme={theme}>
-                    <InfoLabel>생성자:</InfoLabel>
-                    <InfoValue>{moim.creator}</InfoValue>
-                  </InfoItem>
-                  <InfoItem theme={theme}>
-                    <InfoLabel>멤버:</InfoLabel>
-                    <InfoValue>{moim.memberCount}/{moim.maxMembers}</InfoValue>
-                  </InfoItem>
-                  <InfoItem theme={theme}>
-                    <InfoLabel>생성일:</InfoLabel>
-                    <InfoValue>{formatDate(moim.createdAt)}</InfoValue>
-                  </InfoItem>
-                  <InfoItem theme={theme}>
-                    <InfoLabel>마지막 활동:</InfoLabel>
-                    <InfoValue>{formatLastActivity(moim.lastActivity)}</InfoValue>
-                  </InfoItem>
-                  <InfoItem theme={theme}>
-                    <InfoLabel>신고 수:</InfoLabel>
-                    <InfoValue>{moim.reportCount}건</InfoValue>
-                  </InfoItem>
-                </MoimInfo>
-              </CardContent>
+                <div className="admin-moims-info">
+                  <div className="admin-moims-info-item">
+                    <span className="admin-moims-info-label">생성자:</span>
+                    <span className="admin-moims-info-value">{moim.creator}</span>
+                  </div>
+                  <div className="admin-moims-info-item">
+                    <span className="admin-moims-info-label">멤버:</span>
+                    <span className="admin-moims-info-value">{moim.memberCount}/{moim.maxMembers}</span>
+                  </div>
+                  <div className="admin-moims-info-item">
+                    <span className="admin-moims-info-label">생성일:</span>
+                    <span className="admin-moims-info-value">{formatDate(moim.createdAt)}</span>
+                  </div>
+                  <div className="admin-moims-info-item">
+                    <span className="admin-moims-info-label">마지막 활동:</span>
+                    <span className="admin-moims-info-value">{formatLastActivity(moim.lastActivity)}</span>
+                  </div>
+                  <div className="admin-moims-info-item">
+                    <span className="admin-moims-info-label">신고 수:</span>
+                    <span className="admin-moims-info-value">{moim.reportCount}건</span>
+                  </div>
+                </div>
+              </div>
 
-              <CardActions>
+              <div className="admin-moims-card-actions">
                 {moim.status === "active" ? (
-                  <ActionButton
+                  <button
+                    className="admin-moims-action-button"
                     onClick={() => handleMoimAction(moim.id, "suspend")}
-                    theme={theme}
                   >
                     정지
-                  </ActionButton>
+                  </button>
                 ) : (
-                  <ActionButton
+                  <button
+                    className="admin-moims-action-button"
                     onClick={() => handleMoimAction(moim.id, "activate")}
-                    theme={theme}
                   >
                     활성화
-                  </ActionButton>
+                  </button>
                 )}
-                <ActionButton
-                  danger
+                <button
+                  className="admin-moims-action-button danger"
                   onClick={() => handleMoimAction(moim.id, "delete")}
-                  theme={theme}
                 >
                   삭제
-                </ActionButton>
-              </CardActions>
-            </MoimCard>
+                </button>
+              </div>
+            </div>
           ))}
-        </MoimGrid>
+        </div>
 
         {filteredMoims.length === 0 && (
-          <EmptyState>
-            <EmptyIcon>🏠</EmptyIcon>
-            <EmptyTitle theme={theme}>모임이 없습니다</EmptyTitle>
-            <EmptyText theme={theme}>
+          <div className="admin-moims-empty-state">
+            <div className="admin-moims-empty-icon">🏠</div>
+            <h3 className="admin-moims-empty-title">모임이 없습니다</h3>
+            <p className="admin-moims-empty-text">
               {searchTerm ? "검색 결과가 없습니다." : "등록된 모임이 없습니다."}
-            </EmptyText>
-          </EmptyState>
+            </p>
+          </div>
         )}
-      </Container>
-    </PageContainer>
+      </div>
+    </div>
   );
 };
 
-export default AdminMoims;
-
-const PageContainer = styled.div`
-  min-height: 100vh;
-  background: ${(props) => props.theme.background};
-  transition: background-color 0.3s ease;
-`;
-
-const Container = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 40px 16px 60px 16px;
-`;
-
-const PageHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 32px;
-  gap: 16px;
-`;
-
-const HeaderInfo = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const PageTitle = styled.h1`
-  font-size: 2rem;
-  font-weight: 700;
-  color: ${(props) => props.theme.textPrimary};
-  margin: 0;
-  transition: color 0.3s ease;
-`;
-
-const PageSubtitle = styled.p`
-  font-size: 1rem;
-  color: ${(props) => props.theme.textSecondary};
-  margin: 0;
-  transition: color 0.3s ease;
-`;
-
-const BackButton = styled.button`
-  background: ${(props) => props.theme.buttonSecondary};
-  border: 1px solid ${(props) => props.theme.border};
-  border-radius: 6px;
-  padding: 8px 16px;
-  cursor: pointer;
-  color: ${(props) => props.theme.textSecondary};
-  font-size: 0.875rem;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: ${(props) => props.theme.borderLight};
-  }
-`;
-
-const Controls = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  gap: 16px;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: stretch;
-  }
-`;
-
-const FilterSection = styled.div`
-  display: flex;
-  gap: 8px;
-`;
-
-const FilterButton = styled.button`
-  background: ${(props) =>
-    props.active ? props.theme.buttonPrimary : props.theme.buttonSecondary};
-  color: ${(props) => (props.active ? "white" : props.theme.textSecondary)};
-  border: 1px solid
-    ${(props) =>
-      props.active ? props.theme.buttonPrimary : props.theme.border};
-  border-radius: 6px;
-  padding: 6px 12px;
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: ${(props) =>
-      props.active ? props.theme.buttonHover : props.theme.borderLight};
-  }
-`;
-
-const SearchSection = styled.div`
-  flex: 1;
-  max-width: 300px;
-`;
-
-const SearchInput = styled.input`
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid ${(props) => props.theme.border};
-  border-radius: 6px;
-  background: ${(props) => props.theme.surface};
-  color: ${(props) => props.theme.textPrimary};
-  font-size: 0.875rem;
-  transition: all 0.2s ease;
-
-  &:focus {
-    outline: none;
-    border-color: ${(props) => props.theme.buttonPrimary};
-  }
-
-  &::placeholder {
-    color: ${(props) => props.theme.textTertiary};
-  }
-`;
-
-const BulkActions = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px;
-  background: ${(props) => props.theme.surface};
-  border: 1px solid ${(props) => props.theme.borderLight};
-  border-radius: 8px;
-  margin-bottom: 24px;
-`;
-
-const BulkInfo = styled.div`
-  font-size: 0.875rem;
-  color: ${(props) => props.theme.textSecondary};
-`;
-
-const BulkButtons = styled.div`
-  display: flex;
-  gap: 8px;
-`;
-
-const SelectAllSection = styled.div`
-  display: flex;
-  align-items: center;
-  margin-bottom: 24px;
-`;
-
-const SelectAllCheckbox = styled.input`
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-`;
-
-const SelectAllLabel = styled.span`
-  font-size: 0.875rem;
-  color: ${(props) => props.theme.textSecondary};
-  margin-left: 8px;
-`;
-
-const MoimGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 24px;
-`;
-
-const MoimCard = styled.div`
-  background: ${(props) => props.theme.surface};
-  border: 1px solid ${(props) => props.theme.borderLight};
-  border-radius: 12px;
-  overflow: hidden;
-  transition: all 0.3s ease;
-  box-shadow: ${(props) => props.theme.cardShadow};
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-  }
-`;
-
-const CardHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px;
-  border-bottom: 1px solid ${(props) => props.theme.borderLight};
-`;
-
-const Checkbox = styled.input`
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-`;
-
-const StatusBadge = styled.span`
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  background: ${(props) =>
-    props.status === "active"
-      ? props.theme.success + "20"
-      : props.theme.error + "20"};
-  color: ${(props) =>
-    props.status === "active" ? props.theme.success : props.theme.error};
-`;
-
-const MoimImage = styled.img`
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-`;
-
-const CardContent = styled.div`
-  padding: 16px;
-`;
-
-const MoimTitle = styled.h3`
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: ${(props) => props.theme.textPrimary};
-  margin: 0 0 8px 0;
-  transition: color 0.3s ease;
-`;
-
-const MoimCategory = styled.div`
-  font-size: 0.875rem;
-  color: ${(props) => props.theme.textSecondary};
-  margin-bottom: 16px;
-  transition: color 0.3s ease;
-`;
-
-const MoimInfo = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const InfoItem = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.875rem;
-`;
-
-const InfoLabel = styled.span`
-  color: ${(props) => props.theme.textSecondary};
-  font-weight: 500;
-`;
-
-const InfoValue = styled.span`
-  color: ${(props) => props.theme.textPrimary};
-`;
-
-const CardActions = styled.div`
-  display: flex;
-  gap: 8px;
-  padding: 16px;
-  border-top: 1px solid ${(props) => props.theme.borderLight};
-`;
-
-const ActionButton = styled.button`
-  flex: 1;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  cursor: pointer;
-  background: ${(props) =>
-    props.danger ? props.theme.error + "20" : props.theme.buttonSecondary};
-  color: ${(props) =>
-    props.danger ? props.theme.error : props.theme.textSecondary};
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: ${(props) =>
-      props.danger ? props.theme.error : props.theme.borderLight};
-    color: ${(props) => (props.danger ? "white" : props.theme.textPrimary)};
-  }
-`;
-
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 48px 0;
-`;
-
-const EmptyIcon = styled.div`
-  font-size: 3rem;
-  margin-bottom: 16px;
-`;
-
-const EmptyTitle = styled.h3`
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: ${(props) => props.theme.textPrimary};
-  margin: 0 0 8px 0;
-`;
-
-const EmptyText = styled.p`
-  font-size: 0.875rem;
-  color: ${(props) => props.theme.textSecondary};
-  margin: 0;
-`; 
+export default AdminMoims; 

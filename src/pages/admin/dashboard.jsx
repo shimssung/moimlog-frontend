@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from "react";
-import styled from "styled-components";
 import Header from "../../components/Header";
-import { useTheme } from "../../utils/ThemeContext";
 import { useStore } from "../../stores/useStore";
 import { useRouter } from "next/router";
 
 const AdminDashboard = () => {
-  const { theme } = useTheme();
   const { user } = useStore();
   const router = useRouter();
   const [stats, setStats] = useState({
@@ -47,443 +44,179 @@ const AdminDashboard = () => {
   };
 
   return (
-    <PageContainer theme={theme}>
+    <div className="admin-dashboard-page-container">
       <Header />
-      <Container>
-        <PageHeader>
-          <HeaderInfo>
-            <PageTitle theme={theme}>관리자 대시보드</PageTitle>
-            <PageSubtitle theme={theme}>
+      <div className="admin-dashboard-container">
+        <div className="admin-dashboard-page-header">
+          <div className="admin-dashboard-header-info">
+            <h1 className="admin-dashboard-page-title">관리자 대시보드</h1>
+            <p className="admin-dashboard-page-subtitle">
               MoimLog 플랫폼 전체 현황을 확인하세요
-            </PageSubtitle>
-          </HeaderInfo>
-        </PageHeader>
+            </p>
+          </div>
+        </div>
 
-        <StatsGrid>
-          <StatCard theme={theme}>
-            <StatLabel theme={theme}>전체 사용자</StatLabel>
-            <StatRow>
-              <StatIcon>👥</StatIcon>
-              <StatContent>
-                <StatNumber theme={theme}>{stats.totalUsers.toLocaleString()}명</StatNumber>
-                <StatToday theme={theme}>+{stats.todayNewUsers}명 (오늘)</StatToday>
-              </StatContent>
-            </StatRow>
-          </StatCard>
+        <div className="admin-dashboard-stats-grid">
+          <div className="admin-dashboard-stat-card">
+            <div className="admin-dashboard-stat-label">전체 사용자</div>
+            <div className="admin-dashboard-stat-row">
+              <div className="admin-dashboard-stat-icon">👥</div>
+              <div className="admin-dashboard-stat-content">
+                <div className="admin-dashboard-stat-number">{stats.totalUsers.toLocaleString()}명</div>
+                <div className="admin-dashboard-stat-today">+{stats.todayNewUsers}명 (오늘)</div>
+              </div>
+            </div>
+          </div>
 
-          <StatCard theme={theme}>
-            <StatLabel theme={theme}>전체 모임</StatLabel>
-            <StatRow>
-              <StatIcon>🏠</StatIcon>
-              <StatContent>
-                <StatNumber theme={theme}>{stats.totalMoims.toLocaleString()}개</StatNumber>
-                <StatToday theme={theme}>+{stats.todayNewMoims}개 (오늘)</StatToday>
-              </StatContent>
-            </StatRow>
-          </StatCard>
+          <div className="admin-dashboard-stat-card">
+            <div className="admin-dashboard-stat-label">전체 모임</div>
+            <div className="admin-dashboard-stat-row">
+              <div className="admin-dashboard-stat-icon">🏠</div>
+              <div className="admin-dashboard-stat-content">
+                <div className="admin-dashboard-stat-number">{stats.totalMoims.toLocaleString()}개</div>
+                <div className="admin-dashboard-stat-today">+{stats.todayNewMoims}개 (오늘)</div>
+              </div>
+            </div>
+          </div>
 
-          <StatCard theme={theme}>
-            <StatLabel theme={theme}>전체 신고</StatLabel>
-            <StatRow>
-              <StatIcon>⚠️</StatIcon>
-              <StatContent>
-                <StatNumber theme={theme}>{stats.totalReports.toLocaleString()}건</StatNumber>
-                <StatToday theme={theme}>+3건 (오늘)</StatToday>
-              </StatContent>
-            </StatRow>
-          </StatCard>
+          <div className="admin-dashboard-stat-card">
+            <div className="admin-dashboard-stat-label">전체 신고</div>
+            <div className="admin-dashboard-stat-row">
+              <div className="admin-dashboard-stat-icon">⚠️</div>
+              <div className="admin-dashboard-stat-content">
+                <div className="admin-dashboard-stat-number">{stats.totalReports.toLocaleString()}건</div>
+                <div className="admin-dashboard-stat-today">+3건 (오늘)</div>
+              </div>
+            </div>
+          </div>
 
-          <StatCard theme={theme}>
-            <StatLabel theme={theme}>활성 사용자</StatLabel>
-            <StatRow>
-              <StatIcon>🟢</StatIcon>
-              <StatContent>
-                <StatNumber theme={theme}>{stats.activeUsers.toLocaleString()}명</StatNumber>
-              </StatContent>
-            </StatRow>
-          </StatCard>
-        </StatsGrid>
+          <div className="admin-dashboard-stat-card">
+            <div className="admin-dashboard-stat-label">활성 사용자</div>
+            <div className="admin-dashboard-stat-row">
+              <div className="admin-dashboard-stat-icon">🟢</div>
+              <div className="admin-dashboard-stat-content">
+                <div className="admin-dashboard-stat-number">{stats.activeUsers.toLocaleString()}명</div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-        <QuickActions>
-          <SectionTitle theme={theme}>빠른 관리</SectionTitle>
-          <ActionGrid>
-            <ActionCard onClick={() => handleNavigate("/admin/users")} theme={theme}>
-              <ActionIcon>👤</ActionIcon>
-              <ActionTitle theme={theme}>사용자 관리</ActionTitle>
-              <ActionDesc theme={theme}>전체 사용자 조회 및 관리</ActionDesc>
-            </ActionCard>
+        <div className="admin-dashboard-quick-actions">
+          <h2 className="admin-dashboard-section-title">빠른 관리</h2>
+          <div className="admin-dashboard-action-grid">
+            <div className="admin-dashboard-action-card" onClick={() => handleNavigate("/admin/users")}>
+              <div className="admin-dashboard-action-icon">👤</div>
+              <h3 className="admin-dashboard-action-title">사용자 관리</h3>
+              <p className="admin-dashboard-action-desc">전체 사용자 조회 및 관리</p>
+            </div>
 
-            <ActionCard onClick={() => handleNavigate("/admin/moims")} theme={theme}>
-              <ActionIcon>🏠</ActionIcon>
-              <ActionTitle theme={theme}>모임 관리</ActionTitle>
-              <ActionDesc theme={theme}>전체 모임 조회 및 관리</ActionDesc>
-            </ActionCard>
+            <div className="admin-dashboard-action-card" onClick={() => handleNavigate("/admin/moims")}>
+              <div className="admin-dashboard-action-icon">🏠</div>
+              <h3 className="admin-dashboard-action-title">모임 관리</h3>
+              <p className="admin-dashboard-action-desc">전체 모임 조회 및 관리</p>
+            </div>
 
-            <ActionCard onClick={() => handleNavigate("/admin/reports")} theme={theme}>
-              <ActionIcon style={{ position: 'relative' }}>
+            <div className="admin-dashboard-action-card" onClick={() => handleNavigate("/admin/reports")}>
+              <div className="admin-dashboard-action-icon" style={{ position: 'relative' }}>
                 ⚠️
                 {stats.pendingReports > 0 && (
-                  <PendingBadge>{stats.pendingReports}</PendingBadge>
+                  <div className="admin-dashboard-pending-badge">{stats.pendingReports}</div>
                 )}
-              </ActionIcon>
-              <ActionTitle theme={theme}>신고 관리</ActionTitle>
-              <ActionDesc theme={theme}>신고된 내용 처리</ActionDesc>
-            </ActionCard>
-          </ActionGrid>
-        </QuickActions>
+              </div>
+              <h3 className="admin-dashboard-action-title">신고 관리</h3>
+              <p className="admin-dashboard-action-desc">신고된 내용 처리</p>
+            </div>
+          </div>
+        </div>
 
-        <ChartSection>
-          <SectionTitle theme={theme}>주요 지표 추이</SectionTitle>
-          <ChartGrid>
-            <ChartCard theme={theme}>
-              <ChartHeader>
-                <ChartTitle theme={theme}>사용자 증가율</ChartTitle>
-                <ChartPeriod theme={theme}>최근 7일</ChartPeriod>
-              </ChartHeader>
-              <ChartContent>
-                <ChartBar>
-                  <ChartBarItem height="60%" theme={theme}></ChartBarItem>
-                  <ChartBarItem height="75%" theme={theme}></ChartBarItem>
-                  <ChartBarItem height="45%" theme={theme}></ChartBarItem>
-                  <ChartBarItem height="90%" theme={theme}></ChartBarItem>
-                  <ChartBarItem height="65%" theme={theme}></ChartBarItem>
-                  <ChartBarItem height="80%" theme={theme}></ChartBarItem>
-                  <ChartBarItem height="70%" theme={theme}></ChartBarItem>
-                </ChartBar>
-                <ChartLabels>
-                  <ChartLabel theme={theme}>월</ChartLabel>
-                  <ChartLabel theme={theme}>화</ChartLabel>
-                  <ChartLabel theme={theme}>수</ChartLabel>
-                  <ChartLabel theme={theme}>목</ChartLabel>
-                  <ChartLabel theme={theme}>금</ChartLabel>
-                  <ChartLabel theme={theme}>토</ChartLabel>
-                  <ChartLabel theme={theme}>일</ChartLabel>
-                </ChartLabels>
-              </ChartContent>
-            </ChartCard>
+        <div className="admin-dashboard-chart-section">
+          <h2 className="admin-dashboard-section-title">주요 지표 추이</h2>
+          <div className="admin-dashboard-chart-grid">
+            <div className="admin-dashboard-chart-card">
+              <div className="admin-dashboard-chart-header">
+                <h3 className="admin-dashboard-chart-title">사용자 증가율</h3>
+                <p className="admin-dashboard-chart-period">최근 7일</p>
+              </div>
+              <div className="admin-dashboard-chart-content">
+                <div className="admin-dashboard-chart-bar">
+                  <div className="admin-dashboard-chart-bar-item" style={{ height: '60%' }}></div>
+                  <div className="admin-dashboard-chart-bar-item" style={{ height: '75%' }}></div>
+                  <div className="admin-dashboard-chart-bar-item" style={{ height: '45%' }}></div>
+                  <div className="admin-dashboard-chart-bar-item" style={{ height: '90%' }}></div>
+                  <div className="admin-dashboard-chart-bar-item" style={{ height: '65%' }}></div>
+                  <div className="admin-dashboard-chart-bar-item" style={{ height: '80%' }}></div>
+                  <div className="admin-dashboard-chart-bar-item" style={{ height: '70%' }}></div>
+                </div>
+                <div className="admin-dashboard-chart-labels">
+                  <span className="admin-dashboard-chart-label">월</span>
+                  <span className="admin-dashboard-chart-label">화</span>
+                  <span className="admin-dashboard-chart-label">수</span>
+                  <span className="admin-dashboard-chart-label">목</span>
+                  <span className="admin-dashboard-chart-label">금</span>
+                  <span className="admin-dashboard-chart-label">토</span>
+                  <span className="admin-dashboard-chart-label">일</span>
+                </div>
+              </div>
+            </div>
 
-            <ChartCard theme={theme}>
-              <ChartHeader>
-                <ChartTitle theme={theme}>신고 트렌드</ChartTitle>
-                <ChartPeriod theme={theme}>최근 7일</ChartPeriod>
-              </ChartHeader>
-              <ChartContent>
-                <ChartBar>
-                  <ChartBarItem height="30%" theme={theme} color="#ef4444"></ChartBarItem>
-                  <ChartBarItem height="45%" theme={theme} color="#ef4444"></ChartBarItem>
-                  <ChartBarItem height="25%" theme={theme} color="#ef4444"></ChartBarItem>
-                  <ChartBarItem height="60%" theme={theme} color="#ef4444"></ChartBarItem>
-                  <ChartBarItem height="35%" theme={theme} color="#ef4444"></ChartBarItem>
-                  <ChartBarItem height="20%" theme={theme} color="#ef4444"></ChartBarItem>
-                  <ChartBarItem height="40%" theme={theme} color="#ef4444"></ChartBarItem>
-                </ChartBar>
-                <ChartLabels>
-                  <ChartLabel theme={theme}>월</ChartLabel>
-                  <ChartLabel theme={theme}>화</ChartLabel>
-                  <ChartLabel theme={theme}>수</ChartLabel>
-                  <ChartLabel theme={theme}>목</ChartLabel>
-                  <ChartLabel theme={theme}>금</ChartLabel>
-                  <ChartLabel theme={theme}>토</ChartLabel>
-                  <ChartLabel theme={theme}>일</ChartLabel>
-                </ChartLabels>
-              </ChartContent>
-            </ChartCard>
+            <div className="admin-dashboard-chart-card">
+              <div className="admin-dashboard-chart-header">
+                <h3 className="admin-dashboard-chart-title">신고 트렌드</h3>
+                <p className="admin-dashboard-chart-period">최근 7일</p>
+              </div>
+              <div className="admin-dashboard-chart-content">
+                <div className="admin-dashboard-chart-bar">
+                  <div className="admin-dashboard-chart-bar-item red" style={{ height: '30%' }}></div>
+                  <div className="admin-dashboard-chart-bar-item red" style={{ height: '45%' }}></div>
+                  <div className="admin-dashboard-chart-bar-item red" style={{ height: '25%' }}></div>
+                  <div className="admin-dashboard-chart-bar-item red" style={{ height: '60%' }}></div>
+                  <div className="admin-dashboard-chart-bar-item red" style={{ height: '35%' }}></div>
+                  <div className="admin-dashboard-chart-bar-item red" style={{ height: '20%' }}></div>
+                  <div className="admin-dashboard-chart-bar-item red" style={{ height: '40%' }}></div>
+                </div>
+                <div className="admin-dashboard-chart-labels">
+                  <span className="admin-dashboard-chart-label">월</span>
+                  <span className="admin-dashboard-chart-label">화</span>
+                  <span className="admin-dashboard-chart-label">수</span>
+                  <span className="admin-dashboard-chart-label">목</span>
+                  <span className="admin-dashboard-chart-label">금</span>
+                  <span className="admin-dashboard-chart-label">토</span>
+                  <span className="admin-dashboard-chart-label">일</span>
+                </div>
+              </div>
+            </div>
 
-            <ChartCard theme={theme}>
-              <ChartHeader>
-                <ChartTitle theme={theme}>모임 생성 추이</ChartTitle>
-                <ChartPeriod theme={theme}>최근 7일</ChartPeriod>
-              </ChartHeader>
-              <ChartContent>
-                <ChartBar>
-                  <ChartBarItem height="50%" theme={theme} color="#10b981"></ChartBarItem>
-                  <ChartBarItem height="65%" theme={theme} color="#10b981"></ChartBarItem>
-                  <ChartBarItem height="40%" theme={theme} color="#10b981"></ChartBarItem>
-                  <ChartBarItem height="75%" theme={theme} color="#10b981"></ChartBarItem>
-                  <ChartBarItem height="55%" theme={theme} color="#10b981"></ChartBarItem>
-                  <ChartBarItem height="85%" theme={theme} color="#10b981"></ChartBarItem>
-                  <ChartBarItem height="60%" theme={theme} color="#10b981"></ChartBarItem>
-                </ChartBar>
-                <ChartLabels>
-                  <ChartLabel theme={theme}>월</ChartLabel>
-                  <ChartLabel theme={theme}>화</ChartLabel>
-                  <ChartLabel theme={theme}>수</ChartLabel>
-                  <ChartLabel theme={theme}>목</ChartLabel>
-                  <ChartLabel theme={theme}>금</ChartLabel>
-                  <ChartLabel theme={theme}>토</ChartLabel>
-                  <ChartLabel theme={theme}>일</ChartLabel>
-                </ChartLabels>
-              </ChartContent>
-            </ChartCard>
-          </ChartGrid>
-        </ChartSection>
-      </Container>
-    </PageContainer>
+            <div className="admin-dashboard-chart-card">
+              <div className="admin-dashboard-chart-header">
+                <h3 className="admin-dashboard-chart-title">모임 생성 추이</h3>
+                <p className="admin-dashboard-chart-period">최근 7일</p>
+              </div>
+              <div className="admin-dashboard-chart-content">
+                <div className="admin-dashboard-chart-bar">
+                  <div className="admin-dashboard-chart-bar-item green" style={{ height: '50%' }}></div>
+                  <div className="admin-dashboard-chart-bar-item green" style={{ height: '65%' }}></div>
+                  <div className="admin-dashboard-chart-bar-item green" style={{ height: '40%' }}></div>
+                  <div className="admin-dashboard-chart-bar-item green" style={{ height: '75%' }}></div>
+                  <div className="admin-dashboard-chart-bar-item green" style={{ height: '55%' }}></div>
+                  <div className="admin-dashboard-chart-bar-item green" style={{ height: '85%' }}></div>
+                  <div className="admin-dashboard-chart-bar-item green" style={{ height: '60%' }}></div>
+                </div>
+                <div className="admin-dashboard-chart-labels">
+                  <span className="admin-dashboard-chart-label">월</span>
+                  <span className="admin-dashboard-chart-label">화</span>
+                  <span className="admin-dashboard-chart-label">수</span>
+                  <span className="admin-dashboard-chart-label">목</span>
+                  <span className="admin-dashboard-chart-label">금</span>
+                  <span className="admin-dashboard-chart-label">토</span>
+                  <span className="admin-dashboard-chart-label">일</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
-export default AdminDashboard;
-
-const PageContainer = styled.div`
-  min-height: 100vh;
-  background: ${(props) => props.theme.background};
-  transition: background-color 0.3s ease;
-`;
-
-const Container = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 40px 16px 60px 16px;
-`;
-
-const PageHeader = styled.div`
-  margin-bottom: 32px;
-`;
-
-const HeaderInfo = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const PageTitle = styled.h1`
-  font-size: 2rem;
-  font-weight: 700;
-  color: ${(props) => props.theme.textPrimary};
-  margin: 0;
-  transition: color 0.3s ease;
-`;
-
-const PageSubtitle = styled.p`
-  font-size: 1rem;
-  color: ${(props) => props.theme.textSecondary};
-  margin: 0;
-  transition: color 0.3s ease;
-`;
-
-const StatsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 24px;
-  margin-bottom: 40px;
-`;
-
-const StatCard = styled.div`
-  background: ${(props) => props.theme.surface};
-  border: 1px solid ${(props) => props.theme.borderLight};
-  border-radius: 12px;
-  padding: 32px 24px 24px 24px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-  box-shadow: ${(props) => props.theme.cardShadow};
-  transition: all 0.3s ease;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-  }
-`;
-
-const StatLabel = styled.div`
-  position: absolute;
-  top: 16px;
-  left: 20px;
-  font-size: 0.92rem;
-  font-weight: 500;
-  color: ${(props) => props.theme.textTertiary};
-  letter-spacing: -0.5px;
-`;
-
-const StatRow = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-`;
-
-const StatIcon = styled.div`
-  font-size: 2.5rem;
-  margin-top: 12px;
-  margin-bottom: 18px;
-  color: ${(props) => props.theme.textSecondary};
-`;
-
-const StatContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-`;
-
-const StatNumber = styled.div`
-  font-size: 2.1rem;
-  font-weight: 700;
-  color: ${(props) => props.theme.textPrimary};
-  margin-bottom: 4px;
-  text-align: center;
-`;
-
-const StatToday = styled.div`
-  font-size: 1rem;
-  color: #3b82f6;
-  font-weight: 600;
-  text-align: center;
-`;
-
-const QuickActions = styled.div`
-  margin-bottom: 40px;
-`;
-
-const SectionTitle = styled.h2`
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: ${(props) => props.theme.textPrimary};
-  margin: 0 0 24px 0;
-  transition: color 0.3s ease;
-`;
-
-const ActionGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
-`;
-
-const ActionCard = styled.div`
-  background: ${(props) => props.theme.surface};
-  border: 1px solid ${(props) => props.theme.borderLight};
-  border-radius: 12px;
-  padding: 24px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: ${(props) => props.theme.cardShadow};
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-    border-color: ${(props) => props.theme.buttonPrimary};
-  }
-`;
-
-const ActionIcon = styled.div`
-  font-size: 2rem;
-  margin-bottom: 16px;
-`;
-
-const ActionTitle = styled.h3`
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: ${(props) => props.theme.textPrimary};
-  margin: 0 0 8px 0;
-  transition: color 0.3s ease;
-`;
-
-const ActionDesc = styled.p`
-  font-size: 0.875rem;
-  color: ${(props) => props.theme.textSecondary};
-  margin: 0;
-  transition: color 0.3s ease;
-`;
-
-const ChartSection = styled.div``;
-
-const ChartGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 24px;
-`;
-
-const ChartCard = styled.div`
-  background: ${(props) => props.theme.surface};
-  border: 1px solid ${(props) => props.theme.borderLight};
-  border-radius: 12px;
-  padding: 24px;
-  transition: all 0.3s ease;
-  box-shadow: ${(props) => props.theme.cardShadow};
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-  }
-`;
-
-const ChartHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-`;
-
-const ChartTitle = styled.h3`
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: ${(props) => props.theme.textPrimary};
-  margin: 0;
-  transition: color 0.3s ease;
-`;
-
-const ChartPeriod = styled.p`
-  font-size: 0.875rem;
-  color: ${(props) => props.theme.textSecondary};
-  margin: 0;
-  transition: color 0.3s ease;
-`;
-
-const ChartContent = styled.div`
-  position: relative;
-`;
-
-const ChartBar = styled.div`
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  height: 150px;
-  padding: 20px 0;
-  gap: 8px;
-`;
-
-const ChartBarItem = styled.div`
-  flex: 1;
-  height: ${(props) => props.height};
-  background: ${(props) => props.color || props.theme.buttonPrimary};
-  border-radius: 4px 4px 0 0;
-  transition: all 0.3s ease;
-  min-height: 10px;
-
-  &:hover {
-    opacity: 0.8;
-    transform: scaleY(1.05);
-  }
-`;
-
-const ChartLabels = styled.div`
-  display: flex;
-  justify-content: space-between;
-  margin-top: 12px;
-  padding: 0 4px;
-`;
-
-const ChartLabel = styled.span`
-  font-size: 0.75rem;
-  color: ${(props) => props.theme.textSecondary};
-  text-align: center;
-  flex: 1;
-`;
-
-const PendingBadge = styled.div`
-  position: absolute;
-  top: -10px;
-  right: -10px;
-  background: #ef4444;
-  color: white;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.75rem;
-  font-weight: 700;
-`; 
+export default AdminDashboard; 

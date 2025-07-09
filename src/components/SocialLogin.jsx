@@ -1,123 +1,52 @@
 import React from "react";
-import styled from "styled-components";
 import Button from "./Button";
-import { useStore } from "../stores/useStore";
 
 const SocialLogin = () => {
-  const { theme } = useStore();
-
   return (
     <>
-      <Divider theme={theme}>
+      <div className="social-login__divider">
         <span>또는</span>
-      </Divider>
-      <SocialLoginContainer>
-        <SocialLoginButton variant="kakao" fullWidth>
-          <SocialIcon src="/kakao_icon.png" alt="카카오" />
+      </div>
+      <div className="social-login__container">
+        <Button 
+          variant="kakao" 
+          fullWidth 
+          className="social-login__button social-login__button--kakao"
+        >
+          <img 
+            className="social-login__icon" 
+            src="/kakao_icon.png" 
+            alt="카카오" 
+          />
           카카오로 로그인
-        </SocialLoginButton>
-        <SocialLoginButton variant="google" fullWidth>
-          <SocialIcon src="/google_icon.png" alt="구글" />
+        </Button>
+        <Button 
+          variant="google" 
+          fullWidth 
+          className="social-login__button social-login__button--google"
+        >
+          <img 
+            className="social-login__icon" 
+            src="/google_icon.png" 
+            alt="구글" 
+          />
           구글로 로그인
-        </SocialLoginButton>
-        <SocialLoginButton variant="naver" fullWidth>
-          <SocialIcon src="/naver_icon.svg" alt="네이버" />
+        </Button>
+        <Button 
+          variant="naver" 
+          fullWidth 
+          className="social-login__button social-login__button--naver"
+        >
+          <img 
+            className="social-login__icon" 
+            src="/naver_icon.svg" 
+            alt="네이버" 
+          />
           네이버로 로그인
-        </SocialLoginButton>
-      </SocialLoginContainer>
+        </Button>
+      </div>
     </>
   );
 };
 
 export default SocialLogin;
-
-const Divider = styled.div`
-  display: flex;
-  align-items: center;
-  text-align: center;
-  margin: 1rem 0;
-  color: ${(props) => props.theme.textTertiary};
-
-  &::before,
-  &::after {
-    content: "";
-    flex: 1;
-    border-bottom: 1px solid ${(props) => props.theme.borderLight};
-  }
-
-  span {
-    margin: 0 0.75rem;
-    font-size: 0.875rem;
-  }
-
-  /* 반응형: 작은 화면에서 마진 축소 */
-  @media (max-width: 480px) {
-    margin: 0.75rem 0;
-  }
-`;
-
-const SocialLoginContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-
-  /* 반응형: 작은 화면에서 간격 축소 */
-  @media (max-width: 480px) {
-    gap: 0.4rem;
-  }
-`;
-
-const SocialLoginButton = styled(Button)`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  font-size: 0.875rem;
-  height: 40px;
-
-  /* 반응형: 작은 화면에서 높이 축소 */
-  @media (max-width: 480px) {
-    height: 36px;
-    font-size: 0.8rem;
-  }
-
-  ${(props) =>
-    props.variant === "kakao" &&
-    `
-    background-color: #FEE500;
-    color: #000000;
-    border: none;
-    &:hover {
-      background-color: #F6E000;
-      border: none;
-    }
-  `}
-
-  ${(props) =>
-    props.variant === "google" &&
-    `
-    background-color: #ffffff;
-    color: #000000;
-    border: 1px solid #dadce0;
-    &:hover {
-      background-color: #f8f9fa;
-      border-color: #dadce0;
-    }
-  `}
-
-  ${(props) =>
-    props.variant === "naver" &&
-    `
-    background-color: #03C75A;
-    color: #fff;
-    border: none;
-    &:hover { background-color: #1EC800; }
-  `}
-`;
-
-const SocialIcon = styled.img`
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  object-fit: cover;
-`;

@@ -1,10 +1,7 @@
 import React from "react";
-import styled from "styled-components";
 import { useRouter } from "next/router";
-import { useTheme } from "../utils/ThemeContext";
 
 const Sidebar = ({ moimId, moimRole = "멤버", activeMenu = "chat" }) => {
-  const { theme } = useTheme();
   const router = useRouter();
 
   const menuItems = [
@@ -41,156 +38,36 @@ const Sidebar = ({ moimId, moimRole = "멤버", activeMenu = "chat" }) => {
   };
 
   return (
-    <SidebarContainer theme={theme}>
-      <SidebarHeader theme={theme}>
-        <BackButton onClick={() => router.push("/MyPage")} theme={theme}>
-          <BackIcon>←</BackIcon>
-          <BackText theme={theme}>돌아가기</BackText>
-        </BackButton>
-      </SidebarHeader>
+    <div className="sidebar">
+      <div className="sidebar__header">
+        <button 
+          className="sidebar__back-button" 
+          onClick={() => router.push("/MyPage")}
+        >
+          <span className="sidebar__back-icon">←</span>
+          <span className="sidebar__back-text">돌아가기</span>
+        </button>
+      </div>
 
-      <MenuList>
+      <div className="sidebar__menu-list">
         {filteredMenuItems.map((item) => (
-          <MenuItem
+          <div
             key={item.id}
-            $active={activeMenu === item.id}
+            className={`sidebar__menu-item ${activeMenu === item.id ? 'sidebar__menu-item--active' : ''}`}
             onClick={() => handleMenuClick(item.path)}
-            theme={theme}
           >
-            <MenuIcon>{item.icon}</MenuIcon>
-            <MenuLabel theme={theme}>{item.label}</MenuLabel>
-            {activeMenu === item.id && <ActiveIndicator theme={theme} />}
-          </MenuItem>
+            <span className="sidebar__menu-icon">{item.icon}</span>
+            <span className="sidebar__menu-label">{item.label}</span>
+            {activeMenu === item.id && <div className="sidebar__active-indicator" />}
+          </div>
         ))}
-      </MenuList>
+      </div>
 
-      <SidebarFooter theme={theme}>
-        <FooterText theme={theme}>MoimLog</FooterText>
-      </SidebarFooter>
-    </SidebarContainer>
+      <div className="sidebar__footer">
+        <span className="sidebar__footer-text">MoimLog</span>
+      </div>
+    </div>
   );
 };
 
 export default Sidebar;
-
-const SidebarContainer = styled.div`
-  width: 250px;
-  height: calc(100vh - 80px); // 헤더 높이를 뺀 높이
-  background: ${(props) => props.theme.surface};
-  border-right: 1px solid ${(props) => props.theme.borderLight};
-  display: flex;
-  flex-direction: column;
-  position: fixed;
-  left: 0;
-  top: 80px; // 헤더 높이만큼 아래로 이동
-  z-index: 50;
-  transition: all 0.3s ease;
-
-  @media (max-width: 768px) {
-    width: 100%;
-    height: auto;
-    position: relative;
-    top: 0;
-    border-right: none;
-    border-bottom: 1px solid ${(props) => props.theme.borderLight};
-  }
-`;
-
-const SidebarHeader = styled.div`
-  padding: 16px;
-  border-bottom: 1px solid ${(props) => props.theme.borderLight};
-  transition: border-color 0.3s ease;
-`;
-
-const BackButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: none;
-  border: none;
-  color: ${(props) => props.theme.textSecondary};
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  padding: 8px 12px;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: ${(props) => props.theme.surfaceSecondary};
-    color: ${(props) => props.theme.textPrimary};
-  }
-`;
-
-const BackIcon = styled.span`
-  font-size: 1.2rem;
-  font-weight: bold;
-`;
-
-const BackText = styled.span`
-  transition: color 0.3s ease;
-`;
-
-const MenuList = styled.div`
-  flex: 1;
-  padding: 12px 0;
-`;
-
-const MenuItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  cursor: pointer;
-  position: relative;
-  transition: all 0.2s ease;
-  background: ${({ $active, theme }) =>
-    $active ? theme.surfaceSecondary : "transparent"};
-  color: ${({ $active, theme }) =>
-    $active ? theme.buttonPrimary : theme.textSecondary};
-
-  &:hover {
-    background: ${({ $active, theme }) =>
-      $active ? theme.borderLight : theme.surfaceSecondary};
-    color: ${({ $active, theme }) =>
-      $active ? theme.buttonPrimary : theme.textPrimary};
-  }
-`;
-
-const MenuIcon = styled.span`
-  font-size: 1.2rem;
-  width: 24px;
-  text-align: center;
-`;
-
-const MenuLabel = styled.span`
-  font-size: 0.9rem;
-  font-weight: 500;
-  transition: color 0.3s ease;
-`;
-
-const ActiveIndicator = styled.div`
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 3px;
-  height: 20px;
-  background: ${(props) => props.theme.buttonPrimary};
-  border-radius: 2px 0 0 2px;
-  transition: background-color 0.3s ease;
-`;
-
-const SidebarFooter = styled.div`
-  padding: 16px;
-  border-top: 1px solid ${(props) => props.theme.borderLight};
-  text-align: center;
-  transition: border-color 0.3s ease;
-`;
-
-const FooterText = styled.span`
-  font-size: 0.8rem;
-  color: ${(props) => props.theme.textTertiary};
-  font-weight: 500;
-  transition: color 0.3s ease;
-`;

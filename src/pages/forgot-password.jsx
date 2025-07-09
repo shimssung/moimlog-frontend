@@ -1,14 +1,11 @@
 import React, { useState } from "react";
-import styled from "styled-components";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import AuthLayout from "../components/AuthLayout";
 import Link from "next/link";
 import toast from "react-hot-toast";
-import { useTheme } from "../utils/ThemeContext";
 
 const ForgotPassword = () => {
-  const { theme } = useTheme();
   const [userId, setUserId] = useState("");
 
   const handleSubmit = (e) => {
@@ -21,7 +18,7 @@ const ForgotPassword = () => {
     <p>
       로그인이 기억나셨나요?{" "}
       <Link href="/login">
-        <StyledLink theme={theme}>로그인 하기</StyledLink>
+        <span className="forgot-password-styled-link">로그인 하기</span>
       </Link>
     </p>
   );
@@ -40,7 +37,7 @@ const ForgotPassword = () => {
       footerContent={footerContent}
     >
       <form onSubmit={handleSubmit}>
-        <FormGroup>
+        <div className="forgot-password-form-group">
           <Input
             type="email"
             placeholder="가입한 이메일 주소"
@@ -48,7 +45,7 @@ const ForgotPassword = () => {
             onChange={(e) => setUserId(e.target.value)}
             required
           />
-        </FormGroup>
+        </div>
         <Button type="submit" fullWidth style={{ marginTop: "1rem" }}>
           다음
         </Button>
@@ -58,19 +55,3 @@ const ForgotPassword = () => {
 };
 
 export default ForgotPassword;
-
-const FormGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const StyledLink = styled.span`
-  color: ${(props) => props.theme.buttonPrimary};
-  text-decoration: underline;
-  cursor: pointer;
-  transition: color 0.3s ease;
-
-  &:hover {
-    color: ${(props) => props.theme.buttonHover};
-  }
-`;
