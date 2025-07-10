@@ -18,6 +18,7 @@ function SignupPage() {
     emailDomain: "",
     password: "",
     password2: "",
+    verificationCode: "",
   });
   const [error, setError] = useState("");
 
@@ -32,9 +33,17 @@ function SignupPage() {
   });
   const [pwTouched, setPwTouched] = useState(false);
 
+  // 이메일 인증 관련 상태
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [isSendingCode, setIsSendingCode] = useState(false);
+  const [isVerifyingCode, setIsVerifyingCode] = useState(false);
+  const [verificationError, setVerificationError] = useState("");
+  const [countdown, setCountdown] = useState(0);
+
   // refs for focus
   const emailIdRef = useRef(null);
   const emailDomainRef = useRef(null);
+  const verificationCodeRef = useRef(null);
 
   // 이메일 도메인 옵션
   const emailDomains = [
@@ -50,42 +59,39 @@ function SignupPage() {
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setError("");
-    setEmailError("");
+    setEmailError(""); // 이메일 에러 초기화
+    setVerificationError("");
   };
 
-  // 이메일 필드 포커스 아웃 시 중복 확인
-  const handleEmailBlur = async () => {
-    const fullEmail = getFullEmail();
-    if (!fullEmail || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(fullEmail)) {
-      return; // 이메일이 완성되지 않았거나 형식이 틀리면 확인하지 않음
-    }
-
-    setEmailError("");
-
-    try {
-      const emailCheck = await authAPI.checkEmailDuplicate(fullEmail);
-      if (emailCheck.duplicate) {
-        setEmailError("이미 사용 중인 이메일입니다.");
-      } else {
-        setEmailError("");
-      }
-    } catch (error) {
-      setEmailError("이메일 중복 확인 중 오류가 발생했습니다.");
-    }
+  // 이메일 필드 포커스 아웃 시 에러 초기화
+  const handleEmailBlur = () => {
+    // 이메일이 변경되면 인증 상태 초기화
+    setIsEmailVerified(false);
+    setForm(prev => ({ ...prev, verificationCode: "" }));
   };
 
   // 도메인 선택 처리
   const handleDomainChange = (e) => {
     const value = e.target.value;
+    console.log('handleDomainChange:', { value, currentForm: form.emailDomain });
+    
     if (value === "직접입력") {
       setShowCustomDomain(true);
-      setForm({ ...form, emailDomain: "" });
+      setForm(prev => {
+        console.log('setForm 직접입력:', { prev, newValue: { ...prev, emailDomain: "", verificationCode: "" } });
+        return { ...prev, emailDomain: "", verificationCode: "" };
+      });
     } else {
       setShowCustomDomain(false);
       setCustomDomain("");
-      setForm({ ...form, emailDomain: value });
+      setForm(prev => {
+        console.log('setForm 도메인선택:', { prev, newValue: { ...prev, emailDomain: value, verificationCode: "" } });
+        return { ...prev, emailDomain: value, verificationCode: "" };
+      });
     }
     setEmailError("");
+    // 이메일이 변경되면 인증 상태 초기화
+    setIsEmailVerified(false);
   };
 
   // 직접 입력 도메인 처리
@@ -93,14 +99,26 @@ function SignupPage() {
     setCustomDomain(e.target.value);
     setForm({ ...form, emailDomain: e.target.value });
     setEmailError("");
+    // 이메일이 변경되면 인증 상태 초기화
+    setIsEmailVerified(false);
+    setForm({ ...form, verificationCode: "" });
   };
-
-
 
   // 전체 이메일 주소 생성
   const getFullEmail = () => {
-    if (!form.emailId || !form.emailDomain) return "";
-    return `${form.emailId}@${form.emailDomain}`;
+    if (!form.emailId) return "";
+    
+    let domain = "";
+    if (showCustomDomain) {
+      domain = customDomain;
+    } else {
+      domain = form.emailDomain;
+    }
+    
+    if (!domain) return "";
+    const fullEmail = `${form.emailId}@${domain}`;
+    console.log('getFullEmail:', { emailId: form.emailId, domain, showCustomDomain, customDomain, fullEmail });
+    return fullEmail;
   };
 
   const handlePasswordChange = (e) => {
@@ -117,12 +135,83 @@ function SignupPage() {
     });
   };
 
+  // 인증 코드 발송
+  const handleSendVerificationCode = async () => {
+    const fullEmail = getFullEmail();
+    if (!fullEmail || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(fullEmail)) {
+      setVerificationError("올바른 이메일 주소를 입력해주세요.");
+      return;
+    }
+
+    setIsSendingCode(true);
+    setVerificationError("");
+    setEmailError(""); // 이메일 에러 초기화
+
+    try {
+      const response = await authAPI.sendVerificationCode(fullEmail);
+      if (response.success) {
+        toast.success("인증 코드가 발송되었습니다. 이메일을 확인해주세요.");
+        setCountdown(180); // 3분 카운트다운
+        const timer = setInterval(() => {
+          setCountdown((prev) => {
+            if (prev <= 1) {
+              clearInterval(timer);
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+      } else {
+        // 백엔드에서 중복 확인 결과를 반환
+        if (response.message && response.message.includes("이미 가입된")) {
+          setEmailError("이미 사용 중인 이메일입니다.");
+          setVerificationError("이미 사용 중인 이메일입니다.");
+        } else {
+          setVerificationError(response.message || "인증 코드 발송에 실패했습니다.");
+        }
+      }
+    } catch (error) {
+      // 네트워크 오류 등
+      setVerificationError(error.message || "인증 코드 발송 중 오류가 발생했습니다.");
+    } finally {
+      setIsSendingCode(false);
+    }
+  };
+
+  // 인증 코드 검증
+  const handleVerifyCode = async () => {
+    const fullEmail = getFullEmail();
+    if (!form.verificationCode.trim()) {
+      setVerificationError("인증 코드를 입력해주세요.");
+      return;
+    }
+
+    setIsVerifyingCode(true);
+    setVerificationError("");
+
+    try {
+      const response = await authAPI.verifyEmailCode(fullEmail, form.verificationCode);
+      if (response.success) {
+        setIsEmailVerified(true);
+        toast.success("이메일 인증이 완료되었습니다.");
+        setVerificationError("");
+      } else {
+        setVerificationError(response.message || "인증 코드가 올바르지 않습니다.");
+      }
+    } catch (error) {
+      setVerificationError(error.message || "인증 코드 검증 중 오류가 발생했습니다.");
+    } finally {
+      setIsVerifyingCode(false);
+    }
+  };
+
   const validate = () => {
     const fullEmail = getFullEmail();
     if (!fullEmail) return "이메일을 입력해주세요.";
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(fullEmail))
       return "이메일 형식이 올바르지 않습니다.";
     if (emailError) return "이메일 중복 확인을 해주세요.";
+    if (!isEmailVerified) return "이메일 인증을 완료해주세요.";
     if (
       !/^(?=.*[a-zA-Z])(?=.*[0-9!@#$%^&*()_+\-={};':"\\|,.<>/?]).{8,32}$/.test(
         form.password
@@ -138,28 +227,6 @@ function SignupPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // 회원가입 버튼 클릭 시 이메일 중복 재확인
-    const fullEmail = getFullEmail();
-    if (fullEmail && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(fullEmail)) {
-      try {
-        const emailCheck = await authAPI.checkEmailDuplicate(fullEmail);
-        if (emailCheck.duplicate) {
-          setEmailError("이미 사용 중인 이메일입니다.");
-          // 이메일 필드로 포커스 이동
-          if (emailIdRef.current) {
-            emailIdRef.current.focus();
-          }
-          return;
-        }
-      } catch (error) {
-        setEmailError("이메일 중복 확인 중 오류가 발생했습니다.");
-        if (emailIdRef.current) {
-          emailIdRef.current.focus();
-        }
-        return;
-      }
-    }
     
     const err = validate();
     if (err) return setError(err);
@@ -239,6 +306,7 @@ function SignupPage() {
                 }}
                 required
               >
+                {console.log('Select render:', { emailDomain: form.emailDomain, showCustomDomain })}
                 <option value="">도메인 선택</option>
                 {emailDomains.slice(0, -1).map((domain) => (
                   <option key={domain} value={domain}>
@@ -264,6 +332,55 @@ function SignupPage() {
           </EmailInputGroup>
         </EmailContainer>
         {emailError && <ErrorMsg>{emailError}</ErrorMsg>}
+        
+        {/* 이메일 인증 섹션 */}
+        <VerificationSection>
+          <VerificationButton
+            type="button"
+            onClick={handleSendVerificationCode}
+            disabled={isSendingCode || countdown > 0 || !getFullEmail() || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(getFullEmail())}
+            theme={theme}
+          >
+            {isSendingCode 
+              ? "발송 중..." 
+              : countdown > 0 
+                ? `재발송 (${Math.floor(countdown / 60)}:${(countdown % 60).toString().padStart(2, '0')})`
+                : "인증 코드 발송"
+            }
+          </VerificationButton>
+          
+          {countdown > 0 && (
+            <VerificationInputGroup>
+              <Input
+                ref={verificationCodeRef}
+                name="verificationCode"
+                placeholder="인증 코드 6자리"
+                value={form.verificationCode}
+                onChange={handleChange}
+                maxLength={6}
+                style={{
+                  borderColor: verificationError ? "#ef4444" : isEmailVerified ? "#22c55e" : undefined,
+                }}
+              />
+              <VerifyButton
+                type="button"
+                onClick={handleVerifyCode}
+                disabled={isVerifyingCode || !form.verificationCode.trim() || isEmailVerified}
+                theme={theme}
+              >
+                {isVerifyingCode ? "확인 중..." : isEmailVerified ? "인증 완료" : "인증 확인"}
+              </VerifyButton>
+            </VerificationInputGroup>
+          )}
+          
+          {verificationError && <ErrorMsg>{verificationError}</ErrorMsg>}
+          {isEmailVerified && (
+            <SuccessMsg>
+              <FaCheckCircle /> 이메일 인증이 완료되었습니다.
+            </SuccessMsg>
+          )}
+        </VerificationSection>
+
         {error && <ErrorMsg>{error}</ErrorMsg>}
         <Label theme={theme}>비밀번호</Label>
         <Input
@@ -327,7 +444,7 @@ function SignupPage() {
           fullWidth
           variant="primary"
           style={{ margin: "24px 0 0 0" }}
-          disabled={isLoading}
+          disabled={isLoading || !isEmailVerified}
         >
           {isLoading ? "가입 중..." : "가입하기"}
         </Button>
@@ -385,7 +502,56 @@ const Select = styled.select`
   }
 `;
 
+const VerificationSection = styled.div`
+  margin: 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
 
+const VerificationButton = styled.button`
+  padding: 12px 16px;
+  border: 1px solid ${(props) => props.disabled ? props.theme.border : props.theme.buttonPrimary};
+  border-radius: 8px;
+  background-color: ${(props) => props.disabled ? props.theme.surfaceSecondary : props.theme.buttonPrimary};
+  color: ${(props) => props.disabled ? props.theme.textTertiary : 'white'};
+  font-size: 14px;
+  cursor: ${(props) => props.disabled ? 'not-allowed' : 'pointer'};
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background-color: ${(props) => props.theme.buttonHover};
+  }
+`;
+
+const VerificationInputGroup = styled.div`
+  display: flex;
+  gap: 8px;
+  align-items: center;
+`;
+
+const VerifyButton = styled.button`
+  padding: 12px 16px;
+  border: 1px solid ${(props) => props.theme.buttonPrimary};
+  border-radius: 8px;
+  background-color: ${(props) => props.theme.buttonPrimary};
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+
+  &:hover:not(:disabled) {
+    background-color: ${(props) => props.theme.buttonHover};
+  }
+
+  &:disabled {
+    background-color: ${(props) => props.theme.surfaceSecondary};
+    border-color: ${(props) => props.theme.border};
+    color: ${(props) => props.theme.textTertiary};
+    cursor: not-allowed;
+  }
+`;
 
 const Label = styled.label`
   font-size: 15px;
@@ -424,6 +590,17 @@ const ErrorMsg = styled.div`
   font-size: 14px;
   text-align: center;
   margin: 8px 0 -8px;
+`;
+
+const SuccessMsg = styled.div`
+  color: #22c55e !important;
+  font-size: 14px;
+  text-align: center;
+  margin: 8px 0 -8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 `;
 
 const StyledLink = styled.span`

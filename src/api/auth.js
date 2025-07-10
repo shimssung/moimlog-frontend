@@ -39,5 +39,28 @@ export const authAPI = {
     } catch (error) {
       throw error.response?.data || error.message;
     }
+  },
+
+  // 이메일 인증 코드 발송
+  sendVerificationCode: async (email) => {
+    try {
+      const response = await axios.post(`/auth/send-verification?email=${encodeURIComponent(email)}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // 이메일 인증 코드 검증
+  verifyEmailCode: async (email, verificationCode) => {
+    try {
+      const response = await axios.post('/auth/verify-email', {
+        email: email,
+        verificationCode: verificationCode
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
   }
 }; 
