@@ -133,6 +133,10 @@ export const ThemeProvider = ({ children }) => {
     }
   }, [isDarkMode, mounted]);
 
+  if (!mounted) {
+    return null;
+  }
+
   return (
     <ThemeContext.Provider value={{ theme, isDarkMode, toggleTheme, mounted }}>
       <GlobalStyle theme={theme} />

@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { authAPI } from "../api/auth";
 
 // 테마 색상 정의
 export const lightTheme = {
@@ -136,20 +137,8 @@ export const useStore = create(
         set({ isLoading: true });
 
         try {
-          // API 호출 (실제 구현에서는 axios 등 사용)
-          const response = await fetch("/api/auth/login", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ email, password }),
-          });
-
-          if (!response.ok) {
-            throw new Error("로그인 실패");
-          }
-
-          const data = await response.json();
+          // authAPI를 사용하여 로그인
+          const data = await authAPI.login({ email, password });
 
           // 사용자 정보와 토큰 저장
           const userData = {
@@ -168,7 +157,7 @@ export const useStore = create(
           });
 
           // 토큰 저장
-          localStorage.setItem("token", data.token);
+          get().setToken(data.accessToken, data.refreshToken);
 
           return { success: true };
         } catch (error) {
@@ -186,16 +175,16 @@ export const useStore = create(
           isAuthenticated: false,
         });
 
-        // 로컬스토리지에서 토큰 제거
-        localStorage.removeItem("token");
+        // 토큰 제거
+        get().removeToken();
 
-        // API 호출 (토큰 무효화)
-        fetch("/api/auth/logout", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }).catch(console.error);
+        // API 호출 (토큰 무효화) - 백엔드에 logout API가 있다면 사용
+        // fetch("/auth/logout", {
+        //   method: "POST",
+        //   headers: {
+        //     Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        //   },
+        // }).catch(console.error);
       },
 
       // 임시 로그인 (테스트용)
@@ -213,7 +202,7 @@ export const useStore = create(
           isAuthenticated: true,
         });
 
-        localStorage.setItem("token", "temp-token");
+        localStorage.setItem("accessToken", "temp-token");
       },
 
       // 임시 관리자 로그인 (테스트용)
@@ -231,7 +220,7 @@ export const useStore = create(
           isAuthenticated: true,
         });
 
-        localStorage.setItem("token", "temp-admin-token");
+        localStorage.setItem("accessToken", "temp-admin-token");
       },
 
       // 사용자 정보 업데이트
@@ -243,12 +232,44 @@ export const useStore = create(
 
       // 토큰 가져오기
       getToken: () => {
-        return localStorage.getItem("token");
+        return localStorage.getItem("accessToken");
+      },
+
+      // 토큰 설정
+      setToken: (accessToken, refreshToken) => {
+        if (accessToken) {
+          localStorage.setItem("accessToken", accessToken);
+        }
+        if (refreshToken) {
+          localStorage.setItem("refreshToken", refreshToken);
+        }
+      },
+
+      // 토큰 제거
+      removeToken: () => {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+      },
+
+      // 토큰 유효성 확인
+      isTokenValid: () => {
+        const token = localStorage.getItem("accessToken");
+        if (!token) return false;
+        
+        try {
+          // JWT 토큰 디코딩 (payload 확인)
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          const currentTime = Date.now() / 1000;
+          
+          return payload.exp > currentTime;
+        } catch {
+          return false;
+        }
       },
 
       // 인증 상태 확인
       checkAuth: () => {
-        const token = localStorage.getItem("token");
+        const token = localStorage.getItem("accessToken");
         if (!token) {
           get().logout();
           return false;

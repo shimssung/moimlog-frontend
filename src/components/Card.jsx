@@ -22,7 +22,7 @@ const Card = ({ moim }) => {
           <MemberCount theme={theme}>최대 {moim.maxMembers}명</MemberCount>
         </CardMeta>
         <CardLocation>
-          <LocationBadge onlineType={moim.onlineType} theme={theme}>
+          <LocationBadge $onlineType={moim.onlineType} theme={theme}>
             {moim.onlineType === "online" ? "온라인" : "오프라인"}
           </LocationBadge>
           {moim.onlineType === "offline" && moim.location && (
@@ -115,9 +115,9 @@ const CardLocation = styled.div`
 
 const LocationBadge = styled.span`
   font-size: 13px;
-  color: ${(props) => (props.onlineType === "online" ? "#059669" : "#dc2626")};
+  color: ${(props) => (props.$onlineType === "online" ? "#059669" : "#dc2626")};
   background: ${(props) =>
-    props.onlineType === "online" ? "#d1fae5" : "#fee2e2"};
+    props.$onlineType === "online" ? "#d1fae5" : "#fee2e2"};
   padding: 4px 12px;
   border-radius: 20px;
   font-weight: 500;

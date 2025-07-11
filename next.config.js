@@ -8,11 +8,12 @@ const nextConfig = {
       {
         source: "/:path*",
         headers: [
-          {
-            key: "Content-Security-Policy",
-            value:
-              "default-src 'self'; img-src 'self' data: https: blob:; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline';",
-          },
+          // CSP 비활성화 (개발용)
+          // {
+          //   key: "Content-Security-Policy",
+          //   value:
+          //     "default-src 'self'; connect-src 'self' http://localhost:8080 https://localhost:8080; img-src 'self' data: https: blob:; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline';",
+          // },
           {
             key: "X-Content-Type-Options",
             value: "nosniff",
