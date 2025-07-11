@@ -19,6 +19,7 @@ function SignupPage() {
     password: "",
     password2: "",
     verificationCode: "",
+    name: "",
   });
   const [error, setError] = useState("");
 
@@ -238,7 +239,8 @@ function SignupPage() {
       // 회원가입 API 호출
       const response = await authAPI.signup({
         email: getFullEmail(),
-        password: form.password
+        password: form.password,
+        name: form.name
       });
       
       if (response.success) {
@@ -438,6 +440,16 @@ function SignupPage() {
           onChange={handleChange}
           required
         />
+        
+        <Label theme={theme}>이름</Label>
+        <Input
+          name="name"
+          placeholder="이름을 입력해주세요"
+          value={form.name}
+          onChange={handleChange}
+          required
+        />
+        
         {error && <ErrorMsg>{error}</ErrorMsg>}
         <Button
           type="submit"

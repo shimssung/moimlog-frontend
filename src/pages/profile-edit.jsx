@@ -17,6 +17,8 @@ const ProfileEdit = () => {
     bio: "",
     interests: [],
     profileImage: null,
+    birthDate: "",
+    gender: "",
     notificationSettings: {
       email: true,
       push: true,
@@ -211,6 +213,39 @@ const ProfileEdit = () => {
                 onChange={handleInputChange}
                 rows={4}
               />
+              
+              <FormRow>
+                <Input
+                  label="전화번호 (선택)"
+                  name="phone"
+                  type="tel"
+                  value={userData.phone}
+                  onChange={handleInputChange}
+                  placeholder="010-1234-5678"
+                />
+                <Input
+                  label="생년월일 (선택)"
+                  name="birthDate"
+                  type="date"
+                  value={userData.birthDate}
+                  onChange={handleInputChange}
+                />
+              </FormRow>
+              
+              <FormGroup>
+                <Label theme={theme}>성별 (선택)</Label>
+                <Select
+                  name="gender"
+                  value={userData.gender}
+                  onChange={handleInputChange}
+                  theme={theme}
+                >
+                  <option value="">선택하지 않음</option>
+                  <option value="male">남성</option>
+                  <option value="female">여성</option>
+                  <option value="other">기타</option>
+                </Select>
+              </FormGroup>
             </FormSection>
 
             <Section>

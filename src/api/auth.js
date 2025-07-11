@@ -8,8 +8,7 @@ export const authAPI = {
       const response = await axios.post('/auth/signup', {
         email: signupData.email,
         password: signupData.password,
-        name: signupData.name || signupData.email.split('@')[0], // 이름이 없으면 이메일에서 추출
-        nickname: signupData.nickname || signupData.email.split('@')[0] // 닉네임이 없으면 이메일에서 추출
+        name: signupData.name
       });
       return response.data;
     } catch (error) {
