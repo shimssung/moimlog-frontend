@@ -11,8 +11,6 @@ const Header = () => {
   const userMenuRef = useRef(null);
 
   const handleThemeToggle = () => {
-    console.log("Header: Theme toggle button clicked");
-    console.log("Header: Current isDarkMode:", isDarkMode);
     toggleTheme();
   };
 
@@ -75,14 +73,14 @@ const Header = () => {
                     <NotificationBadge theme={theme}>3</NotificationBadge>
                   </NotificationButton>
                 )}
-                
+
                 {/* 관리자 버튼 */}
                 {user.role === "admin" && (
                   <AdminButton href="/admin/dashboard" theme={theme}>
                     관리
                   </AdminButton>
                 )}
-                
+
                 <UserMenu ref={userMenuRef}>
                   <UserButton onClick={toggleUserMenu} theme={theme}>
                     <UserAvatar theme={theme}>

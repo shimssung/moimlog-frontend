@@ -88,6 +88,7 @@ const defaultUser = {
   name: "",
   profileImage: "",
   role: "user",
+  isOnboardingCompleted: false, // 온보딩 상태 추가
 };
 
 // Zustand 스토어 생성
@@ -132,7 +133,7 @@ export const useStore = create(
       isAuthenticated: false,
       isLoading: false,
 
-      // 로그인
+      // 로그인 함수 수정 - 온보딩 상태 체크 추가
       login: async (email, password) => {
         set({ isLoading: true });
 
@@ -142,85 +143,219 @@ export const useStore = create(
 
           // 사용자 정보와 토큰 저장
           const userData = {
-            id: data.user.id,
-            email: data.user.email,
-            name: data.user.name,
-            profileImage: data.user.profileImage,
-            role: data.user.role,
+            id: data.userId,
+            email: data.email,
+            name: data.name,
+            nickname: data.nickname,
+            role: data.user?.role || "user",
+            isOnboardingCompleted: data.isOnboardingCompleted || false,
           };
 
-          // 상태 업데이트
+          // 토큰 저장
+          const accessToken = data.accessToken;
+          if (!accessToken) {
+            throw new Error("로그인 응답에 토큰이 없습니다.");
+          }
+
+          // 로딩 상태 먼저 해제
+          set({ isLoading: false });
+
+          // 상태 업데이트 - 토큰을 먼저 저장
           set({
+            accessToken: accessToken,
             user: userData,
             isAuthenticated: true,
-            isLoading: false,
           });
 
-          // 토큰 저장
-          get().setToken(data.accessToken, data.refreshToken);
-
-          return { success: true };
+          return {
+            success: true,
+            isOnboardingCompleted: data.isOnboardingCompleted || false,
+          };
         } catch (error) {
-          console.error("로그인 오류:", error);
           set({ isLoading: false });
           return { success: false, error: error.message };
         }
       },
 
-      // 로그아웃
-      logout: () => {
+      // 앱 시작 시 사용자 정보 동기화 (단순화)
+      syncUserInfo: async () => {
+        try {
+          const token = get().accessToken;
+          if (!token) return false;
+
+          // 백엔드에서 최신 사용자 정보 가져오기
+          const userData = await authAPI.getProfile();
+
+          // 사용자 정보 업데이트
+          set((state) => ({
+            user: {
+              ...state.user,
+              ...userData,
+              isOnboardingCompleted: userData.isOnboardingCompleted || false,
+            },
+            isAuthenticated: true,
+          }));
+
+          return true;
+        } catch {
+          return false;
+        }
+      },
+
+      // 온보딩 완료 함수
+      completeOnboarding: async (onboardingData) => {
+        try {
+          const data = await authAPI.completeOnboarding(onboardingData);
+
+          if (data.success) {
+            // 사용자 정보 업데이트
+            set((state) => ({
+              user: { ...state.user, isOnboardingCompleted: true },
+            }));
+            return { success: true };
+          } else {
+            return { success: false, error: data.message };
+          }
+        } catch (error) {
+          return { success: false, error: error.message };
+        }
+      },
+
+      // 온보딩 상태 확인 함수
+      checkOnboardingStatus: async () => {
+        try {
+          const data = await authAPI.checkOnboardingStatus();
+
+          // 사용자 정보 업데이트
+          set((state) => ({
+            user: { ...state.user, isOnboardingCompleted: data.isCompleted },
+          }));
+
+          return data.isCompleted;
+        } catch {
+          return false;
+        }
+      },
+
+      // 로그아웃 (API 호출 포함)
+      logout: async () => {
+        try {
+          // 백엔드에 로그아웃 요청 (쿠키 삭제)
+          await authAPI.logout();
+        } catch {
+          // 로그아웃 API 실패는 무시하고 계속 진행
+        }
+
         // 상태 초기화
         set({
           user: defaultUser,
           isAuthenticated: false,
+          accessToken: null,
         });
-
-        // 토큰 제거
-        get().removeToken();
-
-        // API 호출 (토큰 무효화) - 백엔드에 logout API가 있다면 사용
-        // fetch("/auth/logout", {
-        //   method: "POST",
-        //   headers: {
-        //     Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        //   },
-        // }).catch(console.error);
       },
 
-      // 임시 로그인 (테스트용)
-      tempLogin: () => {
-        const userData = {
-          id: 1,
-          email: "test@example.com",
-          name: "테스트 사용자",
-          profileImage: "",
-          role: "user",
-        };
-
+      // 조용한 로그아웃 (API 호출 없이 상태만 초기화)
+      logoutSilently: () => {
         set({
-          user: userData,
-          isAuthenticated: true,
+          user: defaultUser,
+          isAuthenticated: false,
+          accessToken: null,
         });
-
-        localStorage.setItem("accessToken", "temp-token");
       },
 
-      // 임시 관리자 로그인 (테스트용)
-      tempAdminLogin: () => {
-        const userData = {
-          id: 1,
-          email: "admin@example.com",
-          name: "관리자",
-          profileImage: "",
-          role: "admin",
-        };
+      // 토큰 설정 (단순화)
+      setToken: (accessToken) => {
+        set({ accessToken });
+      },
 
-        set({
-          user: userData,
-          isAuthenticated: true,
-        });
+      // 토큰 가져오기
+      getToken: () => {
+        return get().accessToken;
+      },
 
-        localStorage.setItem("accessToken", "temp-admin-token");
+      // 토큰 제거
+      removeToken: () => {
+        set({ accessToken: null });
+      },
+
+      // 앱 시작 시 토큰 복원 (단순화)
+      restoreToken: async () => {
+        try {
+          const token = get().accessToken;
+          if (token) return token; // 이미 토큰이 있으면 그대로 사용
+
+          // 리프레시 토큰으로 새로운 액세스 토큰 발급
+          const response = await authAPI.refreshToken();
+
+          if (response.accessToken) {
+            set({ accessToken: response.accessToken });
+            return response.accessToken;
+          }
+        } catch {
+          // 토큰 복원 실패 시 조용히 로그아웃
+          get().logoutSilently();
+        }
+        return null;
+      },
+
+      // 토큰 유효성 확인
+      isTokenValid: () => {
+        const token = get().accessToken;
+        if (!token) return false;
+
+        try {
+          // JWT 토큰 디코딩 (payload 확인)
+          const payload = JSON.parse(atob(token.split(".")[1]));
+          const currentTime = Date.now() / 1000;
+
+          // 토큰이 만료되었으면 조용한 로그아웃
+          if (payload.exp <= currentTime) {
+            console.log("토큰이 만료되어 조용한 로그아웃 처리");
+            get().logoutSilently();
+            return false;
+          }
+
+          return true;
+        } catch {
+          console.log("토큰 디코딩 실패 - 조용한 로그아웃 처리");
+          get().logoutSilently();
+          return false;
+        }
+      },
+
+      // 인증 상태 확인 (단순화)
+      checkAuth: () => {
+        const token = get().accessToken;
+        if (!token) {
+          get().logoutSilently();
+          return false;
+        }
+
+        // 토큰 유효성도 확인
+        if (!get().isTokenValid()) {
+          return false;
+        }
+
+        return true;
+      },
+
+      // 통합된 인증 확인 및 리다이렉트 함수
+      checkAuthAndRedirect: () => {
+        const state = get();
+
+        if (!state.isAuthenticated || !state.accessToken) {
+          console.log("인증되지 않음 - 조용한 로그아웃 처리");
+          state.logoutSilently();
+          return false;
+        }
+
+        if (!state.isTokenValid()) {
+          console.log("토큰이 만료됨 - 조용한 로그아웃 처리");
+          state.logoutSilently();
+          return false;
+        }
+
+        return true;
       },
 
       // 사용자 정보 업데이트
@@ -230,51 +365,12 @@ export const useStore = create(
         }));
       },
 
-      // 토큰 가져오기
-      getToken: () => {
-        return localStorage.getItem("accessToken");
-      },
-
-      // 토큰 설정
-      setToken: (accessToken, refreshToken) => {
-        if (accessToken) {
-          localStorage.setItem("accessToken", accessToken);
-        }
-        if (refreshToken) {
-          localStorage.setItem("refreshToken", refreshToken);
-        }
-      },
-
-      // 토큰 제거
-      removeToken: () => {
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-      },
-
-      // 토큰 유효성 확인
-      isTokenValid: () => {
-        const token = localStorage.getItem("accessToken");
-        if (!token) return false;
-        
-        try {
-          // JWT 토큰 디코딩 (payload 확인)
-          const payload = JSON.parse(atob(token.split('.')[1]));
-          const currentTime = Date.now() / 1000;
-          
-          return payload.exp > currentTime;
-        } catch {
-          return false;
-        }
-      },
-
-      // 인증 상태 확인
-      checkAuth: () => {
-        const token = localStorage.getItem("accessToken");
-        if (!token) {
-          get().logout();
-          return false;
-        }
-        return true;
+      // 사용자 정보로 로그인 (로그인 페이지에서 사용)
+      loginWithUserData: (userData) => {
+        set({
+          user: userData,
+          isAuthenticated: true,
+        });
       },
 
       // ===== 기타 전역 상태들 =====
@@ -306,6 +402,7 @@ export const useStore = create(
         isDarkMode: state.isDarkMode,
         user: state.user,
         isAuthenticated: state.isAuthenticated,
+        accessToken: state.accessToken, // 토큰도 저장
       }),
     }
   )

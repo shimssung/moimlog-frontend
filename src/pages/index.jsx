@@ -10,7 +10,7 @@ import { useStore } from "../stores/useStore";
 import { mockMoims } from "../utils/mockData";
 
 const MoimMainPage = () => {
-  const { theme } = useStore();
+  const { theme, isAuthenticated } = useStore();
   const [selectedMoim, setSelectedMoim] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -43,9 +43,15 @@ const MoimMainPage = () => {
                 <Button href="/moim-list" variant="secondary">
                   모임 둘러보기
                 </Button>
-                <Button href="/moim-create" variant="primary">
-                  모임 만들기
-                </Button>
+                {isAuthenticated ? (
+                  <Button href="/moim-create" variant="primary">
+                    모임 만들기
+                  </Button>
+                ) : (
+                  <Button href="/login" variant="primary">
+                    로그인하고 시작하기
+                  </Button>
+                )}
               </ButtonGroup>
             </HeroText>
             <HeroImage>

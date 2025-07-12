@@ -54,7 +54,7 @@ function SignupPage() {
     "kakao.com",
     "outlook.com",
     "yahoo.com",
-    "직접입력"
+    "직접입력",
   ];
 
   const handleChange = (e) => {
@@ -68,27 +68,24 @@ function SignupPage() {
   const handleEmailBlur = () => {
     // 이메일이 변경되면 인증 상태 초기화
     setIsEmailVerified(false);
-    setForm(prev => ({ ...prev, verificationCode: "" }));
+    setForm((prev) => ({ ...prev, verificationCode: "" }));
   };
 
   // 도메인 선택 처리
   const handleDomainChange = (e) => {
     const value = e.target.value;
-    console.log('handleDomainChange:', { value, currentForm: form.emailDomain });
-    
+
     if (value === "직접입력") {
       setShowCustomDomain(true);
-      setForm(prev => {
-        console.log('setForm 직접입력:', { prev, newValue: { ...prev, emailDomain: "", verificationCode: "" } });
-        return { ...prev, emailDomain: "", verificationCode: "" };
-      });
+      setForm((prev) => ({ ...prev, emailDomain: "", verificationCode: "" }));
     } else {
       setShowCustomDomain(false);
       setCustomDomain("");
-      setForm(prev => {
-        console.log('setForm 도메인선택:', { prev, newValue: { ...prev, emailDomain: value, verificationCode: "" } });
-        return { ...prev, emailDomain: value, verificationCode: "" };
-      });
+      setForm((prev) => ({
+        ...prev,
+        emailDomain: value,
+        verificationCode: "",
+      }));
     }
     setEmailError("");
     // 이메일이 변경되면 인증 상태 초기화
@@ -108,17 +105,16 @@ function SignupPage() {
   // 전체 이메일 주소 생성
   const getFullEmail = () => {
     if (!form.emailId) return "";
-    
+
     let domain = "";
     if (showCustomDomain) {
       domain = customDomain;
     } else {
       domain = form.emailDomain;
     }
-    
+
     if (!domain) return "";
     const fullEmail = `${form.emailId}@${domain}`;
-    console.log('getFullEmail:', { emailId: form.emailId, domain, showCustomDomain, customDomain, fullEmail });
     return fullEmail;
   };
 
@@ -168,12 +164,16 @@ function SignupPage() {
           setEmailError("이미 사용 중인 이메일입니다.");
           setVerificationError("이미 사용 중인 이메일입니다.");
         } else {
-          setVerificationError(response.message || "인증 코드 발송에 실패했습니다.");
+          setVerificationError(
+            response.message || "인증 코드 발송에 실패했습니다."
+          );
         }
       }
     } catch (error) {
       // 네트워크 오류 등
-      setVerificationError(error.message || "인증 코드 발송 중 오류가 발생했습니다.");
+      setVerificationError(
+        error.message || "인증 코드 발송 중 오류가 발생했습니다."
+      );
     } finally {
       setIsSendingCode(false);
     }
@@ -191,16 +191,23 @@ function SignupPage() {
     setVerificationError("");
 
     try {
-      const response = await authAPI.verifyEmailCode(fullEmail, form.verificationCode);
+      const response = await authAPI.verifyEmailCode(
+        fullEmail,
+        form.verificationCode
+      );
       if (response.success) {
         setIsEmailVerified(true);
         toast.success("이메일 인증이 완료되었습니다.");
         setVerificationError("");
       } else {
-        setVerificationError(response.message || "인증 코드가 올바르지 않습니다.");
+        setVerificationError(
+          response.message || "인증 코드가 올바르지 않습니다."
+        );
       }
     } catch (error) {
-      setVerificationError(error.message || "인증 코드 검증 중 오류가 발생했습니다.");
+      setVerificationError(
+        error.message || "인증 코드 검증 중 오류가 발생했습니다."
+      );
     } finally {
       setIsVerifyingCode(false);
     }
@@ -228,23 +235,23 @@ function SignupPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     const err = validate();
     if (err) return setError(err);
-    
+
     setIsLoading(true);
     setError("");
-    
+
     try {
       // 회원가입 API 호출
       const response = await authAPI.signup({
         email: getFullEmail(),
         password: form.password,
-        name: form.name
+        name: form.name,
       });
-      
+
       if (response.success) {
-        toast.success("회원가입이 완료되었습니다!");
+        toast.success("회원가입이 완료되었습니다! 로그인해주세요.");
         router.push("/login");
       } else {
         setError(response.message || "회원가입에 실패했습니다.");
@@ -308,7 +315,6 @@ function SignupPage() {
                 }}
                 required
               >
-                {console.log('Select render:', { emailDomain: form.emailDomain, showCustomDomain })}
                 <option value="">도메인 선택</option>
                 {emailDomains.slice(0, -1).map((domain) => (
                   <option key={domain} value={domain}>
@@ -334,23 +340,29 @@ function SignupPage() {
           </EmailInputGroup>
         </EmailContainer>
         {emailError && <ErrorMsg>{emailError}</ErrorMsg>}
-        
+
         {/* 이메일 인증 섹션 */}
         <VerificationSection>
           <VerificationButton
             type="button"
             onClick={handleSendVerificationCode}
-            disabled={isSendingCode || countdown > 0 || !getFullEmail() || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(getFullEmail())}
+            disabled={
+              isSendingCode ||
+              countdown > 0 ||
+              !getFullEmail() ||
+              !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(getFullEmail())
+            }
             theme={theme}
           >
-            {isSendingCode 
-              ? "발송 중..." 
-              : countdown > 0 
-                ? `재발송 (${Math.floor(countdown / 60)}:${(countdown % 60).toString().padStart(2, '0')})`
-                : "인증 코드 발송"
-            }
+            {isSendingCode
+              ? "발송 중..."
+              : countdown > 0
+              ? `재발송 (${Math.floor(countdown / 60)}:${(countdown % 60)
+                  .toString()
+                  .padStart(2, "0")})`
+              : "인증 코드 발송"}
           </VerificationButton>
-          
+
           {countdown > 0 && (
             <VerificationInputGroup>
               <Input
@@ -361,20 +373,32 @@ function SignupPage() {
                 onChange={handleChange}
                 maxLength={6}
                 style={{
-                  borderColor: verificationError ? "#ef4444" : isEmailVerified ? "#22c55e" : undefined,
+                  borderColor: verificationError
+                    ? "#ef4444"
+                    : isEmailVerified
+                    ? "#22c55e"
+                    : undefined,
                 }}
               />
               <VerifyButton
                 type="button"
                 onClick={handleVerifyCode}
-                disabled={isVerifyingCode || !form.verificationCode.trim() || isEmailVerified}
+                disabled={
+                  isVerifyingCode ||
+                  !form.verificationCode.trim() ||
+                  isEmailVerified
+                }
                 theme={theme}
               >
-                {isVerifyingCode ? "확인 중..." : isEmailVerified ? "인증 완료" : "인증 확인"}
+                {isVerifyingCode
+                  ? "확인 중..."
+                  : isEmailVerified
+                  ? "인증 완료"
+                  : "인증 확인"}
               </VerifyButton>
             </VerificationInputGroup>
           )}
-          
+
           {verificationError && <ErrorMsg>{verificationError}</ErrorMsg>}
           {isEmailVerified && (
             <SuccessMsg>
@@ -440,7 +464,7 @@ function SignupPage() {
           onChange={handleChange}
           required
         />
-        
+
         <Label theme={theme}>이름</Label>
         <Input
           name="name"
@@ -449,7 +473,7 @@ function SignupPage() {
           onChange={handleChange}
           required
         />
-        
+
         {error && <ErrorMsg>{error}</ErrorMsg>}
         <Button
           type="submit"
@@ -523,12 +547,15 @@ const VerificationSection = styled.div`
 
 const VerificationButton = styled.button`
   padding: 12px 16px;
-  border: 1px solid ${(props) => props.disabled ? props.theme.border : props.theme.buttonPrimary};
+  border: 1px solid
+    ${(props) =>
+      props.disabled ? props.theme.border : props.theme.buttonPrimary};
   border-radius: 8px;
-  background-color: ${(props) => props.disabled ? props.theme.surfaceSecondary : props.theme.buttonPrimary};
-  color: ${(props) => props.disabled ? props.theme.textTertiary : 'white'};
+  background-color: ${(props) =>
+    props.disabled ? props.theme.surfaceSecondary : props.theme.buttonPrimary};
+  color: ${(props) => (props.disabled ? props.theme.textTertiary : "white")};
   font-size: 14px;
-  cursor: ${(props) => props.disabled ? 'not-allowed' : 'pointer'};
+  cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
   transition: all 0.2s ease;
 
   &:hover:not(:disabled) {

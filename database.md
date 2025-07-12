@@ -20,6 +20,7 @@ CREATE TABLE users (
     is_active BOOLEAN DEFAULT TRUE,
     is_verified BOOLEAN DEFAULT FALSE,
     last_login_at TIMESTAMP,
+    is_onboarding_completed DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -388,7 +389,7 @@ CREATE INDEX idx_user_activity_logs_created_at ON user_activity_logs(created_at)
 -- 뷰
 -- ========================================
 CREATE VIEW moim_details AS
-SELECT 
+SELECT
     m.*,
     mc.name as category_name,
     mc.label as category_label,
@@ -400,7 +401,7 @@ LEFT JOIN moim_categories mc ON m.category_id = mc.id
 LEFT JOIN users u ON m.created_by = u.id;
 
 CREATE VIEW user_interests_details AS
-SELECT 
+SELECT
     ui.*,
     u.name as user_name,
     u.email as user_email,
@@ -412,7 +413,7 @@ JOIN users u ON ui.user_id = u.id
 JOIN moim_categories mc ON ui.category_id = mc.id;
 
 CREATE VIEW moim_member_details AS
-SELECT 
+SELECT
     mm.*,
     u.name,
     u.email,
@@ -422,7 +423,7 @@ FROM moim_members mm
 JOIN users u ON mm.user_id = u.id;
 
 CREATE VIEW post_details AS
-SELECT 
+SELECT
     p.*,
     u.name as author_name,
     u.profile_image as author_image,

@@ -9,10 +9,9 @@ import Input from "../components/Input";
 import SocialLogin from "../components/SocialLogin";
 import AuthLayout from "../components/AuthLayout";
 import toast from "react-hot-toast";
-import { authAPI } from "../api/auth";
 
 const LoginPage = () => {
-  const { theme, login, isLoading } = useStore();
+  const { theme, login, isLoading, getToken } = useStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
@@ -23,39 +22,38 @@ const LoginPage = () => {
       toast.error("이메일과 비밀번호를 입력해주세요.");
       return;
     }
-    
+
     try {
-      const response = await authAPI.login({ email, password });
-      
+      const response = await login(email, password);
+
       if (response.success) {
-        // 토큰 저장
-        localStorage.setItem("accessToken", response.accessToken);
-        localStorage.setItem("refreshToken", response.refreshToken);
-        
-        // 사용자 정보 저장
-        const userData = {
-          id: response.userId,
-          email: response.email,
-          name: response.name,
-          nickname: response.nickname,
-          role: "user"
-        };
-        
-        // 스토어에 사용자 정보 저장
-        login(userData);
-        
+        // 토큰 확인
+        const token = getToken();
+        if (!token) {
+          toast.error(
+            "로그인은 성공했지만 토큰을 가져올 수 없습니다. 다시 시도해주세요."
+          );
+          return;
+        }
+
         toast.success("로그인 성공!");
-        router.push("/");
+
+        // 온보딩 상태에 따라 리다이렉트
+        if (!response.isOnboardingCompleted) {
+          router.push("/onboarding");
+        } else {
+          // 홈페이지로 리다이렉트 시 새로고침하여 최신 상태 반영
+          router.push("/").then(() => {
+            window.location.reload();
+          });
+        }
       } else {
-        toast.error(response.message || "로그인에 실패했습니다.");
+        toast.error(response.error || "로그인에 실패했습니다.");
       }
     } catch (error) {
-      console.error("로그인 오류:", error);
       toast.error(error.message || "로그인에 실패했습니다.");
     }
   };
-
-
 
   const footerContent = (
     <FooterText theme={theme}>
@@ -109,7 +107,7 @@ const LoginPage = () => {
           fullWidth
           disabled={isLoading}
         >
-          이메일로 회원가입
+          회원가입
         </Button>
         <SocialLogin />
       </Form>
@@ -149,7 +147,5 @@ const FooterText = styled.p`
   font-size: 0.875rem;
   color: ${({ theme }) => theme.textSecondary};
 `;
-
-
 
 export default LoginPage;

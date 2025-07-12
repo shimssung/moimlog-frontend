@@ -1,40 +1,103 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import Button from "../components/Button";
 import Input from "../components/Input";
 import Textarea from "../components/Textarea";
 import { useTheme } from "../utils/ThemeContext";
 import { useRouter } from "next/router";
+import { useStore } from "../stores/useStore";
+import { authAPI } from "../api/auth";
 import toast from "react-hot-toast";
-
-const INTERESTS = [
-  "등산", "요리", "독서", "여행", "맛집", "사진", 
-  "음악", "미술", "영화", "게임", "운동", "언어학습",
-  "프로그래밍", "디자인", "창작", "봉사활동"
-];
 
 const Onboarding = () => {
   const { theme } = useTheme();
   const router = useRouter();
+  const {
+    completeOnboarding,
+    getToken,
+    isAuthenticated,
+    checkAuthAndRedirect,
+    syncUserInfo,
+    updateUser,
+  } = useStore();
   const [step, setStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     nickname: "",
     bio: "",
-    interests: [],
-    profileImage: null
+    moimCategories: [],
+    profileImage: null,
   });
+
+  // 닉네임 중복 체크 관련 상태
+  const [nicknameError, setNicknameError] = useState("");
+  const [isCheckingNickname, setIsCheckingNickname] = useState(false);
+
+  // 모임 카테고리 관련 상태
+  const [moimCategories, setMoimCategories] = useState([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(false);
+
+  // 모임 카테고리 목록 가져오기
+  useEffect(() => {
+    const fetchCategories = async () => {
+      // 토큰 확인
+      const token = getToken();
+      if (!token) {
+        console.error("토큰이 없어서 카테고리를 불러올 수 없습니다.");
+        toast.error("인증 토큰이 없습니다. 다시 로그인해주세요.");
+        return;
+      }
+
+      setIsLoadingCategories(true);
+      try {
+        const response = await authAPI.getMoimCategories();
+
+        if (response.categories && response.categories.length > 0) {
+          setMoimCategories(response.categories);
+        } else {
+          console.error("모임 카테고리 API 실패:", response);
+          toast.error("모임 카테고리를 불러오는데 실패했습니다.");
+        }
+      } catch (error) {
+        console.error("모임 카테고리 로딩 실패:", error);
+        toast.error("모임 카테고리를 불러오는데 실패했습니다.");
+      } finally {
+        setIsLoadingCategories(false);
+      }
+    };
+
+    fetchCategories();
+  }, [getToken]);
+
+  // 토큰 확인 및 인증 상태 체크
+  useEffect(() => {
+    const checkAuth = () => {
+      // 통합된 인증 확인 함수 사용
+      if (!checkAuthAndRedirect()) {
+        return;
+      }
+    };
+
+    // 초기 로드 시에만 체크
+    checkAuth();
+  }, [isAuthenticated, router.pathname, checkAuthAndRedirect]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // 닉네임 입력 시 에러 메시지 초기화
+    if (name === "nickname") {
+      setNicknameError("");
+    }
   };
 
-  const handleInterestToggle = (interest) => {
-    setFormData(prev => ({
+  const handleCategoryToggle = (categoryId) => {
+    setFormData((prev) => ({
       ...prev,
-      interests: prev.interests.includes(interest)
-        ? prev.interests.filter(i => i !== interest)
-        : [...prev.interests, interest]
+      moimCategories: prev.moimCategories.includes(categoryId)
+        ? prev.moimCategories.filter((id) => id !== categoryId)
+        : [...prev.moimCategories, categoryId],
     }));
   };
 
@@ -43,17 +106,44 @@ const Onboarding = () => {
     if (file) {
       const reader = new FileReader();
       reader.onload = (event) => {
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
-          profileImage: event.target.result
+          profileImage: event.target.result,
         }));
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleNext = () => {
-    if (step < 4) {
+  const handleNext = async () => {
+    // 첫 번째 단계에서 닉네임 중복 체크
+    if (step === 1) {
+      if (!formData.nickname.trim()) {
+        toast.error("닉네임을 입력해주세요.");
+        return;
+      }
+
+      setIsCheckingNickname(true);
+
+      try {
+        const result = await authAPI.checkNicknameDuplicate(formData.nickname);
+
+        if (!result.duplicate) {
+          // 중복되지 않은 경우 다음 단계로
+          setStep(step + 1);
+          setNicknameError("");
+        } else {
+          // 중복된 경우 에러 메시지 표시
+          setNicknameError("이미 사용 중인 닉네임입니다.");
+          toast.error("이미 사용 중인 닉네임입니다.");
+        }
+      } catch {
+        setNicknameError("닉네임 확인 중 오류가 발생했습니다.");
+        toast.error("닉네임 확인 중 오류가 발생했습니다.");
+      } finally {
+        setIsCheckingNickname(false);
+      }
+    } else if (step < 4) {
       setStep(step + 1);
     } else {
       handleSubmit();
@@ -61,20 +151,47 @@ const Onboarding = () => {
   };
 
   const handleSubmit = async () => {
-    try {
-      // 온보딩 데이터 저장 API 호출
-      const response = await fetch("/api/user/onboarding", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData)
-      });
+    // 필수 필드 검증
+    if (!formData.nickname.trim()) {
+      toast.error("닉네임을 입력해주세요.");
+      return;
+    }
 
-      if (response.ok) {
+    setIsSubmitting(true);
+
+    try {
+      // 온보딩 데이터를 백엔드 형식에 맞게 변환
+      const onboardingData = {
+        nickname: formData.nickname,
+        bio: formData.bio || "",
+        moimCategories: formData.moimCategories,
+        profileImage: formData.profileImage || "",
+      };
+
+      const result = await completeOnboarding(onboardingData);
+
+      if (result.success) {
         toast.success("프로필 설정이 완료되었습니다!");
-        router.push("/"); // 홈으로 이동
+
+        // 백엔드에서 최신 사용자 정보 동기화
+        await syncUserInfo();
+
+        // 상태 강제 업데이트
+        updateUser({ isOnboardingCompleted: true });
+
+        // 잠시 대기 후 홈으로 이동 (새로고침 포함)
+        setTimeout(() => {
+          router.push("/").then(() => {
+            window.location.reload();
+          });
+        }, 1000);
+      } else {
+        toast.error(result.error || "프로필 설정에 실패했습니다.");
       }
     } catch {
-      toast.error("설정 저장에 실패했습니다.");
+      toast.error("프로필 설정 중 오류가 발생했습니다.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -91,7 +208,11 @@ const Onboarding = () => {
         onChange={handleInputChange}
         theme={theme}
         required
+        error={nicknameError}
       />
+      {isCheckingNickname && (
+        <CheckingMessage theme={theme}>닉네임 확인 중...</CheckingMessage>
+      )}
     </StepContent>
   );
 
@@ -114,22 +235,26 @@ const Onboarding = () => {
 
   const renderStep3 = () => (
     <StepContent>
-      <StepTitle theme={theme}>관심사를 선택해주세요</StepTitle>
+      <StepTitle theme={theme}>모임 카테고리를 선택해주세요</StepTitle>
       <StepDescription theme={theme}>
-        관심 있는 분야를 선택하면 맞춤형 모임을 추천해드립니다.
+        관심 있는 모임 카테고리를 선택하면 맞춤형 모임을 추천해드립니다.
       </StepDescription>
-      <InterestsGrid>
-        {INTERESTS.map(interest => (
-          <InterestTag
-            key={interest}
-            selected={formData.interests.includes(interest)}
-            onClick={() => handleInterestToggle(interest)}
-            theme={theme}
-          >
-            {interest}
-          </InterestTag>
-        ))}
-      </InterestsGrid>
+      {isLoadingCategories ? (
+        <LoadingMessage theme={theme}>카테고리를 불러오는 중...</LoadingMessage>
+      ) : (
+        <InterestsGrid>
+          {moimCategories.map((category) => (
+            <InterestTag
+              key={category.id}
+              $selected={formData.moimCategories.includes(category.id)}
+              onClick={() => handleCategoryToggle(category.id)}
+              theme={theme}
+            >
+              {category.label}
+            </InterestTag>
+          ))}
+        </InterestsGrid>
+      )}
     </StepContent>
   );
 
@@ -163,11 +288,16 @@ const Onboarding = () => {
 
   const renderStep = () => {
     switch (step) {
-      case 1: return renderStep1();
-      case 2: return renderStep2();
-      case 3: return renderStep3();
-      case 4: return renderStep4();
-      default: return renderStep1();
+      case 1:
+        return renderStep1();
+      case 2:
+        return renderStep2();
+      case 3:
+        return renderStep3();
+      case 4:
+        return renderStep4();
+      default:
+        return renderStep1();
     }
   };
 
@@ -175,22 +305,23 @@ const Onboarding = () => {
     <PageContainer theme={theme}>
       <Header>
         <ProgressBar>
-          <ProgressStep active={step >= 1} theme={theme} />
-          <ProgressStep active={step >= 2} theme={theme} />
-          <ProgressStep active={step >= 3} theme={theme} />
-          <ProgressStep active={step >= 4} theme={theme} />
+          <ProgressStep $active={step >= 1} theme={theme} />
+          <ProgressStep $active={step >= 2} theme={theme} />
+          <ProgressStep $active={step >= 3} theme={theme} />
+          <ProgressStep $active={step >= 4} theme={theme} />
         </ProgressBar>
       </Header>
-      
+
       <MainContent>
         {renderStep()}
-        
+
         <ButtonGroup>
           {step > 1 && (
             <Button
               variant="secondary"
               onClick={() => setStep(step - 1)}
               theme={theme}
+              disabled={isSubmitting || isCheckingNickname}
             >
               이전
             </Button>
@@ -199,8 +330,13 @@ const Onboarding = () => {
             variant="primary"
             onClick={handleNext}
             theme={theme}
+            disabled={isSubmitting || isCheckingNickname}
           >
-            {step === 4 ? "완료" : "다음"}
+            {isSubmitting || isCheckingNickname
+              ? "처리 중..."
+              : step === 4
+              ? "완료"
+              : "다음"}
           </Button>
         </ButtonGroup>
       </MainContent>
@@ -212,7 +348,7 @@ export default Onboarding;
 
 const PageContainer = styled.div`
   min-height: 100vh;
-  background: ${props => props.theme.background};
+  background: ${(props) => props.theme.background};
   display: flex;
   flex-direction: column;
   transition: background-color 0.3s ease;
@@ -220,7 +356,7 @@ const PageContainer = styled.div`
 
 const Header = styled.header`
   padding: 24px;
-  border-bottom: 1px solid ${props => props.theme.borderLight};
+  border-bottom: 1px solid ${(props) => props.theme.borderLight};
 `;
 
 const ProgressBar = styled.div`
@@ -234,7 +370,8 @@ const ProgressBar = styled.div`
 const ProgressStep = styled.div`
   width: 40px;
   height: 4px;
-  background: ${props => props.active ? props.theme.buttonPrimary : props.theme.borderLight};
+  background: ${(props) =>
+    props.$active ? props.theme.buttonPrimary : props.theme.borderLight};
   border-radius: 2px;
   transition: background-color 0.3s ease;
 `;
@@ -259,16 +396,30 @@ const StepContent = styled.div`
 const StepTitle = styled.h1`
   font-size: 28px;
   font-weight: bold;
-  color: ${props => props.theme.textPrimary};
+  color: ${(props) => props.theme.textPrimary};
   margin-bottom: 12px;
   transition: color 0.3s ease;
 `;
 
 const StepDescription = styled.p`
   font-size: 16px;
-  color: ${props => props.theme.textSecondary};
+  color: ${(props) => props.theme.textSecondary};
   margin-bottom: 32px;
   line-height: 1.5;
+  transition: color 0.3s ease;
+`;
+
+const CheckingMessage = styled.div`
+  font-size: 14px;
+  color: ${(props) => props.theme.textTertiary};
+  margin-top: 8px;
+  transition: color 0.3s ease;
+`;
+
+const LoadingMessage = styled.div`
+  font-size: 14px;
+  color: ${(props) => props.theme.textTertiary};
+  margin-top: 8px;
   transition: color 0.3s ease;
 `;
 
@@ -281,9 +432,12 @@ const InterestsGrid = styled.div`
 
 const InterestTag = styled.button`
   padding: 12px 16px;
-  border: 2px solid ${props => props.selected ? props.theme.buttonPrimary : props.theme.borderLight};
-  background: ${props => props.selected ? props.theme.buttonPrimary : props.theme.surface};
-  color: ${props => props.selected ? "white" : props.theme.textPrimary};
+  border: 2px solid
+    ${(props) =>
+      props.$selected ? props.theme.buttonPrimary : props.theme.borderLight};
+  background: ${(props) =>
+    props.$selected ? props.theme.buttonPrimary : props.theme.surface};
+  color: ${(props) => (props.$selected ? "white" : props.theme.textPrimary)};
   border-radius: 8px;
   font-size: 14px;
   font-weight: 500;
@@ -291,7 +445,7 @@ const InterestTag = styled.button`
   transition: all 0.3s ease;
 
   &:hover {
-    border-color: ${props => props.theme.buttonPrimary};
+    border-color: ${(props) => props.theme.buttonPrimary};
   }
 `;
 
@@ -307,14 +461,14 @@ const ProfileImagePreview = styled.img`
   height: 120px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid ${props => props.theme.borderLight};
+  border: 3px solid ${(props) => props.theme.borderLight};
 `;
 
 const UploadButton = styled.button`
   padding: 12px 24px;
-  background: ${props => props.theme.buttonSecondary};
-  color: ${props => props.theme.textPrimary};
-  border: 1px solid ${props => props.theme.borderLight};
+  background: ${(props) => props.theme.buttonSecondary};
+  color: ${(props) => props.theme.textPrimary};
+  border: 1px solid ${(props) => props.theme.borderLight};
   border-radius: 8px;
   font-size: 14px;
   font-weight: 500;
@@ -322,7 +476,7 @@ const UploadButton = styled.button`
   transition: all 0.3s ease;
 
   &:hover {
-    background: ${props => props.theme.borderLight};
+    background: ${(props) => props.theme.borderLight};
   }
 `;
 
@@ -330,4 +484,4 @@ const ButtonGroup = styled.div`
   display: flex;
   gap: 16px;
   justify-content: center;
-`; 
+`;
