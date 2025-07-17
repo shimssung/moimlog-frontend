@@ -30,6 +30,9 @@ instance.interceptors.request.use(
       "/auth/check-nickname",
       "/auth/send-verification",
       "/auth/verify-email",
+      "/auth/forgot-password",
+      "/auth/verify-reset-code",
+      "/auth/reset-password",
       "/auth/logout", // 로그아웃은 토큰이 만료되어도 호출 가능해야 함
     ];
 
@@ -61,6 +64,12 @@ instance.interceptors.response.use(
     return response;
   },
   async (error) => {
+    console.log("Axios 응답 에러:", {
+      url: error.config?.url,
+      status: error.response?.status,
+      data: error.response?.data
+    });
+    
     const originalRequest = error.config;
 
     // 401 또는 403 에러이고 아직 재시도하지 않은 경우에만 처리

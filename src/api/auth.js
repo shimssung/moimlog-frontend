@@ -80,6 +80,45 @@ export const authAPI = {
     }
   },
 
+  // 비밀번호 찾기 요청 (1단계: 이메일 입력 및 인증 코드 발송)
+  forgotPassword: async (email) => {
+    try {
+      const response = await axios.post("/moimlog/auth/forgot-password", {
+        email: email,
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // 인증 코드 검증 (2단계: 인증 코드 검증)
+  verifyResetCode: async (email, verificationCode) => {
+    try {
+      const response = await axios.post("/moimlog/auth/verify-reset-code", {
+        email: email,
+        verificationCode: verificationCode,
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // 비밀번호 재설정 (3단계: 새 비밀번호 설정)
+  resetPassword: async (resetData) => {
+    try {
+      const response = await axios.post("/moimlog/auth/reset-password", {
+        email: resetData.email,
+        newPassword: resetData.newPassword,
+        confirmPassword: resetData.confirmPassword,
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
   // 모임 카테고리 목록 조회
   getMoimCategories: async () => {
     try {
