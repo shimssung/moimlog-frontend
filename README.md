@@ -23,9 +23,10 @@
 
 ### 👤 사용자 관리
 
-- **회원가입/로그인**: 소셜 로그인 지원 (Google, Kakao, Naver)
+- **회원가입/로그인**: 이메일/비밀번호 및 소셜 로그인 지원 (Google, Kakao, Naver)
 - **프로필 관리**: 개인 정보 및 프로필 이미지 수정
 - **내 모임 관리**: 참여 중인 모임 목록 및 관리
+- **온보딩**: 첫 로그인 시 관심사 설정
 
 ### 🎨 사용자 경험
 
@@ -54,6 +55,9 @@
 
 ```
 moimlog-frontend/
+├── docs/                   # 문서
+│   ├── social-login-implementation.md  # 소셜 로그인 구현 문서
+│   └── technical-details.md            # 기술적 세부사항
 ├── public/                 # 정적 파일
 │   ├── img1.jpg ~ img10.jpg
 │   ├── google_icon.png
@@ -80,6 +84,7 @@ moimlog-frontend/
 │   │   ├── index.jsx      # 홈페이지
 │   │   ├── login.jsx      # 로그인
 │   │   ├── signup.jsx     # 회원가입
+│   │   ├── oauth2-callback.jsx # 소셜 로그인 콜백
 │   │   ├── moim-list.jsx  # 모임 목록
 │   │   ├── moim-create.jsx # 모임 생성
 │   │   ├── moim-edit.jsx  # 모임 수정

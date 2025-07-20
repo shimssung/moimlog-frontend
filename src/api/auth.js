@@ -196,4 +196,14 @@ export const authAPI = {
       throw error.response?.data || error.message;
     }
   },
+
+  // 소셜 로그인 URL 조회
+  getSocialLoginUrls: async () => {
+    try {
+      const response = await axios.get("/oauth2/urls");
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
 };

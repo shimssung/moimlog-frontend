@@ -91,7 +91,7 @@ const defaultUser = {
   isOnboardingCompleted: false, // 온보딩 상태 추가
 };
 
-// Zustand 스토어 생성
+// Zustand 스토어 생성 - 액세스 토큰은 메모리에서만 관리
 export const useStore = create(
   persist(
     (set, get) => ({
@@ -132,6 +132,7 @@ export const useStore = create(
       user: defaultUser,
       isAuthenticated: false,
       isLoading: false,
+      // accessToken은 메모리에서만 관리 (persist에서 제외됨)
 
       // 로그인 함수 수정 - 온보딩 상태 체크 추가
       login: async (email, password) => {
@@ -186,18 +187,38 @@ export const useStore = create(
           // 백엔드에서 최신 사용자 정보 가져오기
           const userData = await authAPI.getProfile();
 
+          // 디버깅: 백엔드 응답 확인
+          console.log("백엔드에서 받은 사용자 정보:", userData);
+          console.log(
+            "온보딩 완료 상태 (백엔드):",
+            userData.isOnboardingCompleted
+          );
+
           // 사용자 정보 업데이트
           set((state) => ({
             user: {
               ...state.user,
               ...userData,
-              isOnboardingCompleted: userData.isOnboardingCompleted || false,
+              // 백엔드에서는 onboardingCompleted, 프론트엔드에서는 isOnboardingCompleted로 매핑
+              isOnboardingCompleted:
+                userData.onboardingCompleted ||
+                userData.isOnboardingCompleted ||
+                false,
             },
             isAuthenticated: true,
           }));
 
+          // 디버깅: 업데이트 후 상태 확인
+          const updatedUser = get().user;
+          console.log("업데이트 후 사용자 정보:", updatedUser);
+          console.log(
+            "온보딩 완료 상태 (업데이트 후):",
+            updatedUser.isOnboardingCompleted
+          );
+
           return true;
-        } catch {
+        } catch (error) {
+          console.error("사용자 정보 동기화 실패:", error);
           return false;
         }
       },
@@ -278,11 +299,12 @@ export const useStore = create(
         set({ accessToken: null });
       },
 
-      // 앱 시작 시 토큰 복원 (단순화)
+      // 앱 시작 시 토큰 복원 (메모리 기반)
       restoreToken: async () => {
         try {
+          // 메모리에 토큰이 있으면 사용 (페이지 새로고침 시에는 없음)
           const token = get().accessToken;
-          if (token) return token; // 이미 토큰이 있으면 그대로 사용
+          if (token) return token;
 
           // 리프레시 토큰으로 새로운 액세스 토큰 발급
           const response = await authAPI.refreshToken();
@@ -323,10 +345,11 @@ export const useStore = create(
         }
       },
 
-      // 인증 상태 확인 (단순화)
+      // 인증 상태 확인 (메모리 기반)
       checkAuth: () => {
         const token = get().accessToken;
         if (!token) {
+          // 토큰이 없으면 인증되지 않은 상태로 처리
           get().logoutSilently();
           return false;
         }
@@ -339,16 +362,18 @@ export const useStore = create(
         return true;
       },
 
-      // 통합된 인증 확인 및 리다이렉트 함수
+      // 통합된 인증 확인 및 리다이렉트 함수 (메모리 기반)
       checkAuthAndRedirect: () => {
         const state = get();
 
-        if (!state.isAuthenticated || !state.accessToken) {
-          console.log("인증되지 않음 - 조용한 로그아웃 처리");
+        // 토큰이 없으면 인증되지 않은 상태
+        if (!state.accessToken) {
+          console.log("액세스 토큰 없음 - 조용한 로그아웃 처리");
           state.logoutSilently();
           return false;
         }
 
+        // 토큰 유효성 확인
         if (!state.isTokenValid()) {
           console.log("토큰이 만료됨 - 조용한 로그아웃 처리");
           state.logoutSilently();
@@ -398,11 +423,11 @@ export const useStore = create(
     {
       name: "moimlog-storage", // 로컬스토리지 키 이름
       partialize: (state) => ({
-        // 저장할 상태만 선택
+        // 저장할 상태만 선택 (액세스 토큰 제외)
         isDarkMode: state.isDarkMode,
         user: state.user,
         isAuthenticated: state.isAuthenticated,
-        accessToken: state.accessToken, // 토큰도 저장
+        // accessToken은 메모리에서만 관리 (보안상 로컬스토리지에 저장하지 않음)
       }),
     }
   )

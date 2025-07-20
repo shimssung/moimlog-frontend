@@ -7,7 +7,8 @@ import axios from "axios";
 */
 
 const instance = axios.create({
-  baseURL: "http://localhost:8080/moimlog", // Spring Boot 주소 (백엔드 API 경로에 /api가 없으므로 제거)
+  baseURL:
+    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080/moimlog", // Spring Boot 주소
   withCredentials: true, // HttpOnly 쿠키 주고받을 경우 필요
 });
 
@@ -67,9 +68,9 @@ instance.interceptors.response.use(
     console.log("Axios 응답 에러:", {
       url: error.config?.url,
       status: error.response?.status,
-      data: error.response?.data
+      data: error.response?.data,
     });
-    
+
     const originalRequest = error.config;
 
     // 401 또는 403 에러이고 아직 재시도하지 않은 경우에만 처리

@@ -30,21 +30,17 @@ export default function App({ Component, pageProps }) {
 
     setStoreRef(storeWithFunctions);
 
-    // 앱 시작 시 인증 상태 확인 (단순화)
+    // 앱 시작 시 인증 상태 확인 (메모리 기반)
     const initializeAuth = async () => {
-      // 통합된 인증 확인
-      if (!store.checkAuthAndRedirect()) {
-        return;
-      }
+      // 페이지 새로고침 시에는 토큰이 메모리에 없으므로 리프레시 토큰으로 복원 시도
+      const token = await store.restoreToken();
 
-      // 로그인된 상태이거나 사용자 정보가 있으면 토큰 복원 시도
-      if (store.isAuthenticated || (store.user && store.user.id)) {
-        const token = await store.restoreToken();
-
-        if (token) {
-          // 사용자 정보 동기화
-          await store.syncUserInfo();
-        }
+      if (token) {
+        // 토큰이 복원되면 사용자 정보 동기화
+        await store.syncUserInfo();
+      } else {
+        // 토큰 복원 실패 시 인증 상태 초기화
+        store.logoutSilently();
       }
     };
 
