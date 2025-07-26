@@ -87,3 +87,41 @@ export const CATEGORY_OPTIONS = [
     description: CATEGORY_DESCRIPTIONS[CATEGORIES.OTHER],
   },
 ];
+
+// 보호된 라우트 (로그인이 필요한 페이지)
+export const PROTECTED_ROUTES = [
+  "/moim-list", // 모임 목록
+  "/moim-create", // 모임 생성
+  "/moim-edit", // 모임 수정
+  "/moim", // 모임 관련 모든 페이지
+  "/MyPage", // 마이페이지
+  "/profile-edit", // 프로필 수정
+  "/settings", // 설정
+  "/notification", // 알림
+  "/admin", // 관리자 페이지
+];
+
+// 공개 라우트 (로그인 없이 접근 가능한 페이지)
+export const PUBLIC_ROUTES = [
+  "/", // 홈페이지 (공개)
+  "/login", // 로그인
+  "/signup", // 회원가입
+  "/forgot-password", // 비밀번호 찾기
+  "/oauth2-callback", // 소셜 로그인 콜백
+  "/onboarding", // 온보딩 (로그인 후)
+];
+
+// 라우트가 보호된 라우트인지 확인하는 함수
+export const isProtectedRoute = (pathname) => {
+  return PROTECTED_ROUTES.some((route) => {
+    // 정확히 일치하거나 하위 경로인 경우
+    return pathname === route || pathname.startsWith(route + "/");
+  });
+};
+
+// 라우트가 공개 라우트인지 확인하는 함수
+export const isPublicRoute = (pathname) => {
+  return PUBLIC_ROUTES.some((route) => {
+    return pathname === route || pathname.startsWith(route + "/");
+  });
+};

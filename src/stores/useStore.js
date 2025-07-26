@@ -88,7 +88,7 @@ const defaultUser = {
   name: "",
   profileImage: "",
   role: "user",
-  isOnboardingCompleted: false, // 온보딩 상태 추가
+  onboardingCompleted: false, // 온보딩 상태 추가
 };
 
 // Zustand 스토어 생성 - 액세스 토큰은 메모리에서만 관리
@@ -149,7 +149,7 @@ export const useStore = create(
             name: data.name,
             nickname: data.nickname,
             role: data.user?.role || "user",
-            isOnboardingCompleted: data.isOnboardingCompleted || false,
+            onboardingCompleted: data.isOnboardingCompleted || false,
           };
 
           // 토큰 저장
@@ -178,11 +178,18 @@ export const useStore = create(
         }
       },
 
-      // 앱 시작 시 사용자 정보 동기화 (단순화)
+      // 앱 시작 시 사용자 정보 동기화
       syncUserInfo: async () => {
         try {
-          const token = get().accessToken;
-          if (!token) return false;
+          let token = get().accessToken;
+
+          // 액세스 토큰이 없으면 실패 (refreshToken 호출하지 않음)
+          if (!token) {
+            console.error(
+              "액세스 토큰이 없습니다. syncUserInfo를 호출하기 전에 restoreToken을 먼저 호출하세요."
+            );
+            return false;
+          }
 
           // 백엔드에서 최신 사용자 정보 가져오기
           const userData = await authAPI.getProfile();
@@ -191,7 +198,7 @@ export const useStore = create(
           console.log("백엔드에서 받은 사용자 정보:", userData);
           console.log(
             "온보딩 완료 상태 (백엔드):",
-            userData.isOnboardingCompleted
+            userData.onboardingCompleted
           );
 
           // 사용자 정보 업데이트
@@ -199,11 +206,8 @@ export const useStore = create(
             user: {
               ...state.user,
               ...userData,
-              // 백엔드에서는 onboardingCompleted, 프론트엔드에서는 isOnboardingCompleted로 매핑
-              isOnboardingCompleted:
-                userData.onboardingCompleted ||
-                userData.isOnboardingCompleted ||
-                false,
+              // 백엔드에서 onboardingCompleted로 전송됨
+              onboardingCompleted: userData.onboardingCompleted || false,
             },
             isAuthenticated: true,
           }));
@@ -213,7 +217,7 @@ export const useStore = create(
           console.log("업데이트 후 사용자 정보:", updatedUser);
           console.log(
             "온보딩 완료 상태 (업데이트 후):",
-            updatedUser.isOnboardingCompleted
+            updatedUser.onboardingCompleted
           );
 
           return true;
@@ -231,7 +235,7 @@ export const useStore = create(
           if (data.success) {
             // 사용자 정보 업데이트
             set((state) => ({
-              user: { ...state.user, isOnboardingCompleted: true },
+              user: { ...state.user, onboardingCompleted: true },
             }));
             return { success: true };
           } else {
@@ -249,7 +253,7 @@ export const useStore = create(
 
           // 사용자 정보 업데이트
           set((state) => ({
-            user: { ...state.user, isOnboardingCompleted: data.isCompleted },
+            user: { ...state.user, onboardingCompleted: data.isCompleted },
           }));
 
           return data.isCompleted;
@@ -261,22 +265,65 @@ export const useStore = create(
       // 로그아웃 (API 호출 포함)
       logout: async () => {
         try {
-          // 백엔드에 로그아웃 요청 (쿠키 삭제)
+          // 백엔드에 로그아웃 요청 (리프레시 토큰 쿠키 삭제)
           await authAPI.logout();
-        } catch {
-          // 로그아웃 API 실패는 무시하고 계속 진행
+
+          // API 호출이 성공했을 때만 로컬 상태 초기화
+          // 쿠키 삭제 (리프레시 토큰만) - 다양한 방법으로 시도
+          if (typeof window !== "undefined") {
+            // 방법 1: 기본 삭제
+            document.cookie =
+              "refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+
+            // 방법 2: 도메인 없이 삭제
+            document.cookie =
+              "refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+
+            // 방법 3: 루트 경로로 삭제
+            document.cookie =
+              "refreshToken=; path=/; domain=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+
+            // 방법 4: 현재 도메인으로 삭제
+            const currentDomain = window.location.hostname;
+            document.cookie = `refreshToken=; path=/; domain=${currentDomain}; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+          }
+
+          // 상태 초기화
+          set({
+            user: defaultUser,
+            isAuthenticated: false,
+            accessToken: null,
+          });
+        } catch (error) {
+          console.error("로그아웃 API 호출 실패:", error);
+          // API 호출 실패 시에도 로컬 상태는 초기화
+          if (typeof window !== "undefined") {
+            // 강제 쿠키 삭제 시도
+            document.cookie =
+              "refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+            document.cookie =
+              "refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+            document.cookie =
+              "refreshToken=; path=/; domain=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+          }
+
+          set({
+            user: defaultUser,
+            isAuthenticated: false,
+            accessToken: null,
+          });
+        }
+      },
+
+      // 졩용한 로그아웃 (API 호출 없이 상태만 초기화)
+      logoutSilently: () => {
+        // 쿠키 삭제 (리프레시 토큰만)
+        if (typeof window !== "undefined") {
+          document.cookie =
+            "refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
         }
 
         // 상태 초기화
-        set({
-          user: defaultUser,
-          isAuthenticated: false,
-          accessToken: null,
-        });
-      },
-
-      // 조용한 로그아웃 (API 호출 없이 상태만 초기화)
-      logoutSilently: () => {
         set({
           user: defaultUser,
           isAuthenticated: false,
@@ -302,19 +349,29 @@ export const useStore = create(
       // 앱 시작 시 토큰 복원 (메모리 기반)
       restoreToken: async () => {
         try {
-          // 메모리에 토큰이 있으면 사용 (페이지 새로고침 시에는 없음)
-          const token = get().accessToken;
+          // 메모리에 토큰이 있으면 사용
+          let token = get().accessToken;
           if (token) return token;
 
-          // 리프레시 토큰으로 새로운 액세스 토큰 발급
+          console.log("메모리에 토큰 없음 - 리프레시 토큰으로 복원 시도");
+
+          // 현재 쿠키 상태 확인
+          if (typeof window !== "undefined") {
+            console.log("현재 쿠키:", document.cookie);
+          }
+
+          // 리프레시 토큰으로 새로운 액세스 토큰 발급 시도
           const response = await authAPI.refreshToken();
 
           if (response.accessToken) {
+            console.log("토큰 복원 성공");
             set({ accessToken: response.accessToken });
             return response.accessToken;
           }
-        } catch {
-          // 토큰 복원 실패 시 조용히 로그아웃
+        } catch (error) {
+          console.log("토큰 복원 실패:", error.message);
+          console.log("에러 상세:", error);
+          // 토큰 복원 실패 시 조용히 로그아웃하고 더 이상 시도하지 않음
           get().logoutSilently();
         }
         return null;

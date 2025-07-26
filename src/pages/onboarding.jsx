@@ -40,11 +40,22 @@ const Onboarding = () => {
   // 모임 카테고리 목록 가져오기
   useEffect(() => {
     const fetchCategories = async () => {
-      // 토큰 확인
-      const token = getToken();
+      // 토큰 확인 및 복원 시도
+      let token = getToken();
+      if (!token) {
+        // 토큰이 없으면 복원 시도
+        try {
+          const { restoreToken } = useStore.getState();
+          token = await restoreToken();
+        } catch (error) {
+          console.error("토큰 복원 실패:", error);
+        }
+      }
+
       if (!token) {
         console.error("토큰이 없어서 카테고리를 불러올 수 없습니다.");
         toast.error("인증 토큰이 없습니다. 다시 로그인해주세요.");
+        router.push("/login");
         return;
       }
 
@@ -67,7 +78,7 @@ const Onboarding = () => {
     };
 
     fetchCategories();
-  }, [getToken]);
+  }, [getToken, router]);
 
   // 토큰 확인 및 인증 상태 체크
   useEffect(() => {
@@ -177,7 +188,7 @@ const Onboarding = () => {
         await syncUserInfo();
 
         // 상태 강제 업데이트
-        updateUser({ isOnboardingCompleted: true });
+        updateUser({ onboardingCompleted: true });
 
         // 잠시 대기 후 홈으로 이동 (새로고침 포함)
         setTimeout(() => {

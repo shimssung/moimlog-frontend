@@ -39,7 +39,7 @@ const LoginPage = () => {
         toast.success("로그인 성공!");
 
         // 온보딩 상태에 따라 리다이렉트
-        if (!response.isOnboardingCompleted) {
+        if (!response.onboardingCompleted) {
           router.push("/onboarding");
         } else {
           // 홈페이지로 리다이렉트 시 새로고침하여 최신 상태 반영
