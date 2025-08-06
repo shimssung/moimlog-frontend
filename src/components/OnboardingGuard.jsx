@@ -52,7 +52,9 @@ const OnboardingGuard = ({ children }) => {
     }
   }, [
     isAuthenticated,
-    user?.isOnboardingCompleted,
+    user,
+    user?.onboardingCompleted,
+    router,
     router.pathname,
     checkAuthAndRedirect,
     updateUser,

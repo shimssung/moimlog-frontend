@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 import React, { useEffect, useRef } from "react";
+import { useRouter } from "next/router";
 import { Toaster } from "react-hot-toast";
 import { ThemeProvider } from "../utils/ThemeContext";
 import OnboardingGuard from "../components/OnboardingGuard";
@@ -11,6 +12,7 @@ import { useRouter } from "next/router";
 
 export default function App({ Component, pageProps }) {
   const store = useStore();
+  const router = useRouter();
   const initialized = useRef(false);
   const router = useRouter();
 
@@ -43,14 +45,19 @@ export default function App({ Component, pageProps }) {
       // 페이지 새로고침 시에는 토큰이 메모리에 없으므로 리프레시 토큰으로 복원 시도
       const token = await store.restoreToken();
 
-      if (token) {
-        // 토큰이 복원되면 사용자 정보 동기화
-        await store.syncUserInfo();
-      } else {
-        // 토큰 복원 실패 시 인증 상태 초기화
-        store.logoutSilently();
-      }
-    };
+          if (token) {
+            // 토큰이 복원되면 사용자 정보 동기화
+            await store.syncUserInfo();
+          } else {
+            // 토큰 복원 실패 시 인증 상태 초기화 (이미 restoreToken에서 처리됨)
+            console.log("토큰 복원 실패 - 인증되지 않은 상태로 유지");
+          }
+        } catch (error) {
+          console.error("인증 초기화 중 오류:", error);
+          // 오류 발생 시 조용한 로그아웃
+          store.logoutSilently();
+        }
+      };
 
     initializeAuth();
   }, [router.pathname]);

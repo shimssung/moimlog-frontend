@@ -8,20 +8,19 @@ const OAuth2CallbackPage = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isProcessed, setIsProcessed] = useState(false); // 중복 실행 방지
+  const [isProcessed, setIsProcessed] = useState(false);
   const { setToken, syncUserInfo } = useStore();
 
   useEffect(() => {
-    // 중복 실행 방지
     if (isProcessed) return;
 
     const handleCallback = async () => {
       try {
-        setIsProcessed(true); // 처리 시작 표시
+        setIsProcessed(true);
 
-        // URL 파라미터에서 토큰 확인
+        // URL 파라미터 확인
         const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get("token");
+        const success = urlParams.get("success");
         const error = urlParams.get("error");
 
         if (error) {
@@ -29,27 +28,39 @@ const OAuth2CallbackPage = () => {
           return;
         }
 
-        if (token) {
-          // 토큰을 스토어에 저장
-          setToken(token);
+        if (success === "true") {
+          try {
+            // 먼저 토큰 복원 시도
+            const { restoreToken } = useStore.getState();
+            const token = await restoreToken();
 
-          // 사용자 정보 동기화
-          await syncUserInfo();
+            if (!token) {
+              console.error("토큰 복원 실패");
+              setError("로그인 토큰을 가져오는데 실패했습니다.");
+              return;
+            }
 
-          // 디버깅: 사용자 정보 확인
-          const currentUser = useStore.getState().user;
-          console.log("소셜 로그인 후 사용자 정보:", currentUser);
-          console.log("온보딩 완료 상태:", currentUser.isOnboardingCompleted);
+            // 토큰이 복원된 후 사용자 정보 동기화
+            await syncUserInfo();
 
-          toast.success("소셜 로그인 성공!");
+            // 디버깅: 사용자 정보 확인
+            const currentUser = useStore.getState().user;
+            console.log("소셜 로그인 후 사용자 정보:", currentUser);
+            console.log("온보딩 완료 상태:", currentUser.onboardingCompleted);
 
-          // 온보딩 상태에 따라 리다이렉트
-          if (currentUser.isOnboardingCompleted === false) {
-            console.log("온보딩 미완료 - 온보딩 페이지로 이동");
-            router.push("/onboarding");
-          } else {
-            console.log("온보딩 완료 - 메인 페이지로 이동");
-            router.push("/");
+            toast.success("소셜 로그인 성공!");
+
+            // 온보딩 상태에 따라 리다이렉트
+            if (currentUser.onboardingCompleted === false) {
+              console.log("온보딩 미완료 - 온보딩 페이지로 이동");
+              router.push("/onboarding");
+            } else {
+              console.log("온보딩 완료 - 메인 페이지로 이동");
+              router.push("/");
+            }
+          } catch (syncError) {
+            console.error("사용자 정보 동기화 실패:", syncError);
+            setError("사용자 정보를 가져오는데 실패했습니다.");
           }
         } else {
           setError("로그인에 실패했습니다.");

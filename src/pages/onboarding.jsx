@@ -180,7 +180,7 @@ const Onboarding = () => {
         await syncUserInfo();
 
         // 상태 강제 업데이트
-        updateUser({ isOnboardingCompleted: true });
+        updateUser({ onboardingCompleted: true });
 
         // 잠시 대기 후 홈으로 이동
         setTimeout(() => {
