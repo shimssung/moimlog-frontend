@@ -5,21 +5,17 @@ import { ThemeProvider } from "../utils/ThemeContext";
 import OnboardingGuard from "../components/OnboardingGuard";
 import { useStore } from "../stores/useStore";
 import { setStoreRef } from "../api/axios";
+import { isPublicPath } from "../utils/constants";
 import "../index.css";
+import { useRouter } from "next/router";
 
 export default function App({ Component, pageProps }) {
   const store = useStore();
   const initialized = useRef(false);
+  const router = useRouter();
 
   useEffect(() => {
-    // 이미 초기화되었으면 건너뛰기
-    if (initialized.current) {
-      return;
-    }
-
-    initialized.current = true;
-
-    // Zustand 스토어 참조를 axios 인터셉터에 설정
+    // Zustand 스토어 참조를 axios 인터셉터에 설정 (항상 먼저 실행)
     const storeWithFunctions = {
       ...store,
       getToken: store.getToken,
@@ -29,6 +25,18 @@ export default function App({ Component, pageProps }) {
     };
 
     setStoreRef(storeWithFunctions);
+
+    // 이미 초기화되었으면 건너뛰기
+    if (initialized.current) {
+      return;
+    }
+
+    initialized.current = true;
+
+    // 중앙 집중식 설정 사용
+    if (isPublicPath(router.pathname)) {
+      return; // 인증 체크/토큰 복원 건너뜀
+    }
 
     // 앱 시작 시 인증 상태 확인 (메모리 기반)
     const initializeAuth = async () => {
@@ -45,7 +53,7 @@ export default function App({ Component, pageProps }) {
     };
 
     initializeAuth();
-  }, []);
+  }, [router.pathname]);
 
   return (
     <ThemeProvider>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -15,6 +15,17 @@ const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
+
+  // 로그아웃 이유 표시
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const reason = window.localStorage.getItem("logoutReason");
+      if (reason) {
+        toast.error(reason);
+        window.localStorage.removeItem("logoutReason");
+      }
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

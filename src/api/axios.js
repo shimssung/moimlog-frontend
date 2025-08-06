@@ -1,4 +1,5 @@
 import axios from "axios";
+import { isPublicApi } from "../utils/constants";
 /* axios를 선택한 이유
 토큰 자동 관리: 인터셉터로 모든 요청에 자동으로 토큰 추가
 에러 처리: HTTP 에러 상태를 자동으로 처리
@@ -23,33 +24,15 @@ export const setStoreRef = (store) => {
 // 요청 인터셉터 - 토큰 자동 추가
 instance.interceptors.request.use(
   (config) => {
-    // 인증이 필요하지 않은 API는 토큰을 추가하지 않음
-    const publicApis = [
-      "/auth/signup",
-      "/auth/login",
-      "/auth/check-email",
-      "/auth/check-nickname",
-      "/auth/send-verification",
-      "/auth/verify-email",
-      "/auth/forgot-password",
-      "/auth/verify-reset-code",
-      "/auth/reset-password",
-      "/auth/logout", // 로그아웃은 토큰이 만료되어도 호출 가능해야 함
-    ];
-
-    const isPublicApi = publicApis.some((api) => config.url?.includes(api));
-
-    if (!isPublicApi && typeof window !== "undefined") {
+    // 중앙 집중식 설정 사용
+    if (!isPublicApi(config.url) && typeof window !== "undefined") {
       // Zustand 스토어에서 토큰 가져오기
-      try {
-        if (storeRef && typeof storeRef.getToken === "function") {
-          const token = storeRef.getToken();
-          if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-          }
+      if (storeRef && typeof storeRef.getToken === "function") {
+        const token = storeRef.getToken();
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
         }
-      } catch {
-        // 토큰 가져오기 실패 시 조용히 처리
+        // 토큰이 없어도 에러를 발생시키지 않음 - 각 API에서 필요에 따라 처리
       }
     }
     return config;

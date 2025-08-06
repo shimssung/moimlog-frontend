@@ -13,8 +13,6 @@ const Onboarding = () => {
   const { theme } = useTheme();
   const router = useRouter();
   const {
-    completeOnboarding,
-    getToken,
     isAuthenticated,
     checkAuthAndRedirect,
     syncUserInfo,
@@ -40,34 +38,39 @@ const Onboarding = () => {
   // 모임 카테고리 목록 가져오기
   useEffect(() => {
     const fetchCategories = async () => {
-      // 토큰 확인
-      const token = getToken();
-      if (!token) {
-        console.error("토큰이 없어서 카테고리를 불러올 수 없습니다.");
-        toast.error("인증 토큰이 없습니다. 다시 로그인해주세요.");
-        return;
-      }
-
       setIsLoadingCategories(true);
       try {
         const response = await authAPI.getMoimCategories();
 
-        if (response.categories && response.categories.length > 0) {
+        // 백엔드 가이드에 따르면 배열 형태로 직접 반환됨
+        if (Array.isArray(response) && response.length > 0) {
+          setMoimCategories(response);
+        } else if (response.categories && response.categories.length > 0) {
+          // 기존 형태도 지원
           setMoimCategories(response.categories);
         } else {
           console.error("모임 카테고리 API 실패:", response);
-          toast.error("모임 카테고리를 불러오는데 실패했습니다.");
+          throw new Error("카테고리 데이터가 올바르지 않습니다.");
         }
       } catch (error) {
         console.error("모임 카테고리 로딩 실패:", error);
-        toast.error("모임 카테고리를 불러오는데 실패했습니다.");
+        
+        // 사용자 친화적 에러 메시지
+        let message = "모임 카테고리를 불러오는데 실패했습니다.";
+        if (error.message.includes("401")) {
+          message = "로그인이 필요합니다.";
+        } else if (error.message.includes("500")) {
+          message = "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
+        }
+        
+        toast.error(message);
       } finally {
         setIsLoadingCategories(false);
       }
     };
 
     fetchCategories();
-  }, [getToken]);
+  }, []);
 
   // 토큰 확인 및 인증 상태 체크
   useEffect(() => {
@@ -160,18 +163,18 @@ const Onboarding = () => {
     setIsSubmitting(true);
 
     try {
-      // 온보딩 데이터를 백엔드 형식에 맞게 변환
+      // 백엔드 가이드에 맞춰 온보딩 데이터 구성
       const onboardingData = {
         nickname: formData.nickname,
         bio: formData.bio || "",
-        moimCategories: formData.moimCategories,
-        profileImage: formData.profileImage || "",
+        selectedCategories: formData.moimCategories, // 백엔드 가이드에 맞춰 필드명 변경
+        profileImage: formData.profileImage || "", // 프로필 이미지 추가
       };
 
-      const result = await completeOnboarding(onboardingData);
+      const result = await authAPI.completeOnboarding(onboardingData);
 
       if (result.success) {
-        toast.success("프로필 설정이 완료되었습니다!");
+        toast.success(result.message || "온보딩이 완료되었습니다!");
 
         // 백엔드에서 최신 사용자 정보 동기화
         await syncUserInfo();
@@ -179,17 +182,27 @@ const Onboarding = () => {
         // 상태 강제 업데이트
         updateUser({ isOnboardingCompleted: true });
 
-        // 잠시 대기 후 홈으로 이동 (새로고침 포함)
+        // 잠시 대기 후 홈으로 이동
         setTimeout(() => {
-          router.push("/").then(() => {
-            window.location.reload();
-          });
+          router.push("/");
         }, 1000);
       } else {
-        toast.error(result.error || "프로필 설정에 실패했습니다.");
+        toast.error(result.message || "온보딩 완료에 실패했습니다.");
       }
-    } catch {
-      toast.error("프로필 설정 중 오류가 발생했습니다.");
+    } catch (error) {
+      console.error("온보딩 완료 실패:", error);
+      
+      // 사용자 친화적 에러 메시지
+      let message = "온보딩 완료 중 오류가 발생했습니다.";
+      if (error.message.includes("401")) {
+        message = "로그인이 필요합니다.";
+      } else if (error.message.includes("400")) {
+        message = "입력 정보를 확인해주세요.";
+      } else if (error.message.includes("500")) {
+        message = "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
+      }
+      
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -244,14 +257,23 @@ const Onboarding = () => {
       ) : (
         <InterestsGrid>
           {moimCategories.map((category) => (
-            <InterestTag
+            <CategoryCard
               key={category.id}
               $selected={formData.moimCategories.includes(category.id)}
               onClick={() => handleCategoryToggle(category.id)}
               theme={theme}
+              $color={category.color}
             >
-              {category.label}
-            </InterestTag>
+              <CategoryIcon $color={category.color}>
+                {category.name ? category.name.charAt(0) : category.label.charAt(0)}
+              </CategoryIcon>
+              <CategoryName theme={theme}>{category.label}</CategoryName>
+              {category.description && (
+                <CategoryDescription theme={theme}>
+                  {category.description}
+                </CategoryDescription>
+              )}
+            </CategoryCard>
           ))}
         </InterestsGrid>
       )}
@@ -425,28 +447,76 @@ const LoadingMessage = styled.div`
 
 const InterestsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
   margin-top: 24px;
+  padding: 16px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 12px;
+  }
 `;
 
-const InterestTag = styled.button`
-  padding: 12px 16px;
+const CategoryCard = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 16px;
   border: 2px solid
     ${(props) =>
-      props.$selected ? props.theme.buttonPrimary : props.theme.borderLight};
+      props.$selected ? props.$color || props.theme.buttonPrimary : props.theme.borderLight};
   background: ${(props) =>
-    props.$selected ? props.theme.buttonPrimary : props.theme.surface};
+    props.$selected ? props.$color || props.theme.buttonPrimary : props.theme.surface};
   color: ${(props) => (props.$selected ? "white" : props.theme.textPrimary)};
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
+  border-radius: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
+  min-height: 120px;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 
   &:hover {
-    border-color: ${(props) => props.theme.buttonPrimary};
+    border-color: ${(props) => props.$color || props.theme.buttonPrimary};
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
+
+  @media (max-width: 768px) {
+    min-height: 100px;
+    padding: 16px 12px;
+  }
+`;
+
+const CategoryIcon = styled.div`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: ${(props) => props.$color || "#6b7280"};
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 12px;
+`;
+
+const CategoryName = styled.div`
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  text-align: center;
+  transition: color 0.3s ease;
+`;
+
+const CategoryDescription = styled.div`
+  font-size: 12px;
+  color: ${(props) => props.theme.textTertiary};
+  text-align: center;
+  line-height: 1.3;
+  transition: color 0.3s ease;
 `;
 
 const ImageUploadSection = styled.div`

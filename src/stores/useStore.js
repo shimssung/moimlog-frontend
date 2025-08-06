@@ -282,6 +282,11 @@ export const useStore = create(
           isAuthenticated: false,
           accessToken: null,
         });
+        // 안내 메시지 추가 및 리다이렉트
+        if (typeof window !== "undefined") {
+          window.localStorage.setItem("logoutReason", "세션이 만료되었습니다. 다시 로그인 해주세요.");
+          window.location.href = "/login";
+        }
       },
 
       // 토큰 설정 (단순화)
@@ -312,9 +317,12 @@ export const useStore = create(
           if (response.accessToken) {
             set({ accessToken: response.accessToken });
             return response.accessToken;
+          } else {
+            // refreshToken도 만료된 경우 안내 메시지 후 로그아웃
+            get().logoutSilently();
           }
         } catch {
-          // 토큰 복원 실패 시 조용히 로그아웃
+          // refreshToken도 만료된 경우 안내 메시지 후 로그아웃
           get().logoutSilently();
         }
         return null;

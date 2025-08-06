@@ -122,15 +122,6 @@ export const authAPI = {
   // 모임 카테고리 목록 조회
   getMoimCategories: async () => {
     try {
-      // 토큰 확인
-      if (typeof window !== "undefined") {
-        const { useStore } = require("../stores/useStore");
-        const token = useStore.getState().getToken();
-        if (!token) {
-          throw new Error("인증 토큰이 없습니다. 다시 로그인해주세요.");
-        }
-      }
-
       const response = await axios.get("/auth/moim-categories");
       return response.data;
     } catch (error) {
@@ -141,15 +132,6 @@ export const authAPI = {
   // 온보딩 완료
   completeOnboarding: async (onboardingData) => {
     try {
-      // 토큰 확인
-      if (typeof window !== "undefined") {
-        const { useStore } = require("../stores/useStore");
-        const token = useStore.getState().getToken();
-        if (!token) {
-          throw new Error("인증 토큰이 없습니다. 다시 로그인해주세요.");
-        }
-      }
-
       const response = await axios.post("/auth/onboarding", onboardingData);
       return response.data;
     } catch (error) {

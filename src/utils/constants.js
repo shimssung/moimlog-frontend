@@ -8,17 +8,17 @@ export const CATEGORIES = {
   OTHER: "other",
 };
 
-// 카테고리 라벨 (한국어)
+// 카테고리 라벨
 export const CATEGORY_LABELS = {
   [CATEGORIES.BOOK]: "독서",
   [CATEGORIES.MOVIE]: "영화",
   [CATEGORIES.MUSIC]: "음악",
-  [CATEGORIES.SPORTS]: "스포츠",
+  [CATEGORIES.SPORTS]: "운동/스포츠",
   [CATEGORIES.GAME]: "게임",
   [CATEGORIES.OTHER]: "기타",
 };
 
-// 카테고리 색상 (데이터베이스와 일치)
+// 카테고리 색상
 export const CATEGORY_COLORS = {
   [CATEGORIES.BOOK]: "#3b82f6",
   [CATEGORIES.MOVIE]: "#ef4444",
@@ -36,16 +36,6 @@ export const CATEGORY_DESCRIPTIONS = {
   [CATEGORIES.SPORTS]: "운동 및 스포츠 모임",
   [CATEGORIES.GAME]: "게임 관련 모임",
   [CATEGORIES.OTHER]: "기타 다양한 모임",
-};
-
-// 모임 기본 구조 정의
-export const MOIM_STRUCTURE = {
-  title: "string", // 모임명
-  category: "string", // 카테고리 (CATEGORIES 중 하나)
-  description: "string", // 모임 소개
-  maxMembers: "number", // 최대 인원
-  tags: ["string"], // 태그 배열
-  thumbnail: "string", // 대표 이미지 URL
 };
 
 // 카테고리 옵션 (Select 컴포넌트용)
@@ -87,3 +77,60 @@ export const CATEGORY_OPTIONS = [
     description: CATEGORY_DESCRIPTIONS[CATEGORIES.OTHER],
   },
 ];
+
+// 모임 기본 구조 정의
+export const MOIM_STRUCTURE = {
+  title: "string", // 모임명
+  category: "string", // 카테고리 (CATEGORIES 중 하나)
+  description: "string", // 모임 소개
+  maxMembers: "number", // 최대 인원
+  tags: ["string"], // 태그 배열
+  thumbnail: "string", // 대표 이미지 URL
+};
+
+// 인증이 필요 없는 경로들 (중앙 집중식 관리)
+export const PUBLIC_PATHS = [
+  "/", // 홈페이지
+  "/login",
+  "/signup", 
+  "/forgot-password",
+  "/oauth2-callback",
+  "/oauth2", // 소셜 로그인 관련 페이지
+  "/404",
+  "/500",
+  "/about",
+  "/guide",
+  "/updates",
+  "/faq",
+  "/contact",
+  "/feedback",
+  "/terms",
+  "/privacy",
+  "/rules"
+];
+
+// 인증이 필요 없는 API 엔드포인트들
+export const PUBLIC_APIS = [
+  "/auth/signup",
+  "/auth/login",
+  "/auth/check-email",
+  "/auth/check-nickname",
+  "/auth/send-verification",
+  "/auth/verify-email",
+  "/auth/forgot-password",
+  "/auth/verify-reset-code",
+  "/auth/reset-password",
+  "/auth/logout", // 로그아웃은 토큰이 만료되어도 호출 가능해야 함
+  "/oauth2", // 소셜 로그인 관련 모든 API
+  "/oauth2-callback", // 소셜 로그인 콜백
+];
+
+// 경로가 public인지 확인하는 유틸리티 함수
+export const isPublicPath = (pathname) => {
+  return PUBLIC_PATHS.includes(pathname);
+};
+
+// API가 public인지 확인하는 유틸리티 함수
+export const isPublicApi = (url) => {
+  return PUBLIC_APIS.some((api) => url?.includes(api));
+};
