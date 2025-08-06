@@ -3,6 +3,7 @@ import styled from "styled-components";
 import Button from "./Button";
 import { useStore } from "../stores/useStore";
 import { authAPI } from "../api/auth";
+import { OAUTH_PROVIDERS } from "../utils/constants";
 import toast from "react-hot-toast";
 
 const SocialLogin = () => {
@@ -13,15 +14,18 @@ const SocialLogin = () => {
     setIsLoading(true);
 
     try {
-      // 백엔드에서 소셜 로그인 URL 조회
-      const urls = await authAPI.getSocialLoginUrls();
-
-      // 해당 플랫폼의 OAuth2 URL로 리다이렉트
-      window.location.href = urls[provider];
+      if (provider === OAUTH_PROVIDERS.NAVER) {
+        authAPI.startNaverLogin();
+      } else if (provider === OAUTH_PROVIDERS.GOOGLE) {
+        authAPI.startGoogleLogin();
+      } else {
+        // 기존 방식 (백엔드에서 URL 조회)
+        const urls = await authAPI.getSocialLoginUrls();
+        window.location.href = urls[provider];
+      }
     } catch (error) {
-      console.error("소셜 로그인 URL 조회 실패:", error);
+      console.error("소셜 로그인 시작 실패:", error);
       toast.error("소셜 로그인을 시작할 수 없습니다.");
-    } finally {
       setIsLoading(false);
     }
   };
@@ -48,25 +52,22 @@ const SocialLogin = () => {
         <SocialLoginButton
           variant="google"
           fullWidth
-          onClick={() => handleSocialLogin("google")}
+          onClick={() => handleSocialLogin(OAUTH_PROVIDERS.GOOGLE)}
           disabled={isLoading}
         >
           <SocialIcon src="/google_icon.png" alt="구글" />
           {isLoading ? "로그인 중..." : "구글로 로그인"}
         </SocialLoginButton>
 
-        {/* 네이버는 나중에 추가 */}
-        {/* 
         <SocialLoginButton 
           variant="naver" 
           fullWidth 
-          onClick={() => handleSocialLogin("naver")}
+          onClick={() => handleSocialLogin(OAUTH_PROVIDERS.NAVER)}
           disabled={isLoading}
         >
-          <SocialIcon src="/naver_icon.svg" alt="네이버" />
-          네이버로 로그인
+          <SocialIcon src="/naver_icon.png" alt="네이버" />
+          {isLoading ? "로그인 중..." : "네이버로 로그인"}
         </SocialLoginButton>
-        */}
       </SocialLoginContainer>
     </>
   );

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import styled from "styled-components";
 import { useStore } from "../stores/useStore";
+import { authAPI } from "../api/auth";
 import toast from "react-hot-toast";
 
 const OAuth2CallbackPage = () => {
@@ -20,15 +21,14 @@ const OAuth2CallbackPage = () => {
 
         // URL 파라미터 확인
         const urlParams = new URLSearchParams(window.location.search);
-        const success = urlParams.get("success");
-        const error = urlParams.get("error");
+        const callbackResult = await authAPI.handleOAuth2Callback(urlParams);
 
-        if (error) {
-          setError("소셜 로그인에 실패했습니다.");
+        if (!callbackResult.success) {
+          setError(callbackResult.message || "소셜 로그인에 실패했습니다.");
           return;
         }
 
-        if (success === "true") {
+        if (callbackResult.success) {
           try {
             // 먼저 토큰 복원 시도
             const { restoreToken } = useStore.getState();

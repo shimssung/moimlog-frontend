@@ -109,6 +109,20 @@ export const PUBLIC_PATHS = [
   "/rules"
 ];
 
+// 소셜 로그인 제공자
+export const OAUTH_PROVIDERS = {
+  GOOGLE: 'google',
+  NAVER: 'naver',
+  KAKAO: 'kakao'
+};
+
+// 소셜 로그인 제공자 라벨
+export const OAUTH_PROVIDER_LABELS = {
+  [OAUTH_PROVIDERS.GOOGLE]: '구글',
+  [OAUTH_PROVIDERS.NAVER]: '네이버',
+  [OAUTH_PROVIDERS.KAKAO]: '카카오'
+};
+
 // 인증이 필요 없는 API 엔드포인트들
 export const PUBLIC_APIS = [
   "/auth/signup",
@@ -120,7 +134,6 @@ export const PUBLIC_APIS = [
   "/auth/forgot-password",
   "/auth/verify-reset-code",
   "/auth/reset-password",
-  "/auth/logout", // 로그아웃은 토큰이 만료되어도 호출 가능해야 함
   "/oauth2", // 소셜 로그인 관련 모든 API
   "/oauth2-callback", // 소셜 로그인 콜백
 ];
