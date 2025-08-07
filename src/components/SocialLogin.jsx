@@ -18,6 +18,8 @@ const SocialLogin = () => {
         authAPI.startNaverLogin();
       } else if (provider === OAUTH_PROVIDERS.GOOGLE) {
         authAPI.startGoogleLogin();
+      } else if (provider === OAUTH_PROVIDERS.KAKAO) {
+        authAPI.startKakaoLogin();
       } else {
         // 기존 방식 (백엔드에서 URL 조회)
         const urls = await authAPI.getSocialLoginUrls();
@@ -36,19 +38,6 @@ const SocialLogin = () => {
         <span>또는</span>
       </Divider>
       <SocialLoginContainer>
-        {/* 카카오는 나중에 추가 */}
-        {/* 
-        <SocialLoginButton 
-          variant="kakao" 
-          fullWidth 
-          onClick={() => handleSocialLogin("kakao")}
-          disabled={isLoading}
-        >
-          <SocialIcon src="/kakao_icon.png" alt="카카오" />
-          카카오로 로그인
-        </SocialLoginButton>
-        */}
-
         <SocialLoginButton
           variant="google"
           fullWidth
@@ -67,6 +56,16 @@ const SocialLogin = () => {
         >
           <SocialIcon src="/naver_icon.png" alt="네이버" />
           {isLoading ? "로그인 중..." : "네이버로 로그인"}
+        </SocialLoginButton>
+
+        <SocialLoginButton 
+          variant="kakao" 
+          fullWidth 
+          onClick={() => handleSocialLogin(OAUTH_PROVIDERS.KAKAO)}
+          disabled={isLoading}
+        >
+          <SocialIcon src="/kakao_icon.png" alt="카카오" />
+          {isLoading ? "로그인 중..." : "카카오로 로그인"}
         </SocialLoginButton>
       </SocialLoginContainer>
     </>

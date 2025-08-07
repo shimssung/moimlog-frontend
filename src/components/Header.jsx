@@ -10,6 +10,16 @@ const Header = () => {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const userMenuRef = useRef(null);
 
+  // 디버깅: 사용자 정보 확인
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      console.log("헤더에서 사용자 정보:", user);
+      console.log("헤더에서 닉네임:", user.nickname);
+      console.log("헤더에서 이름:", user.name);
+      console.log("헤더에서 프로필 이미지:", user.profileImage);
+    }
+  }, [isAuthenticated, user]);
+
   const handleThemeToggle = () => {
     toggleTheme();
   };
@@ -85,14 +95,14 @@ const Header = () => {
                   <UserButton onClick={toggleUserMenu} theme={theme}>
                     <UserAvatar theme={theme}>
                       {user.profileImage ? (
-                        <img src={user.profileImage} alt={user.name} />
+                        <img src={user.profileImage} alt={user.nickname || user.name} />
                       ) : (
                         <UserInitial>
-                          {user.name ? user.name.charAt(0) : "U"}
+                          {(user.nickname || user.name) ? (user.nickname || user.name).charAt(0) : "U"}
                         </UserInitial>
                       )}
                     </UserAvatar>
-                    <UserName theme={theme}>{user.name || "사용자"}</UserName>
+                    <UserName theme={theme}>{user.nickname || user.name || "사용자"}</UserName>
                     <ChevronDownIcon theme={theme} isOpen={isUserMenuOpen} />
                   </UserButton>
                   {isUserMenuOpen && (
@@ -255,11 +265,13 @@ const UserAvatar = styled.div`
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  flex-shrink: 0;
 
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    border-radius: 50%;
   }
 `;
 

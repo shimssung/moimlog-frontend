@@ -207,6 +207,11 @@ export const authAPI = {
     window.location.href = 'http://localhost:8080/moimlog/oauth2/authorization/google';
   },
 
+  // 카카오 소셜 로그인 시작
+  startKakaoLogin: () => {
+    window.location.href = 'http://localhost:8080/moimlog/oauth2/authorization/kakao';
+  },
+
   // OAuth2 콜백 처리
   handleOAuth2Callback: async (searchParams) => {
     const success = searchParams.get('success');
