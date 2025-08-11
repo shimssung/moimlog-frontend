@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import Header from "../components/Header";
 import Button from "../components/Button";
@@ -7,21 +7,28 @@ import Textarea from "../components/Textarea";
 import { useRouter } from "next/router";
 import toast from "react-hot-toast";
 import { useStore } from "../stores/useStore";
-import { CATEGORY_OPTIONS } from "../utils/constants";
+import { useMoim } from "../hooks/useMoim";
+import { moimAPI } from "../api/moim";
+import { useCategories } from "../hooks/useCategories";
 
 const MoimEdit = () => {
   const { theme } = useStore();
   const router = useRouter();
+  const { updateMoim, isLoading } = useMoim();
+  const { categories, isLoading: categoriesLoading } = useCategories();
   const [formData, setFormData] = useState({
-    title: "독서 모임",
-    category: "독서",
-    maxMembers: "10",
-    description: "매주 새로운 책을 읽고 토론하는 모임입니다.",
-    tags: ["독서", "토론", "학습"],
+    title: "",
+    categoryId: "", // category → categoryId로 변경
+    maxMembers: "",
+    description: "",
+    tags: [],
     thumbnail: null,
+    isPrivate: false, // 비공개 여부 추가
     onlineType: "offline",
-    location: "서울시 강남구",
+    location: "",
+    locationDetail: "", // 상세 주소 추가
   });
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -30,6 +37,41 @@ const MoimEdit = () => {
       [name]: value,
     }));
   };
+
+  // 기존 모임 데이터 불러오기
+  useEffect(() => {
+    const fetchMoimData = async () => {
+      try {
+        const moimId = router.query.id;
+        if (!moimId) return;
+
+        const moimData = await moimAPI.getMoimDetail(moimId);
+
+        setFormData({
+          title: moimData.title || "",
+          categoryId: moimData.categoryId || "", // category → categoryId
+          maxMembers: moimData.maxMembers?.toString() || "",
+          description: moimData.description || "",
+          tags: moimData.tags || [],
+          thumbnail: moimData.thumbnail || null,
+          isPrivate: moimData.isPrivate || false, // 비공개 여부
+          onlineType: moimData.onlineType || "offline",
+          location: moimData.location || "",
+          locationDetail: moimData.locationDetail || "", // 상세 주소
+        });
+
+        setIsInitialized(true);
+      } catch (error) {
+        console.error("모임 데이터 불러오기 실패:", error);
+        toast.error("모임 데이터를 불러올 수 없습니다.");
+        router.push("/MyPage");
+      }
+    };
+
+    if (router.isReady) {
+      fetchMoimData();
+    }
+  }, [router.isReady, router.query.id]);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -45,8 +87,26 @@ const MoimEdit = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // 필수 필드 검증
+    if (!formData.title.trim()) {
+      toast.error("모임명을 입력해주세요.");
+      return;
+    }
+    if (!formData.categoryId) {
+      toast.error("카테고리를 선택해주세요.");
+      return;
+    }
+    if (!formData.maxMembers || formData.maxMembers < 2) {
+      toast.error("최대 인원은 2명 이상으로 설정해주세요.");
+      return;
+    }
+    if (!formData.description.trim()) {
+      toast.error("모임 소개를 입력해주세요.");
+      return;
+    }
 
     // 오프라인 모임인데 지역이 입력되지 않은 경우
     if (formData.onlineType === "offline" && !formData.location.trim()) {
@@ -54,12 +114,41 @@ const MoimEdit = () => {
       return;
     }
 
-    toast.success("모임 정보가 성공적으로 수정되었습니다!");
-    router.push("/my-moims");
+    const moimId = router.query.id;
+    if (!moimId) {
+      toast.error("모임 ID를 찾을 수 없습니다.");
+      return;
+    }
+
+    // API 호출을 위한 데이터 준비 (백엔드 구조에 맞줌)
+    const moimData = {
+      title: formData.title.trim(),
+      categoryId: parseInt(formData.categoryId), // category → categoryId, 숫자로 변환
+      maxMembers: parseInt(formData.maxMembers),
+      description: formData.description.trim(),
+      tags: formData.tags,
+      thumbnail: formData.thumbnail,
+      isPrivate: formData.isPrivate,
+      onlineType: formData.onlineType,
+      location:
+        formData.onlineType === "offline" ? formData.location.trim() : null,
+      locationDetail:
+        formData.onlineType === "offline"
+          ? formData.locationDetail.trim()
+          : null,
+    };
+
+    // 모임 수정 API 호출
+    const result = await updateMoim(moimId, moimData);
+
+    if (result.success) {
+      // 성공 시 updateMoim 훅에서 자동으로 리다이렉트 처리
+      return;
+    }
   };
 
   const handleCancel = () => {
-    router.push("/my-moims");
+    router.push("/MyPage");
   };
 
   return (
@@ -133,20 +222,25 @@ const MoimEdit = () => {
               </FormGroup>
 
               <FormGroup>
-                <Label htmlFor="category" theme={theme}>
+                <Label htmlFor="categoryId" theme={theme}>
                   카테고리 *
                 </Label>
                 <Select
-                  id="category"
-                  name="category"
-                  value={formData.category}
+                  id="categoryId"
+                  name="categoryId"
+                  value={formData.categoryId}
                   onChange={handleChange}
                   required
                   theme={theme}
+                  disabled={categoriesLoading || !isInitialized}
                 >
-                  <option value="">카테고리 선택</option>
-                  {CATEGORY_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
+                  <option value="">
+                    {categoriesLoading
+                      ? "카테고리 로딩 중..."
+                      : "카테고리 선택"}
+                  </option>
+                  {categories.map((option) => (
+                    <option key={option.id} value={option.id}>
                       {option.label}
                     </option>
                   ))}
@@ -222,6 +316,41 @@ const MoimEdit = () => {
               </FormGroup>
 
               <FormGroup>
+                <Label htmlFor="isPrivate" theme={theme}>
+                  모임 공개 설정
+                </Label>
+                <CheckboxContainer>
+                  <input
+                    type="checkbox"
+                    id="isPrivate"
+                    name="isPrivate"
+                    checked={formData.isPrivate}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        isPrivate: e.target.checked,
+                      }))
+                    }
+                  />
+                  <span>비공개 모임으로 설정</span>
+                </CheckboxContainer>
+              </FormGroup>
+
+              <FormGroup>
+                <Label htmlFor="locationDetail" theme={theme}>
+                  상세 주소
+                </Label>
+                <Input
+                  type="text"
+                  id="locationDetail"
+                  name="locationDetail"
+                  value={formData.locationDetail}
+                  onChange={handleChange}
+                  placeholder="상세 주소를 입력해주세요 (선택사항)"
+                />
+              </FormGroup>
+
+              <FormGroup>
                 <Label theme={theme}>태그</Label>
                 <TagContainer theme={theme}>
                   {formData.tags.map((tag, index) => (
@@ -263,8 +392,12 @@ const MoimEdit = () => {
                 <Button type="button" variant="light" onClick={handleCancel}>
                   취소
                 </Button>
-                <Button type="submit" variant="primary">
-                  수정 완료
+                <Button
+                  type="submit"
+                  variant="primary"
+                  disabled={isLoading || !isInitialized}
+                >
+                  {isLoading ? "수정 중..." : "수정 완료"}
                 </Button>
               </ButtonGroup>
             </Form>
@@ -303,9 +436,9 @@ const MoimEdit = () => {
                 <InfoItem>
                   <InfoLabel theme={theme}>카테고리</InfoLabel>
                   <InfoValue theme={theme}>
-                    {formData.category
-                      ? CATEGORY_OPTIONS.find(
-                          (opt) => opt.value === formData.category
+                    {formData.categoryId
+                      ? categories.find(
+                          (opt) => opt.id === parseInt(formData.categoryId)
                         )?.label
                       : "미선택"}
                   </InfoValue>
@@ -689,4 +822,20 @@ const FileName = styled.div`
   font-size: 0.85rem;
   color: ${(props) => props.theme.textSecondary};
   margin-top: 2px;
+`;
+
+const CheckboxContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 0.875rem;
+  color: ${(props) => props.theme.textPrimary};
+  transition: color 0.3s ease;
+
+  input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: ${(props) => props.theme.buttonPrimary};
+  }
 `;

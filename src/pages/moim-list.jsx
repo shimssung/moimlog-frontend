@@ -5,14 +5,8 @@ import Card from "../components/Card";
 import Input from "../components/Input";
 import Button from "../components/Button";
 import { useTheme } from "../utils/ThemeContext";
-import {
-  mockMoims,
-  filterMoimsByCategory,
-  searchMoims,
-} from "../utils/mockData";
-import { CATEGORY_LABELS, CATEGORIES } from "../utils/constants";
-
-const categories = ["All", ...Object.values(CATEGORIES)];
+import { mockMoims } from "../utils/mockData";
+import { useCategories } from "../hooks/useCategories";
 
 // 가장 많이 사용되는 isomorphic hook 패턴
 const useIsomorphicLayoutEffect =
@@ -31,13 +25,14 @@ const useClientOnly = () => {
 
 const MoimListPage = () => {
   const { theme } = useTheme();
+  const { categories } = useCategories();
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [onlineType, setOnlineType] = useState("all"); // 온라인/오프라인 필터
-  const [selectedLocation, setSelectedLocation] = useState("all"); // 지역 필터
-  const [memberRange, setMemberRange] = useState({ min: 0, max: 100 }); // 인원수 범위
-  const [sortBy, setSortBy] = useState("latest"); // 정렬 옵션
-  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false); // 고급 필터 표시 여부
+  const [onlineType, setOnlineType] = useState("all");
+  const [selectedLocation, setSelectedLocation] = useState("all");
+  const [memberRange, setMemberRange] = useState({ min: 0, max: 100 });
+  const [sortBy, setSortBy] = useState("latest");
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [visibleCount, setVisibleCount] = useState(8);
   const [loading, setLoading] = useState(false);
   const isClient = useClientOnly();
@@ -48,49 +43,42 @@ const MoimListPage = () => {
   const getFilteredMoims = () => {
     let filtered = mockMoims;
 
-    // 카테고리 필터
-    filtered = filterMoimsByCategory(
-      filtered,
-      selectedCategory === "All" ? null : selectedCategory
-    );
+    // 카테고리 필터링
+    if (selectedCategory !== "All") {
+      filtered = filtered.filter(
+        (moim) => moim.categoryId === selectedCategory
+      );
+    }
 
-    // 검색 필터
-    filtered = searchMoims(filtered, search);
-
-    // 온라인/오프라인 필터
+    // 온라인/오프라인 필터링
     if (onlineType !== "all") {
       filtered = filtered.filter((moim) => moim.onlineType === onlineType);
     }
 
-    // 지역 필터
+    // 지역 필터링
     if (selectedLocation !== "all") {
-      filtered = filtered.filter(
-        (moim) =>
-          moim.onlineType === "offline" &&
-          moim.location &&
-          moim.location.includes(selectedLocation)
+      filtered = filtered.filter((moim) =>
+        moim.location.includes(selectedLocation)
       );
     }
 
-    // 인원수 범위 필터
+    // 인원수 범위 필터링
     filtered = filtered.filter(
       (moim) =>
         moim.maxMembers >= memberRange.min && moim.maxMembers <= memberRange.max
     );
 
-    // 정렬
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case "latest":
-          return b.id - a.id; // ID 기준 최신순 (실제로는 createdAt 사용)
-        case "popular":
-          return b.maxMembers - a.maxMembers; // 인원수 기준 인기순
-        case "name":
-          return a.title.localeCompare(b.title); // 이름순
-        default:
-          return 0;
-      }
-    });
+    // 검색어 필터링
+    if (search.trim()) {
+      filtered = filtered.filter(
+        (moim) =>
+          moim.title.toLowerCase().includes(search.toLowerCase()) ||
+          moim.description.toLowerCase().includes(search.toLowerCase()) ||
+          moim.tags.some((tag) =>
+            tag.toLowerCase().includes(search.toLowerCase())
+          )
+      );
+    }
 
     return filtered;
   };
@@ -171,6 +159,9 @@ const MoimListPage = () => {
     }
   };
 
+  // 카테고리 옵션 (useCategories 훅에서 가져온 데이터 사용)
+  const categoryOptions = ["All", ...categories.map(cat => cat.name)];
+
   return (
     <Container theme={theme}>
       <Header />
@@ -179,18 +170,18 @@ const MoimListPage = () => {
           <TopTitle theme={theme}>모임을 찾아보세요</TopTitle>
 
           {/* 기본 필터 */}
-          <CategoryList>
-            {categories.map((cat) => (
-              <CategoryItem
-                key={cat}
-                $active={selectedCategory === cat}
-                onClick={() => setSelectedCategory(cat)}
+          <CategoryFilter>
+            {categoryOptions.map((category) => (
+              <CategoryButton
+                key={category}
+                $isActive={selectedCategory === category}
+                onClick={() => setSelectedCategory(category)}
                 theme={theme}
               >
-                {cat === "All" ? "전체" : CATEGORY_LABELS[cat]}
-              </CategoryItem>
+                {category}
+              </CategoryButton>
             ))}
-          </CategoryList>
+          </CategoryFilter>
 
           {/* 검색바 */}
           <SearchSection>
@@ -400,14 +391,14 @@ const TopTitle = styled.h1`
   transition: color 0.3s ease;
 `;
 
-const CategoryList = styled.div`
+const CategoryFilter = styled.div`
   display: flex;
   gap: 12px;
   padding: 12px 0 0 0;
   flex-wrap: wrap;
 `;
 
-const CategoryItem = styled.div`
+const CategoryButton = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -423,8 +414,8 @@ const CategoryItem = styled.div`
   transition: all 0.15s;
   border: 1px solid ${(props) => props.theme.borderLight};
 
-  ${({ $active, theme }) =>
-    $active &&
+  ${({ $isActive, theme }) =>
+    $isActive &&
     `
     background: ${theme.buttonPrimary};
     color: #fff;

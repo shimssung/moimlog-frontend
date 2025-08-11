@@ -6,11 +6,13 @@ import Sidebar from "../../../components/Sidebar";
 import Header from "../../../components/Header";
 import Button from "../../../components/Button";
 import { useTheme } from "../../../utils/ThemeContext";
+import { useMoim } from "../../../hooks/useMoim";
 
 const MoimSettingsPage = () => {
   const { theme } = useTheme();
   const router = useRouter();
   const { id: moimId } = router.query;
+  const { deleteMoim, isLoading } = useMoim();
   const [moimInfo, setMoimInfo] = useState(null);
   const [activeTab, setActiveTab] = useState("general");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -44,10 +46,19 @@ const MoimSettingsPage = () => {
     toast.success("설정이 저장되었습니다!");
   };
 
-  const handleDeleteMoim = () => {
-    // 모임 삭제 로직
-    toast.success("모임이 삭제되었습니다!");
-    router.push("/my-moims");
+  const handleDeleteMoim = async () => {
+    try {
+      // 모임 삭제 API 호출
+      const result = await deleteMoim(moimId);
+
+      if (result.success) {
+        // 성공 시 deleteMoim 훅에서 자동으로 리다이렉트 처리
+        return;
+      }
+    } catch (error) {
+      console.error("모임 삭제 실패:", error);
+      toast.error("모임 삭제에 실패했습니다.");
+    }
   };
 
   return (
@@ -61,233 +72,237 @@ const MoimSettingsPage = () => {
         />
 
         <MainContent theme={theme}>
-        <PageHeader>
-          <HeaderInfo>
-            <PageTitle theme={theme}>모임 설정</PageTitle>
-            <PageSubtitle theme={theme}>
-              {moimInfo?.title}의 설정을 관리하세요
-            </PageSubtitle>
-          </HeaderInfo>
-        </PageHeader>
+          <PageHeader>
+            <HeaderInfo>
+              <PageTitle theme={theme}>모임 설정</PageTitle>
+              <PageSubtitle theme={theme}>
+                {moimInfo?.title}의 설정을 관리하세요
+              </PageSubtitle>
+            </HeaderInfo>
+          </PageHeader>
 
-        <SettingsContainer theme={theme}>
-          <SettingsTabs theme={theme}>
-            <SettingsTab
-              $active={activeTab === "general"}
-              onClick={() => setActiveTab("general")}
-              theme={theme}
-            >
-              일반 설정
-            </SettingsTab>
-            <SettingsTab
-              $active={activeTab === "notifications"}
-              onClick={() => setActiveTab("notifications")}
-              theme={theme}
-            >
-              알림 설정
-            </SettingsTab>
-            <SettingsTab
-              $active={activeTab === "privacy"}
-              onClick={() => setActiveTab("privacy")}
-              theme={theme}
-            >
-              개인정보
-            </SettingsTab>
-            <SettingsTab
-              $active={activeTab === "danger"}
-              onClick={() => setActiveTab("danger")}
-              theme={theme}
-            >
-              위험 영역
-            </SettingsTab>
-          </SettingsTabs>
+          <SettingsContainer theme={theme}>
+            <SettingsTabs theme={theme}>
+              <SettingsTab
+                $active={activeTab === "general"}
+                onClick={() => setActiveTab("general")}
+                theme={theme}
+              >
+                일반 설정
+              </SettingsTab>
+              <SettingsTab
+                $active={activeTab === "notifications"}
+                onClick={() => setActiveTab("notifications")}
+                theme={theme}
+              >
+                알림 설정
+              </SettingsTab>
+              <SettingsTab
+                $active={activeTab === "privacy"}
+                onClick={() => setActiveTab("privacy")}
+                theme={theme}
+              >
+                개인정보
+              </SettingsTab>
+              <SettingsTab
+                $active={activeTab === "danger"}
+                onClick={() => setActiveTab("danger")}
+                theme={theme}
+              >
+                위험 영역
+              </SettingsTab>
+            </SettingsTabs>
 
-          <SettingsContent>
-            {activeTab === "general" && (
-              <GeneralSettings>
-                <SectionTitle theme={theme}>모임 정보</SectionTitle>
-                <FormGroup>
-                  <Label theme={theme}>모임명</Label>
-                  <Input
-                    type="text"
-                    defaultValue={moimInfo?.title}
-                    placeholder="모임명을 입력하세요"
-                    theme={theme}
-                  />
-                </FormGroup>
-                <FormGroup>
-                  <Label theme={theme}>모임 설명</Label>
-                  <Textarea
-                    defaultValue={moimInfo?.description}
-                    placeholder="모임에 대한 설명을 입력하세요"
-                    rows="4"
-                    theme={theme}
-                  />
-                </FormGroup>
-                <FormGroup>
-                  <Label theme={theme}>카테고리</Label>
-                  <Select defaultValue={moimInfo?.category} theme={theme}>
-                    <option value="독서">독서</option>
-                    <option value="개발">개발</option>
-                    <option value="요리">요리</option>
-                    <option value="스포츠">스포츠</option>
-                    <option value="예술">예술</option>
-                    <option value="음악">음악</option>
-                    <option value="운동">운동</option>
-                  </Select>
-                </FormGroup>
-                <FormGroup>
-                  <Label theme={theme}>최대 멤버 수</Label>
-                  <Input
-                    type="number"
-                    min="2"
-                    max="100"
-                    defaultValue={moimInfo?.maxMembers}
-                    theme={theme}
-                  />
-                </FormGroup>
-                <SaveButton onClick={handleSaveSettings} theme={theme}>
-                  설정 저장
-                </SaveButton>
-              </GeneralSettings>
-            )}
+            <SettingsContent>
+              {activeTab === "general" && (
+                <GeneralSettings>
+                  <SectionTitle theme={theme}>모임 정보</SectionTitle>
+                  <FormGroup>
+                    <Label theme={theme}>모임명</Label>
+                    <Input
+                      type="text"
+                      defaultValue={moimInfo?.title}
+                      placeholder="모임명을 입력하세요"
+                      theme={theme}
+                    />
+                  </FormGroup>
+                  <FormGroup>
+                    <Label theme={theme}>모임 설명</Label>
+                    <Textarea
+                      defaultValue={moimInfo?.description}
+                      placeholder="모임에 대한 설명을 입력하세요"
+                      rows="4"
+                      theme={theme}
+                    />
+                  </FormGroup>
+                  <FormGroup>
+                    <Label theme={theme}>카테고리</Label>
+                    <Select defaultValue={moimInfo?.category} theme={theme}>
+                      <option value="독서">독서</option>
+                      <option value="개발">개발</option>
+                      <option value="요리">요리</option>
+                      <option value="스포츠">스포츠</option>
+                      <option value="예술">예술</option>
+                      <option value="음악">음악</option>
+                      <option value="운동">운동</option>
+                    </Select>
+                  </FormGroup>
+                  <FormGroup>
+                    <Label theme={theme}>최대 멤버 수</Label>
+                    <Input
+                      type="number"
+                      min="2"
+                      max="100"
+                      defaultValue={moimInfo?.maxMembers}
+                      theme={theme}
+                    />
+                  </FormGroup>
+                  <SaveButton onClick={handleSaveSettings} theme={theme}>
+                    설정 저장
+                  </SaveButton>
+                </GeneralSettings>
+              )}
 
-            {activeTab === "notifications" && (
-              <NotificationSettings>
-                <SectionTitle theme={theme}>알림 설정</SectionTitle>
-                <NotificationItem theme={theme}>
-                  <NotificationInfo>
-                    <NotificationLabel theme={theme}>
-                      새 메시지 알림
-                    </NotificationLabel>
-                    <NotificationDesc theme={theme}>
-                      채팅에 새 메시지가 올 때 알림을 받습니다
-                    </NotificationDesc>
-                  </NotificationInfo>
-                  <ToggleSwitch
-                    defaultChecked={moimInfo?.notifications?.newMessage}
-                  />
-                </NotificationItem>
-                <NotificationItem theme={theme}>
-                  <NotificationInfo>
-                    <NotificationLabel theme={theme}>
-                      새 게시글 알림
-                    </NotificationLabel>
-                    <NotificationDesc theme={theme}>
-                      게시판에 새 글이 올 때 알림을 받습니다
-                    </NotificationDesc>
-                  </NotificationInfo>
-                  <ToggleSwitch
-                    defaultChecked={moimInfo?.notifications?.newPost}
-                  />
-                </NotificationItem>
-                <NotificationItem theme={theme}>
-                  <NotificationInfo>
-                    <NotificationLabel theme={theme}>
-                      새 일정 알림
-                    </NotificationLabel>
-                    <NotificationDesc theme={theme}>
-                      새로운 일정이 생성될 때 알림을 받습니다
-                    </NotificationDesc>
-                  </NotificationInfo>
-                  <ToggleSwitch
-                    defaultChecked={moimInfo?.notifications?.newEvent}
-                  />
-                </NotificationItem>
-                <NotificationItem theme={theme}>
-                  <NotificationInfo>
-                    <NotificationLabel theme={theme}>
-                      멤버 가입 알림
-                    </NotificationLabel>
-                    <NotificationDesc theme={theme}>
-                      새로운 멤버가 가입할 때 알림을 받습니다
-                    </NotificationDesc>
-                  </NotificationInfo>
-                  <ToggleSwitch
-                    defaultChecked={moimInfo?.notifications?.memberJoin}
-                  />
-                </NotificationItem>
-                <SaveButton onClick={handleSaveSettings} theme={theme}>
-                  알림 설정 저장
-                </SaveButton>
-              </NotificationSettings>
-            )}
+              {activeTab === "notifications" && (
+                <NotificationSettings>
+                  <SectionTitle theme={theme}>알림 설정</SectionTitle>
+                  <NotificationItem theme={theme}>
+                    <NotificationInfo>
+                      <NotificationLabel theme={theme}>
+                        새 메시지 알림
+                      </NotificationLabel>
+                      <NotificationDesc theme={theme}>
+                        채팅에 새 메시지가 올 때 알림을 받습니다
+                      </NotificationDesc>
+                    </NotificationInfo>
+                    <ToggleSwitch
+                      defaultChecked={moimInfo?.notifications?.newMessage}
+                    />
+                  </NotificationItem>
+                  <NotificationItem theme={theme}>
+                    <NotificationInfo>
+                      <NotificationLabel theme={theme}>
+                        새 게시글 알림
+                      </NotificationLabel>
+                      <NotificationDesc theme={theme}>
+                        게시판에 새 글이 올 때 알림을 받습니다
+                      </NotificationDesc>
+                    </NotificationInfo>
+                    <ToggleSwitch
+                      defaultChecked={moimInfo?.notifications?.newPost}
+                    />
+                  </NotificationItem>
+                  <NotificationItem theme={theme}>
+                    <NotificationInfo>
+                      <NotificationLabel theme={theme}>
+                        새 일정 알림
+                      </NotificationLabel>
+                      <NotificationDesc theme={theme}>
+                        새로운 일정이 생성될 때 알림을 받습니다
+                      </NotificationDesc>
+                    </NotificationInfo>
+                    <ToggleSwitch
+                      defaultChecked={moimInfo?.notifications?.newEvent}
+                    />
+                  </NotificationItem>
+                  <NotificationItem theme={theme}>
+                    <NotificationInfo>
+                      <NotificationLabel theme={theme}>
+                        멤버 가입 알림
+                      </NotificationLabel>
+                      <NotificationDesc theme={theme}>
+                        새로운 멤버가 가입할 때 알림을 받습니다
+                      </NotificationDesc>
+                    </NotificationInfo>
+                    <ToggleSwitch
+                      defaultChecked={moimInfo?.notifications?.memberJoin}
+                    />
+                  </NotificationItem>
+                  <SaveButton onClick={handleSaveSettings} theme={theme}>
+                    알림 설정 저장
+                  </SaveButton>
+                </NotificationSettings>
+              )}
 
-            {activeTab === "privacy" && (
-              <PrivacySettings>
-                <SectionTitle theme={theme}>개인정보 설정</SectionTitle>
-                <PrivacyItem theme={theme}>
-                  <PrivacyInfo>
-                    <PrivacyLabel theme={theme}>공개 모임</PrivacyLabel>
-                    <PrivacyDesc theme={theme}>
-                      모임이 검색 결과에 표시됩니다
-                    </PrivacyDesc>
-                  </PrivacyInfo>
-                  <ToggleSwitch defaultChecked={moimInfo?.isPublic} />
-                </PrivacyItem>
-                <SaveButton onClick={handleSaveSettings} theme={theme}>
-                  개인정보 설정 저장
-                </SaveButton>
-              </PrivacySettings>
-            )}
+              {activeTab === "privacy" && (
+                <PrivacySettings>
+                  <SectionTitle theme={theme}>개인정보 설정</SectionTitle>
+                  <PrivacyItem theme={theme}>
+                    <PrivacyInfo>
+                      <PrivacyLabel theme={theme}>공개 모임</PrivacyLabel>
+                      <PrivacyDesc theme={theme}>
+                        모임이 검색 결과에 표시됩니다
+                      </PrivacyDesc>
+                    </PrivacyInfo>
+                    <ToggleSwitch defaultChecked={moimInfo?.isPublic} />
+                  </PrivacyItem>
+                  <SaveButton onClick={handleSaveSettings} theme={theme}>
+                    개인정보 설정 저장
+                  </SaveButton>
+                </PrivacySettings>
+              )}
 
-            {activeTab === "danger" && (
-              <DangerSettings>
-                <SectionTitle theme={theme}>위험 영역</SectionTitle>
-                <DangerItem theme={theme}>
-                  <DangerInfo>
-                    <DangerLabel theme={theme}>모임 삭제</DangerLabel>
-                    <DangerDesc theme={theme}>
-                      모임을 영구적으로 삭제합니다. 이 작업은 되돌릴 수
-                      없습니다.
-                    </DangerDesc>
-                  </DangerInfo>
-                  <DeleteButton
-                    onClick={() => setShowDeleteModal(true)}
+              {activeTab === "danger" && (
+                <DangerSettings>
+                  <SectionTitle theme={theme}>위험 영역</SectionTitle>
+                  <DangerItem theme={theme}>
+                    <DangerInfo>
+                      <DangerLabel theme={theme}>모임 삭제</DangerLabel>
+                      <DangerDesc theme={theme}>
+                        모임을 영구적으로 삭제합니다. 이 작업은 되돌릴 수
+                        없습니다.
+                      </DangerDesc>
+                    </DangerInfo>
+                    <DeleteButton
+                      onClick={() => setShowDeleteModal(true)}
+                      theme={theme}
+                    >
+                      모임 삭제
+                    </DeleteButton>
+                  </DangerItem>
+                </DangerSettings>
+              )}
+            </SettingsContent>
+          </SettingsContainer>
+
+          {showDeleteModal && (
+            <ModalOverlay onClick={() => setShowDeleteModal(false)}>
+              <ModalContent onClick={(e) => e.stopPropagation()} theme={theme}>
+                <ModalHeader theme={theme}>
+                  <ModalTitle theme={theme}>모임 삭제 확인</ModalTitle>
+                  <CloseButton
+                    onClick={() => setShowDeleteModal(false)}
                     theme={theme}
                   >
-                    모임 삭제
-                  </DeleteButton>
-                </DangerItem>
-              </DangerSettings>
-            )}
-          </SettingsContent>
-        </SettingsContainer>
-
-        {showDeleteModal && (
-          <ModalOverlay onClick={() => setShowDeleteModal(false)}>
-            <ModalContent onClick={(e) => e.stopPropagation()} theme={theme}>
-              <ModalHeader theme={theme}>
-                <ModalTitle theme={theme}>모임 삭제 확인</ModalTitle>
-                <CloseButton
-                  onClick={() => setShowDeleteModal(false)}
-                  theme={theme}
-                >
-                  ✕
-                </CloseButton>
-              </ModalHeader>
-              <ModalBody>
-                <ModalText theme={theme}>
-                  정말로 "{moimInfo?.title}" 모임을 삭제하시겠습니까?
-                  <br />이 작업은 되돌릴 수 없으며, 모든 데이터가 영구적으로
-                  삭제됩니다.
-                </ModalText>
-              </ModalBody>
-              <ModalFooter theme={theme}>
-                <Button
-                  variant="light"
-                  onClick={() => setShowDeleteModal(false)}
-                >
-                  취소
-                </Button>
-                <Button variant="danger" onClick={handleDeleteMoim}>
-                  모임 삭제
-                </Button>
-              </ModalFooter>
-            </ModalContent>
-          </ModalOverlay>
-        )}
-      </MainContent>
+                    ✕
+                  </CloseButton>
+                </ModalHeader>
+                <ModalBody>
+                  <ModalText theme={theme}>
+                    정말로 "{moimInfo?.title}" 모임을 삭제하시겠습니까?
+                    <br />이 작업은 되돌릴 수 없으며, 모든 데이터가 영구적으로
+                    삭제됩니다.
+                  </ModalText>
+                </ModalBody>
+                <ModalFooter theme={theme}>
+                  <Button
+                    variant="light"
+                    onClick={() => setShowDeleteModal(false)}
+                  >
+                    취소
+                  </Button>
+                  <Button
+                    variant="danger"
+                    onClick={handleDeleteMoim}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "삭제 중..." : "모임 삭제"}
+                  </Button>
+                </ModalFooter>
+              </ModalContent>
+            </ModalOverlay>
+          )}
+        </MainContent>
       </ContentContainer>
     </PageContainer>
   );

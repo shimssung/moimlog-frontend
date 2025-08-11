@@ -5,7 +5,8 @@ import { CATEGORY_LABELS } from "../utils/constants";
 
 const Card = ({ moim }) => {
   const { theme } = useStore();
-  const categoryLabel = CATEGORY_LABELS[moim.category];
+  // 새로운 카테고리 구조에 맞춰 카테고리 라벨 가져오기
+  const categoryLabel = CATEGORY_LABELS[moim.categoryId] || moim.category || "기타";
   const truncatedDescription =
     moim.description.length > 60
       ? moim.description.substring(0, 60) + "..."
@@ -23,7 +24,8 @@ const Card = ({ moim }) => {
         </CardMeta>
         <CardLocation>
           <LocationBadge $onlineType={moim.onlineType} theme={theme}>
-            {moim.onlineType === "online" ? "온라인" : "오프라인"}
+            {moim.onlineType === "online" ? "온라인" : 
+             moim.onlineType === "hybrid" ? "하이브리드" : "오프라인"}
           </LocationBadge>
           {moim.onlineType === "offline" && moim.location && (
             <LocationText theme={theme}>{moim.location}</LocationText>

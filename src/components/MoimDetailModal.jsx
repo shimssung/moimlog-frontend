@@ -2,11 +2,15 @@ import React from "react";
 import styled from "styled-components";
 import Button from "./Button";
 import { useStore } from "../stores/useStore";
+import { CATEGORY_LABELS } from "../utils/constants";
 
 const MoimDetailModal = ({ isOpen, onClose, moim }) => {
   const { theme } = useStore();
 
   if (!isOpen || !moim) return null;
+
+  // 새로운 카테고리 구조에 맞춰 카테고리 라벨 가져오기
+  const categoryLabel = CATEGORY_LABELS[moim.categoryId] || moim.category || "기타";
 
   return (
     <ModalOverlay onClick={onClose}>
@@ -15,7 +19,8 @@ const MoimDetailModal = ({ isOpen, onClose, moim }) => {
           <TitleGroup>
             <ModalTitle theme={theme}>{moim.title}</ModalTitle>
             <OnlineStatus $isOnline={moim.onlineType === "online"}>
-              {moim.onlineType === "online" ? "온라인" : "오프라인"}
+              {moim.onlineType === "online" ? "온라인" : 
+               moim.onlineType === "hybrid" ? "하이브리드" : "오프라인"}
             </OnlineStatus>
           </TitleGroup>
           <MemberCount theme={theme}>최대 {moim.maxMembers}명</MemberCount>
@@ -38,18 +43,19 @@ const MoimDetailModal = ({ isOpen, onClose, moim }) => {
           <InfoSection>
             <InfoRow>
               <InfoLabel theme={theme}>카테고리</InfoLabel>
-              <InfoValue theme={theme}>{moim.category}</InfoValue>
+              <InfoValue theme={theme}>{categoryLabel}</InfoValue>
             </InfoRow>
             <InfoRow>
               <InfoLabel theme={theme}>위치</InfoLabel>
               <InfoValue theme={theme}>
-                {moim.onlineType === "online" ? "온라인" : moim.location}
+                {moim.onlineType === "online" ? "온라인" : 
+                 moim.onlineType === "hybrid" ? "하이브리드" : moim.location}
               </InfoValue>
             </InfoRow>
             <InfoRow>
               <InfoLabel theme={theme}>참여자</InfoLabel>
               <AttendeeBadges>
-                {moim.attendees.slice(0, 3).map((attendee, index) => (
+                {moim.attendees?.slice(0, 3).map((attendee, index) => (
                   <AttendeeImg
                     key={attendee.id}
                     src={attendee.image}
@@ -57,7 +63,7 @@ const MoimDetailModal = ({ isOpen, onClose, moim }) => {
                     style={{ left: `${index * 20}px` }}
                   />
                 ))}
-                {moim.attendees.length > 3 && (
+                {moim.attendees && moim.attendees.length > 3 && (
                   <AttendeeCount theme={theme}>
                     +{moim.attendees.length - 3}
                   </AttendeeCount>
@@ -74,7 +80,7 @@ const MoimDetailModal = ({ isOpen, onClose, moim }) => {
           <TagsSection>
             <TagsTitle theme={theme}>태그</TagsTitle>
             <TagsContainer>
-              {moim.tags.map((tag, index) => (
+              {moim.tags?.map((tag, index) => (
                 <Tag key={index} theme={theme}>
                   #{tag}
                 </Tag>

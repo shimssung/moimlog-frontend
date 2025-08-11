@@ -8,16 +8,14 @@ import { useRouter } from "next/router";
 import { useStore } from "../stores/useStore";
 import { authAPI } from "../api/auth";
 import toast from "react-hot-toast";
+import { useCategories } from "../hooks/useCategories";
 
 const Onboarding = () => {
   const { theme } = useTheme();
   const router = useRouter();
-  const {
-    isAuthenticated,
-    checkAuthAndRedirect,
-    syncUserInfo,
-    updateUser,
-  } = useStore();
+  const { isAuthenticated, checkAuthAndRedirect, syncUserInfo, updateUser } =
+    useStore();
+  const { categories, isLoading: categoriesLoading } = useCategories();
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -31,46 +29,101 @@ const Onboarding = () => {
   const [nicknameError, setNicknameError] = useState("");
   const [isCheckingNickname, setIsCheckingNickname] = useState(false);
 
-  // 모임 카테고리 관련 상태
-  const [moimCategories, setMoimCategories] = useState([]);
-  const [isLoadingCategories, setIsLoadingCategories] = useState(false);
+  // 모임 카테고리 관련 상태 (useCategories 훅으로 대체)
+  // const [isLoadingCategories, setIsLoadingCategories] = useState(false);
 
-  // 모임 카테고리 목록 가져오기
-  useEffect(() => {
-    const fetchCategories = async () => {
-      setIsLoadingCategories(true);
-      try {
-        const response = await authAPI.getMoimCategories();
+  // 모임 카테고리 목록 가져오기 (useCategories 훅으로 대체)
+  // useEffect(() => {
+  //   const fetchCategories = async () => {
+  //     setIsLoadingCategories(true);
+  //     try {
+  //       const response = await authAPI.getMoimCategories();
+  //       // 백엔드 응답 구조에 맞춰 데이터 처리
+  //       const categories =
+  //         response.data?.categories || response.categories || [];
+  //       // setMoimCategories(categories); // useCategories 훅으로 대체
+  //     } catch (error) {
+  //       console.error("카테고리 불러오기 실패:", error);
+  //       // API 실패 시 기본 카테고리 사용
+  //       // setMoimCategories([ // useCategories 훅으로 대체
+  //       //   {
+  //       //     id: "운동/스포츠",
+  //       //     name: "운동/스포츠",
+  //       //     label: "운동/스포츠",
+  //       //     color: "#10b981",
+  //       //     description: "다양한 운동과 스포츠 활동",
+  //       //   },
+  //       //   {
+  //       //     id: "게임",
+  //       //     name: "게임",
+  //       //     label: "게임",
+  //       //     color: "#f59e0b",
+  //       //     description: "온라인/오프라인 게임",
+  //       //   },
+  //       //   {
+  //       //     id: "독서/스터디",
+  //       //     name: "독서/스터디",
+  //       //     label: "독서/스터디",
+  //       //     color: "#3b82f6",
+  //       //     description: "책 읽기와 공부",
+  //       //   },
+  //       //   {
+  //       //     id: "음악",
+  //       //     name: "음악",
+  //       //     label: "음악",
+  //       //     color: "#8b5cf6",
+  //       //     description: "음악 감상과 연주",
+  //       //   },
+  //       //   {
+  //       //     id: "여행",
+  //       //     name: "여행",
+  //       //     label: "여행",
+  //       //     color: "#06b6d4",
+  //       //     description: "국내외 여행",
+  //       //   },
+  //       //   {
+  //       //     id: "요리/베이킹",
+  //       //     name: "요리/베이킹",
+  //       //     label: "요리/베이킹",
+  //       //     color: "#ef4444",
+  //       //     description: "요리와 베이킹",
+  //       //   },
+  //       //   {
+  //       //     id: "영화/드라마",
+  //       //     name: "영화/드라마",
+  //       //     label: "영화/드라마",
+  //       //     color: "#ec4899",
+  //       //     description: "영화와 드라마 감상",
+  //       //   },
+  //       //   {
+  //       //     id: "예술/문화",
+  //       //     name: "예술/문화",
+  //       //     label: "예술/문화",
+  //       //     color: "#a855f7",
+  //       //     description: "예술과 문화 활동",
+  //       //   },
+  //       //   {
+  //       //     id: "IT/기술",
+  //       //     name: "IT/기술",
+  //       //     label: "IT/기술",
+  //       //     color: "#6366f1",
+  //       //     description: "IT와 기술",
+  //       //   },
+  //       //   {
+  //       //     id: "기타",
+  //       //     name: "기타",
+  //       //     label: "기타",
+  //       //     color: "#6b7280",
+  //       //     description: "기타 다양한 관심사",
+  //       //   },
+  //       // ]);
+  //     } finally {
+  //       setIsLoadingCategories(false);
+  //     }
+  //   };
 
-        // 백엔드 가이드에 따르면 배열 형태로 직접 반환됨
-        if (Array.isArray(response) && response.length > 0) {
-          setMoimCategories(response);
-        } else if (response.categories && response.categories.length > 0) {
-          // 기존 형태도 지원
-          setMoimCategories(response.categories);
-        } else {
-          console.error("모임 카테고리 API 실패:", response);
-          throw new Error("카테고리 데이터가 올바르지 않습니다.");
-        }
-      } catch (error) {
-        console.error("모임 카테고리 로딩 실패:", error);
-        
-        // 사용자 친화적 에러 메시지
-        let message = "모임 카테고리를 불러오는데 실패했습니다.";
-        if (error.message.includes("401")) {
-          message = "로그인이 필요합니다.";
-        } else if (error.message.includes("500")) {
-          message = "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
-        }
-        
-        toast.error(message);
-      } finally {
-        setIsLoadingCategories(false);
-      }
-    };
-
-    fetchCategories();
-  }, []);
+  //   fetchCategories();
+  // }, []);
 
   // 토큰 확인 및 인증 상태 체크
   useEffect(() => {
@@ -191,7 +244,7 @@ const Onboarding = () => {
       }
     } catch (error) {
       console.error("온보딩 완료 실패:", error);
-      
+
       // 사용자 친화적 에러 메시지
       let message = "온보딩 완료 중 오류가 발생했습니다.";
       if (error.message.includes("401")) {
@@ -201,7 +254,7 @@ const Onboarding = () => {
       } else if (error.message.includes("500")) {
         message = "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
       }
-      
+
       toast.error(message);
     } finally {
       setIsSubmitting(false);
@@ -252,11 +305,11 @@ const Onboarding = () => {
       <StepDescription theme={theme}>
         관심 있는 모임 카테고리를 선택하면 맞춤형 모임을 추천해드립니다.
       </StepDescription>
-      {isLoadingCategories ? (
+      {categoriesLoading ? (
         <LoadingMessage theme={theme}>카테고리를 불러오는 중...</LoadingMessage>
       ) : (
         <InterestsGrid>
-          {moimCategories.map((category) => (
+          {categories.map((category) => (
             <CategoryCard
               key={category.id}
               $selected={formData.moimCategories.includes(category.id)}
@@ -265,7 +318,9 @@ const Onboarding = () => {
               $color={category.color}
             >
               <CategoryIcon $color={category.color}>
-                {category.name ? category.name.charAt(0) : category.label.charAt(0)}
+                {category.name
+                  ? category.name.charAt(0)
+                  : category.label.charAt(0)}
               </CategoryIcon>
               <CategoryName theme={theme}>{category.label}</CategoryName>
               {category.description && (
@@ -466,9 +521,13 @@ const CategoryCard = styled.div`
   padding: 20px 16px;
   border: 2px solid
     ${(props) =>
-      props.$selected ? props.$color || props.theme.buttonPrimary : props.theme.borderLight};
+      props.$selected
+        ? props.$color || props.theme.buttonPrimary
+        : props.theme.borderLight};
   background: ${(props) =>
-    props.$selected ? props.$color || props.theme.buttonPrimary : props.theme.surface};
+    props.$selected
+      ? props.$color || props.theme.buttonPrimary
+      : props.theme.surface};
   color: ${(props) => (props.$selected ? "white" : props.theme.textPrimary)};
   border-radius: 12px;
   cursor: pointer;

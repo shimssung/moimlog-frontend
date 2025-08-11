@@ -10,7 +10,58 @@ const AdminMoims = () => {
   const { theme } = useTheme();
   const { user } = useStore();
   const router = useRouter();
-  const [moims, setMoims] = useState([]);
+  const [moims, setMoims] = useState([
+    {
+      id: 1,
+      title: "스크럼 플러스 모임",
+      category: "독서/스터디", // 새로운 카테고리로 변경
+      creator: "김개발",
+      members: 15,
+      status: "active",
+      reportCount: 0,
+      createdAt: "2025-01-01",
+    },
+    {
+      id: 2,
+      title: "웹앱 개발 모임",
+      category: "IT/기술", // 새로운 카테고리로 변경
+      creator: "이웹개발",
+      members: 12,
+      status: "active",
+      reportCount: 0,
+      createdAt: "2025-01-02",
+    },
+    {
+      id: 3,
+      title: "어반 플레이팅 모임",
+      category: "요리/베이킹", // 새로운 카테고리로 변경
+      creator: "박요리",
+      members: 8,
+      status: "active",
+      reportCount: 0,
+      createdAt: "2025-01-03",
+    },
+    {
+      id: 4,
+      title: "북클럽 모임",
+      category: "독서/스터디", // 새로운 카테고리로 변경
+      creator: "최독서",
+      members: 18,
+      status: "active",
+      reportCount: 0,
+      createdAt: "2025-01-04",
+    },
+    {
+      id: 5,
+      title: "런닝 크루",
+      category: "운동/스포츠", // 새로운 카테고리로 변경
+      creator: "정운동",
+      members: 22,
+      status: "active",
+      reportCount: 0,
+      createdAt: "2025-01-05",
+    },
+  ]);
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedMoims, setSelectedMoims] = useState([]);
@@ -28,68 +79,53 @@ const AdminMoims = () => {
     setMoims([
       {
         id: 1,
-        title: "북클럽: 시크릿 가든",
-        category: "독서",
-        creator: "김철수",
-        memberCount: 12,
-        maxMembers: 20,
+        title: "스크럼 플러스 모임",
+        category: "독서/스터디", // 새로운 카테고리로 변경
+        creator: "김개발",
+        members: 15,
         status: "active",
-        createdAt: "2024-01-15",
-        lastActivity: "2024-03-15T14:30:00",
         reportCount: 0,
-        image: "/img4.jpg",
+        createdAt: "2025-01-01",
       },
       {
         id: 2,
         title: "웹앱 개발 모임",
-        category: "개발",
-        creator: "이영희",
-        memberCount: 8,
-        maxMembers: 15,
+        category: "IT/기술", // 새로운 카테고리로 변경
+        creator: "이웹개발",
+        members: 12,
         status: "active",
-        createdAt: "2024-02-20",
-        lastActivity: "2024-03-14T10:15:00",
         reportCount: 0,
-        image: "/img2.jpg",
+        createdAt: "2025-01-02",
       },
       {
         id: 3,
         title: "어반 플레이팅 모임",
-        category: "요리",
-        creator: "박민수",
-        memberCount: 6,
-        maxMembers: 12,
-        status: "suspended",
-        createdAt: "2024-01-10",
-        lastActivity: "2024-03-10T16:45:00",
-        reportCount: 2,
-        image: "/img3.jpg",
+        category: "요리/베이킹", // 새로운 카테고리로 변경
+        creator: "박요리",
+        members: 8,
+        status: "active",
+        reportCount: 0,
+        createdAt: "2025-01-03",
       },
       {
         id: 4,
-        title: "주말 축구 동호회",
-        category: "스포츠",
-        creator: "최지영",
-        memberCount: 18,
-        maxMembers: 22,
+        title: "북클럽 모임",
+        category: "독서/스터디", // 새로운 카테고리로 변경
+        creator: "최독서",
+        members: 18,
         status: "active",
-        createdAt: "2024-03-01",
-        lastActivity: "2024-03-15T09:20:00",
         reportCount: 0,
-        image: "/img5.jpg",
+        createdAt: "2025-01-04",
       },
       {
         id: 5,
-        title: "아트 스터디 그룹",
-        category: "예술",
-        creator: "정현우",
-        memberCount: 9,
-        maxMembers: 15,
+        title: "런닝 크루",
+        category: "운동/스포츠", // 새로운 카테고리로 변경
+        creator: "정운동",
+        members: 22,
         status: "active",
-        createdAt: "2024-02-05",
-        lastActivity: "2024-03-12T11:30:00",
-        reportCount: 1,
-        image: "/img7.jpg",
+        reportCount: 0,
+        createdAt: "2025-01-05",
       },
     ]);
   }, []);
@@ -182,7 +218,10 @@ const AdminMoims = () => {
               전체 모임을 조회하고 관리하세요
             </PageSubtitle>
           </HeaderInfo>
-          <BackButton onClick={() => router.push("/admin/dashboard")} theme={theme}>
+          <BackButton
+            onClick={() => router.push("/admin/dashboard")}
+            theme={theme}
+          >
             ← 대시보드로 돌아가기
           </BackButton>
         </PageHeader>
@@ -232,9 +271,7 @@ const AdminMoims = () => {
 
         {selectedMoims.length > 0 && (
           <BulkActions>
-            <BulkInfo theme={theme}>
-              {selectedMoims.length}개 선택됨
-            </BulkInfo>
+            <BulkInfo theme={theme}>{selectedMoims.length}개 선택됨</BulkInfo>
             <BulkButtons>
               <Button
                 variant="light"
@@ -264,7 +301,10 @@ const AdminMoims = () => {
         <SelectAllSection>
           <SelectAllCheckbox
             type="checkbox"
-            checked={selectedMoims.length === filteredMoims.length && filteredMoims.length > 0}
+            checked={
+              selectedMoims.length === filteredMoims.length &&
+              filteredMoims.length > 0
+            }
             onChange={handleSelectAll}
             theme={theme}
           />
@@ -289,11 +329,11 @@ const AdminMoims = () => {
               </CardHeader>
 
               <MoimImage src={moim.image} alt={moim.title} />
-              
+
               <CardContent>
                 <MoimTitle theme={theme}>{moim.title}</MoimTitle>
                 <MoimCategory theme={theme}>{moim.category}</MoimCategory>
-                
+
                 <MoimInfo>
                   <InfoItem theme={theme}>
                     <InfoLabel>생성자:</InfoLabel>
@@ -301,7 +341,9 @@ const AdminMoims = () => {
                   </InfoItem>
                   <InfoItem theme={theme}>
                     <InfoLabel>멤버:</InfoLabel>
-                    <InfoValue>{moim.memberCount}/{moim.maxMembers}</InfoValue>
+                    <InfoValue>
+                      {moim.memberCount}/{moim.maxMembers}
+                    </InfoValue>
                   </InfoItem>
                   <InfoItem theme={theme}>
                     <InfoLabel>생성일:</InfoLabel>
@@ -309,7 +351,9 @@ const AdminMoims = () => {
                   </InfoItem>
                   <InfoItem theme={theme}>
                     <InfoLabel>마지막 활동:</InfoLabel>
-                    <InfoValue>{formatLastActivity(moim.lastActivity)}</InfoValue>
+                    <InfoValue>
+                      {formatLastActivity(moim.lastActivity)}
+                    </InfoValue>
                   </InfoItem>
                   <InfoItem theme={theme}>
                     <InfoLabel>신고 수:</InfoLabel>
@@ -661,4 +705,4 @@ const EmptyText = styled.p`
   font-size: 0.875rem;
   color: ${(props) => props.theme.textSecondary};
   margin: 0;
-`; 
+`;
