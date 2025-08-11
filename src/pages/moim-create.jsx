@@ -7,20 +7,33 @@ import Textarea from "../components/Textarea";
 import { useRouter } from "next/router";
 import toast from "react-hot-toast";
 import { useTheme } from "../utils/ThemeContext";
-import { CATEGORY_OPTIONS } from "../utils/constants";
+import { useMoim } from "../hooks/useMoim";
+import { useCategories } from "../hooks/useCategories";
 
 const MoimCreatePage = () => {
   const { theme } = useTheme();
   const router = useRouter();
+  const { createMoim, isLoading } = useMoim();
+  const { categories, isLoading: categoriesLoading } = useCategories();
+
+  // 카테고리 데이터 디버깅
+  console.log("=== 모임 생성 페이지 카테고리 상태 ===");
+  console.log("categories:", categories);
+  console.log("categoriesLoading:", categoriesLoading);
+  console.log("categories.length:", categories?.length);
+  console.log("=== 모임 생성 페이지 카테고리 상태 끝 ===");
+
   const [formData, setFormData] = useState({
     title: "",
-    category: "",
+    categoryId: "", // category → categoryId로 변경
     maxMembers: "",
     description: "",
     tags: [],
     thumbnail: null,
+    isPrivate: false, // 비공개 여부 추가
     onlineType: "offline",
     location: "",
+    locationDetail: "", // 상세 주소 추가
   });
 
   const handleChange = (e) => {
@@ -45,8 +58,26 @@ const MoimCreatePage = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // 필수 필드 검증
+    if (!formData.title.trim()) {
+      toast.error("모임명을 입력해주세요.");
+      return;
+    }
+    if (!formData.categoryId) {
+      toast.error("카테고리를 선택해주세요.");
+      return;
+    }
+    if (!formData.maxMembers || formData.maxMembers < 2) {
+      toast.error("최대 인원은 2명 이상으로 설정해주세요.");
+      return;
+    }
+    if (!formData.description.trim()) {
+      toast.error("모임 소개를 입력해주세요.");
+      return;
+    }
 
     // 오프라인 모임인데 지역이 입력되지 않은 경우
     if (formData.onlineType === "offline" && !formData.location.trim()) {
@@ -54,9 +85,31 @@ const MoimCreatePage = () => {
       return;
     }
 
-    toast.success("모임이 성공적으로 생성되었습니다!");
-    // TODO: API 연동
-    router.push("/my-moims");
+    // API 호출을 위한 데이터 준비 (백엔드 구조에 맞춤)
+    const moimData = {
+      title: formData.title.trim(),
+      categoryId: parseInt(formData.categoryId), // category → categoryId, 숫자로 변환
+      maxMembers: parseInt(formData.maxMembers),
+      description: formData.description.trim(),
+      tags: formData.tags,
+      thumbnail: formData.thumbnail,
+      isPrivate: formData.isPrivate,
+      onlineType: formData.onlineType,
+      location:
+        formData.onlineType === "offline" ? formData.location.trim() : null,
+      locationDetail:
+        formData.onlineType === "offline"
+          ? formData.locationDetail.trim()
+          : null,
+    };
+
+    // 모임 생성 API 호출
+    const result = await createMoim(moimData);
+
+    if (result.success) {
+      // 성공 시 createMoim 훅에서 자동으로 리다이렉트 처리
+      return;
+    }
   };
 
   const handleClick = () => {
@@ -133,23 +186,32 @@ const MoimCreatePage = () => {
               </FormGroup>
 
               <FormGroup>
-                <Label htmlFor="category" theme={theme}>
+                <Label htmlFor="categoryId" theme={theme}>
                   카테고리 *
                 </Label>
                 <Select
-                  id="category"
-                  name="category"
-                  value={formData.category}
+                  id="categoryId"
+                  name="categoryId"
+                  value={formData.categoryId}
                   onChange={handleChange}
                   required
                   theme={theme}
+                  disabled={categoriesLoading}
                 >
-                  <option value="">카테고리 선택</option>
-                  {CATEGORY_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
+                  <option value="">
+                    {categoriesLoading
+                      ? "카테고리 로딩 중..."
+                      : "카테고리 선택"}
+                  </option>
+                  {Array.isArray(categories) &&
+                    categories.map((option) => {
+                      console.log("카테고리 옵션 렌더링:", option);
+                      return (
+                        <option key={option.id} value={option.id}>
+                          {option.label}
+                        </option>
+                      );
+                    })}
                 </Select>
               </FormGroup>
 
@@ -222,6 +284,41 @@ const MoimCreatePage = () => {
               </FormGroup>
 
               <FormGroup>
+                <Label htmlFor="isPrivate" theme={theme}>
+                  모임 공개 설정
+                </Label>
+                <CheckboxContainer>
+                  <input
+                    type="checkbox"
+                    id="isPrivate"
+                    name="isPrivate"
+                    checked={formData.isPrivate}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        isPrivate: e.target.checked,
+                      }))
+                    }
+                  />
+                  <span>비공개 모임으로 설정</span>
+                </CheckboxContainer>
+              </FormGroup>
+
+              <FormGroup>
+                <Label htmlFor="locationDetail" theme={theme}>
+                  상세 주소
+                </Label>
+                <Input
+                  type="text"
+                  id="locationDetail"
+                  name="locationDetail"
+                  value={formData.locationDetail}
+                  onChange={handleChange}
+                  placeholder="상세 주소를 입력해주세요 (선택사항)"
+                />
+              </FormGroup>
+
+              <FormGroup>
                 <Label theme={theme}>태그</Label>
                 <TagContainer theme={theme}>
                   {formData.tags.map((tag, index) => (
@@ -263,8 +360,8 @@ const MoimCreatePage = () => {
                 <Button type="button" variant="light" onClick={handleClick}>
                   취소
                 </Button>
-                <Button type="submit" variant="primary">
-                  모임 만들기
+                <Button type="submit" variant="primary" disabled={isLoading}>
+                  {isLoading ? "모임 생성 중..." : "모임 만들기"}
                 </Button>
               </ButtonGroup>
             </Form>
@@ -303,9 +400,9 @@ const MoimCreatePage = () => {
                 <InfoItem>
                   <InfoLabel theme={theme}>카테고리</InfoLabel>
                   <InfoValue theme={theme}>
-                    {formData.category
-                      ? CATEGORY_OPTIONS.find(
-                          (opt) => opt.value === formData.category
+                    {formData.categoryId
+                      ? categories.find(
+                          (opt) => opt.id === parseInt(formData.categoryId)
                         )?.label
                       : "미선택"}
                   </InfoValue>
@@ -679,4 +776,26 @@ const FileName = styled.div`
   font-size: 0.85rem;
   color: ${(props) => props.theme.textSecondary};
   margin-top: 2px;
+`;
+
+const CheckboxContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: ${(props) => props.theme.textPrimary};
+  transition: color 0.3s ease;
+
+  input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: ${(props) => props.theme.buttonPrimary};
+    margin-right: 4px;
+  }
+
+  &:hover {
+    color: ${(props) => props.theme.buttonPrimary};
+  }
 `;

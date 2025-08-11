@@ -171,6 +171,8 @@ export const useStore = create(
           return {
             success: true,
             isOnboardingCompleted: data.isOnboardingCompleted || false,
+            // 온보딩이 완료되지 않은 경우 리다이렉트 정보 포함
+            shouldRedirectToOnboarding: !(data.isOnboardingCompleted || false),
           };
         } catch (error) {
           set({ isLoading: false });
@@ -331,7 +333,10 @@ export const useStore = create(
         });
         // 안내 메시지 추가 및 리다이렉트
         if (typeof window !== "undefined") {
-          window.localStorage.setItem("logoutReason", "세션이 만료되었습니다. 다시 로그인 해주세요.");
+          window.localStorage.setItem(
+            "logoutReason",
+            "세션이 만료되었습니다. 다시 로그인 해주세요."
+          );
           window.location.href = "/login";
         }
       },
@@ -373,11 +378,13 @@ export const useStore = create(
             set({ accessToken: response.accessToken });
             return response.accessToken;
           } else {
-            // refreshToken도 만료된 경우 안내 메시지 후 로그아웃
+            console.log("리프레시 토큰으로 액세스 토큰 발급 실패");
+            // refreshToken도 만료된 경우 조용한 로그아웃
             get().logoutSilently();
           }
-        } catch {
-          // refreshToken도 만료된 경우 안내 메시지 후 로그아웃
+        } catch (error) {
+          console.error("토큰 복원 중 오류:", error);
+          // 오류 발생 시에도 조용한 로그아웃
           get().logoutSilently();
         }
         return null;
