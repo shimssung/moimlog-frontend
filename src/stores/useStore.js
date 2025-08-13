@@ -331,8 +331,12 @@ export const useStore = create(
           isAuthenticated: false,
           accessToken: null,
         });
-        // 안내 메시지 추가 및 리다이렉트
-        if (typeof window !== "undefined") {
+
+        // 로그인 페이지가 아닌 경우에만 리다이렉트
+        if (
+          typeof window !== "undefined" &&
+          window.location.pathname !== "/login"
+        ) {
           window.localStorage.setItem(
             "logoutReason",
             "세션이 만료되었습니다. 다시 로그인 해주세요."

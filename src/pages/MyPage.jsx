@@ -1,140 +1,114 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import styled from "styled-components";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Button from "../components/Button";
 import { useTheme } from "../utils/ThemeContext";
 import { useRouter } from "next/router";
+import { useStore } from "../stores/useStore";
+import { authAPI } from "../api/auth";
+import { moimAPI } from "../api/moim";
+import toast from "react-hot-toast";
 
 const TABS = [
   { key: "all", label: "전체 모임" },
   { key: "created", label: "내가 만든 모임" },
   { key: "joined", label: "참여한 모임" },
-  { key: "favorites", label: "즐겨찾기" },
-];
-
-const mockProfile = {
-  name: "올리비아 베넷",
-  email: "olivia.bennett@email.com",
-  joined: "2023-01-15",
-  about:
-    "여행과 맛집 탐방을 좋아하는 모험가입니다. 새로운 사람들과 문화를 경험하는 것을 즐깁니다. 여가 시간에는 등산, 독서, 요리하기를 좋아합니다.",
-  avatar:
-    "https://lh3.googleusercontent.com/aida-public/AB6AXuDYhudJVFm4j1jvaC3VWtkGNFmVFgvExkuGOiCq6wb6n7E4J9xxEqElvphiAZC0gj5eBA_7iZgjBRvQo-9Gxw8JoY_kWlISZJ50bITlmXdYj57pGxsbk6KKMfELeMhLrns-rtFui-xzTQShRZX3NVMfl7dfHr6tUYvsvy_alUFaMe6a3euW23fOmmrjFpi3shfKFXu-nkXQNxR7dsB2s_X6eCXyewLkF_HPECgXPDn2yaaxF-BZRZzDxExVJeWp_v0pylmwt9R_2g",
-};
-
-// my-moims.jsx의 상세 모임 데이터
-const myMoims = [
-  {
-    id: 1,
-    title: "북클럽: 시크릿 가든",
-    image: "/img4.jpg",
-    category: "독서",
-    nextEvent: {
-      title: "북클럽 정기모임",
-      date: "2024-03-20T14:00:00",
-      location: "중앙 도서관 3층 세미나실",
-    },
-    newMessages: 5,
-    newPosts: 2,
-    members: 12,
-    maxMembers: 20,
-    role: "운영자",
-    onlineType: "offline",
-    location: "서울시 강남구",
-  },
-  {
-    id: 2,
-    title: "웹앱 개발 모임",
-    image: "/img2.jpg",
-    category: "개발",
-    nextEvent: {
-      title: "프로젝트 데모 데이",
-      date: "2024-03-25T19:00:00",
-      location: "온라인(Zoom)",
-    },
-    newMessages: 3,
-    newPosts: 1,
-    members: 8,
-    maxMembers: 15,
-    role: "멤버",
-    onlineType: "online",
-    location: "",
-  },
-  {
-    id: 3,
-    title: "어반 플레이팅 모임",
-    image: "/img3.jpg",
-    category: "요리",
-    nextEvent: null,
-    newMessages: 0,
-    newPosts: 0,
-    members: 6,
-    maxMembers: 12,
-    role: "멤버",
-    onlineType: "offline",
-    location: "서울시 마포구",
-  },
-  {
-    id: 4,
-    title: "주말 축구 동호회",
-    image: "/img5.jpg",
-    category: "스포츠",
-    nextEvent: {
-      title: "정기 축구 경기",
-      date: "2024-03-23T09:00:00",
-      location: "올림픽공원 축구장",
-    },
-    newMessages: 8,
-    newPosts: 3,
-    members: 18,
-    maxMembers: 22,
-    role: "멤버",
-    onlineType: "offline",
-    location: "서울시 송파구",
-  },
-  {
-    id: 5,
-    title: "아트 스터디 그룹",
-    image: "/img7.jpg",
-    category: "예술",
-    nextEvent: {
-      title: "전시회 관람",
-      date: "2024-03-28T15:00:00",
-      location: "국립현대미술관",
-    },
-    newMessages: 2,
-    newPosts: 1,
-    members: 9,
-    maxMembers: 15,
-    role: "운영자",
-    onlineType: "offline",
-    location: "서울시 종로구",
-  },
-  {
-    id: 6,
-    title: "재즈 음악 애호가",
-    image: "/img6.jpg",
-    category: "음악",
-    nextEvent: {
-      title: "재즈 클럽 나이트",
-      date: "2024-03-22T20:00:00",
-      location: "블루노트 재즈클럽",
-    },
-    newMessages: 4,
-    newPosts: 0,
-    members: 11,
-    maxMembers: 18,
-    role: "멤버",
-    onlineType: "offline",
-    location: "서울시 용산구",
-  },
 ];
 
 const MyPage = () => {
   const { theme } = useTheme();
   const router = useRouter();
+  const { isAuthenticated } = useStore();
   const [tab, setTab] = useState("all");
+  const [myMoims, setMyMoims] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(1);
+  const [userProfile, setUserProfile] = useState(null);
+
+  // 무한스크롤을 위한 observer ref
+  const observer = useRef();
+  const lastMoimElementRef = useCallback(
+    (node) => {
+      if (isLoading) return;
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          setPage((prevPage) => prevPage + 1);
+        }
+      });
+      if (node) observer.current.observe(node);
+    },
+    [isLoading, hasMore]
+  );
+
+  // 사용자 프로필 가져오기
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const response = await authAPI.getProfile();
+        setUserProfile(response.data);
+      } catch (error) {
+        console.error("사용자 프로필 가져오기 실패:", error);
+        toast.error("사용자 정보를 가져오는데 실패했습니다.");
+      }
+    };
+
+    if (isAuthenticated) {
+      fetchUserProfile();
+    }
+  }, [isAuthenticated]);
+
+  // 모임 데이터 가져오기
+  useEffect(() => {
+    const fetchMoims = async () => {
+      if (isLoading) return;
+
+      try {
+        setIsLoading(true);
+        let response;
+
+        switch (tab) {
+          case "created":
+            response = await moimAPI.getMyCreatedMoims();
+            break;
+          case "joined":
+            response = await moimAPI.getMyJoinedMoims();
+            break;
+          default:
+            response = await moimAPI.getMyJoinedMoims(); // 전체 모임
+        }
+
+        const newMoims = response.data.moims || [];
+
+        if (page === 1) {
+          setMyMoims(newMoims);
+        } else {
+          setMyMoims((prev) => [...prev, ...newMoims]);
+        }
+
+        // 더 불러올 데이터가 있는지 확인
+        setHasMore(newMoims.length === 20); // 페이지 크기가 20개
+      } catch (error) {
+        console.error("모임 데이터 가져오기 실패:", error);
+        toast.error("모임 정보를 가져오는데 실패했습니다.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (isAuthenticated) {
+      fetchMoims();
+    }
+  }, [tab, page, isAuthenticated]);
+
+  // 탭 변경 시 페이지 초기화
+  useEffect(() => {
+    setPage(1);
+    setMyMoims([]);
+    setHasMore(true);
+  }, [tab]);
 
   const handleSettingsClick = () => {
     router.push("/settings");
@@ -155,13 +129,30 @@ const MyPage = () => {
     });
   };
 
-  // 필터링된 모임
-  const filteredMoims = myMoims.filter((moim) => {
-    if (tab === "created") return moim.role === "운영자";
-    if (tab === "joined") return moim.role === "멤버";
-    if (tab === "favorites") return moim.favorite; // 즐겨찾기 기능은 나중에 구현
-    return true; // 전체 모임
+  // 데이터베이스 응답을 UI에 맞게 변환하는 함수
+  const mapMoimData = (moim) => ({
+    id: moim.id,
+    title: moim.title,
+    image: moim.thumbnail || "/img4.jpg", // 기본 이미지
+    category: moim.category_name || "기타",
+    nextEvent: moim.next_schedule
+      ? {
+          title: moim.next_schedule.title,
+          date: moim.next_schedule.start_date,
+          location: moim.next_schedule.location,
+        }
+      : null,
+    newMessages: moim.unread_messages || 0,
+    newPosts: moim.unread_posts || 0,
+    members: moim.current_members || 0,
+    maxMembers: moim.max_members || 0,
+    role: moim.role === "admin" ? "운영자" : "멤버",
+    onlineType: moim.online_type || "offline",
+    location: moim.location || "",
   });
+
+  // 변환된 모임 데이터
+  const transformedMoims = myMoims.map(mapMoimData);
 
   return (
     <>
@@ -170,14 +161,25 @@ const MyPage = () => {
         <ProfileSection>
           <ProfileLeft>
             <Avatar
-              style={{ backgroundImage: `url(${mockProfile.avatar})` }}
+              style={{
+                backgroundImage: `url(${
+                  userProfile?.profile_image || "/img1.jpg"
+                })`,
+              }}
               theme={theme}
             />
             <ProfileInfo>
-              <ProfileName theme={theme}>{mockProfile.name}</ProfileName>
-              <ProfileEmail theme={theme}>{mockProfile.email}</ProfileEmail>
+              <ProfileName theme={theme}>
+                {userProfile?.name || "사용자"}
+              </ProfileName>
+              <ProfileEmail theme={theme}>
+                {userProfile?.email || "email@example.com"}
+              </ProfileEmail>
               <ProfileJoined theme={theme}>
-                Joined on {mockProfile.joined}
+                Joined on{" "}
+                {userProfile?.created_at
+                  ? new Date(userProfile.created_at).toLocaleDateString()
+                  : "날짜 없음"}
               </ProfileJoined>
             </ProfileInfo>
           </ProfileLeft>
@@ -188,7 +190,9 @@ const MyPage = () => {
 
         <AboutSection>
           <AboutTitle theme={theme}>About Me</AboutTitle>
-          <AboutDesc theme={theme}>{mockProfile.about}</AboutDesc>
+          <AboutDesc theme={theme}>
+            {userProfile?.bio || "자기소개가 없습니다."}
+          </AboutDesc>
         </AboutSection>
 
         <TabBar theme={theme}>
@@ -205,9 +209,14 @@ const MyPage = () => {
         </TabBar>
 
         <MoimGrid>
-          {filteredMoims.map((moim) => (
+          {transformedMoims.map((moim, index) => (
             <MoimCard
               key={moim.id}
+              ref={
+                index === transformedMoims.length - 1
+                  ? lastMoimElementRef
+                  : null
+              }
               onClick={() => handleCardClick(moim.id)}
               theme={theme}
             >
@@ -285,20 +294,27 @@ const MyPage = () => {
           ))}
         </MoimGrid>
 
-        {filteredMoims.length === 0 && (
+        {/* 로딩 상태 표시 */}
+        {isLoading && (
+          <LoadingContainer>
+            <LoadingText theme={theme}>모임을 불러오는 중...</LoadingText>
+          </LoadingContainer>
+        )}
+
+        {/* 더 이상 데이터가 없을 때 */}
+        {!isLoading && !hasMore && transformedMoims.length > 0 && (
+          <EndMessage theme={theme}>모든 모임을 불러왔습니다.</EndMessage>
+        )}
+
+        {transformedMoims.length === 0 && !isLoading && (
           <EmptyState>
             <EmptyIcon>🤝</EmptyIcon>
             <EmptyTitle theme={theme}>
               {tab === "all" && "아직 참여한 모임이 없어요"}
               {tab === "created" && "아직 만든 모임이 없어요"}
               {tab === "joined" && "아직 참여한 모임이 없어요"}
-              {tab === "favorites" && "즐겨찾기한 모임이 없어요"}
             </EmptyTitle>
-            <EmptyText theme={theme}>
-              {tab === "favorites"
-                ? "관심 있는 모임을 즐겨찾기에 추가해보세요!"
-                : "새로운 모임에 참여해보세요!"}
-            </EmptyText>
+            <EmptyText theme={theme}>새로운 모임에 참여해보세요!</EmptyText>
             <Button href="/moim-list" variant="primary">
               모임 찾아보기
             </Button>
@@ -641,4 +657,25 @@ const EmptyText = styled.p`
   font-size: 16px;
   color: ${(props) => props.theme.textSecondary};
   margin: 0 0 24px 0;
+`;
+
+const LoadingContainer = styled.div`
+  text-align: center;
+  padding: 20px;
+  width: 100%;
+  max-width: 960px;
+`;
+
+const LoadingText = styled.p`
+  font-size: 16px;
+  color: ${(props) => props.theme.textSecondary};
+`;
+
+const EndMessage = styled.p`
+  text-align: center;
+  padding: 20px;
+  width: 100%;
+  max-width: 960px;
+  font-size: 16px;
+  color: ${(props) => props.theme.textSecondary};
 `;

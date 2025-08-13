@@ -2,10 +2,10 @@ import axios from "./axios";
 
 // OAuth2 에러 타입
 export const OAUTH2_ERROR_TYPES = {
-  USER_NOT_FOUND: 'oauth2_user_not_found',
-  LOGIN_FAILED: 'oauth2_login_failed',
-  UNSUPPORTED_PROVIDER: 'unsupported_provider',
-  UNKNOWN_ERROR: 'unknown_error'
+  USER_NOT_FOUND: "oauth2_user_not_found",
+  LOGIN_FAILED: "oauth2_login_failed",
+  UNSUPPORTED_PROVIDER: "unsupported_provider",
+  UNKNOWN_ERROR: "unknown_error",
 };
 
 // 인증 관련 API 함수들
@@ -167,6 +167,16 @@ export const authAPI = {
     }
   },
 
+  // 프로필 수정
+  updateProfile: async (profileData) => {
+    try {
+      const response = await axios.put("/auth/profile", profileData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
   // 토큰 갱신
   refreshToken: async () => {
     try {
@@ -199,49 +209,52 @@ export const authAPI = {
 
   // 네이버 소셜 로그인 시작
   startNaverLogin: () => {
-    window.location.href = 'http://localhost:8080/moimlog/oauth2/authorization/naver';
+    window.location.href =
+      "http://localhost:8080/moimlog/oauth2/authorization/naver";
   },
 
   // 구글 소셜 로그인 시작
   startGoogleLogin: () => {
-    window.location.href = 'http://localhost:8080/moimlog/oauth2/authorization/google';
+    window.location.href =
+      "http://localhost:8080/moimlog/oauth2/authorization/google";
   },
 
   // 카카오 소셜 로그인 시작
   startKakaoLogin: () => {
-    window.location.href = 'http://localhost:8080/moimlog/oauth2/authorization/kakao';
+    window.location.href =
+      "http://localhost:8080/moimlog/oauth2/authorization/kakao";
   },
 
   // OAuth2 콜백 처리
   handleOAuth2Callback: async (searchParams) => {
-    const success = searchParams.get('success');
-    const error = searchParams.get('error');
-    const message = searchParams.get('message');
+    const success = searchParams.get("success");
+    const error = searchParams.get("error");
+    const message = searchParams.get("message");
 
-    if (success === 'true') {
+    if (success === "true") {
       return { success: true };
     } else {
       // 에러 타입에 따른 메시지 처리
-      let errorMessage = message || '로그인에 실패했습니다.';
-      
+      let errorMessage = message || "로그인에 실패했습니다.";
+
       switch (error) {
         case OAUTH2_ERROR_TYPES.USER_NOT_FOUND:
-          errorMessage = 'OAuth2 사용자 정보를 찾을 수 없습니다.';
+          errorMessage = "OAuth2 사용자 정보를 찾을 수 없습니다.";
           break;
         case OAUTH2_ERROR_TYPES.LOGIN_FAILED:
-          errorMessage = 'OAuth2 로그인에 실패했습니다.';
+          errorMessage = "OAuth2 로그인에 실패했습니다.";
           break;
         case OAUTH2_ERROR_TYPES.UNSUPPORTED_PROVIDER:
-          errorMessage = '지원하지 않는 OAuth2 제공자입니다.';
+          errorMessage = "지원하지 않는 OAuth2 제공자입니다.";
           break;
         default:
-          errorMessage = message || '소셜 로그인에 실패했습니다.';
+          errorMessage = message || "소셜 로그인에 실패했습니다.";
       }
 
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: error || OAUTH2_ERROR_TYPES.UNKNOWN_ERROR,
-        message: errorMessage
+        message: errorMessage,
       };
     }
   },

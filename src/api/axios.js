@@ -113,17 +113,13 @@ instance.interceptors.response.use(
         }
       } catch (refreshError) {
         console.error("토큰 갱신 실패:", refreshError);
-        // 리프레시 토큰도 만료된 경우 조용한 로그아웃 처리
+        // 리프레시 토큰도 만료된 경우 간단하게 로그아웃 처리
         if (typeof window !== "undefined" && storeRef) {
           try {
             storeRef.logoutSilently();
           } catch {
             // 스토어 접근 실패 시 조용히 처리
           }
-        }
-        // 로그인 페이지로 리다이렉트
-        if (typeof window !== "undefined") {
-          window.location.href = "/login";
         }
       }
     }
