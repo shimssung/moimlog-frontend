@@ -33,11 +33,32 @@ export default function App({ Component, pageProps }) {
 
     initialized.current = true;
 
-    // 앱 시작 시 항상 토큰 복원 시도 (공개 페이지여도)
+    // 공개 페이지라도 조건부로 토큰 복원 시도
     const initializeAuth = async () => {
       try {
-        console.log("앱 시작 시 토큰 복원 시도...");
-        // 페이지 새로고침 시에는 토큰이 메모리에 없으므로 리프레시 토큰으로 복원 시도
+        // 공개 페이지라도 리프레시 토큰이 있으면 토큰 복원 시도
+        if (isPublicPath(router.pathname)) {
+          console.log("공개 페이지 - 조건부 토큰 복원 시도");
+          
+          // 이미 인증된 상태라면 건너뛰기
+          if (store.isAuthenticated) {
+            console.log("이미 인증된 상태 - 토큰 복원 건너뛰기");
+            return;
+          }
+          
+          // 리프레시 토큰이 있는지 확인
+          const hasRefreshToken = typeof window !== "undefined" && 
+                                 document.cookie.includes('refreshToken=');
+          
+          if (!hasRefreshToken) {
+            console.log("리프레시 토큰 없음1 - 토큰 복원 건너뛰기");
+            return;
+          }
+          
+          console.log("리프레시 토큰 있음 - 토큰 복원 시도");
+        }
+
+        console.log("토큰 복원 시도...");
         const token = await store.restoreToken();
 
         if (token) {
@@ -55,7 +76,6 @@ export default function App({ Component, pageProps }) {
         }
       } catch (error) {
         console.error("인증 초기화 중 오류:", error);
-        // 오류 발생 시에도 조용한 로그아웃하지 않고 인증되지 않은 상태로 유지
         console.log("인증 초기화 오류로 인증되지 않은 상태로 유지");
       }
     };

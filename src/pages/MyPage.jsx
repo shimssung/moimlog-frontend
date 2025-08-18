@@ -19,13 +19,14 @@ const TABS = [
 const MyPage = () => {
   const { theme } = useTheme();
   const router = useRouter();
-  const { isAuthenticated } = useStore();
+  const { isAuthenticated, accessToken } = useStore();
   const [tab, setTab] = useState("all");
   const [myMoims, setMyMoims] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
   const [userProfile, setUserProfile] = useState(null);
+  const [isTokenRestoring, setIsTokenRestoring] = useState(true); // 토큰 복원 상태 추가
 
   // 무한스크롤을 위한 observer ref
   const observer = useRef();
@@ -43,6 +44,13 @@ const MyPage = () => {
     [isLoading, hasMore]
   );
 
+  // 토큰 복원 상태 관리
+  useEffect(() => {
+    if (accessToken) {
+      setIsTokenRestoring(false);
+    }
+  }, [accessToken]);
+
   // 사용자 프로필 가져오기
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -55,10 +63,11 @@ const MyPage = () => {
       }
     };
 
-    if (isAuthenticated) {
+    // accessToken이 있을 때만 API 호출
+    if (isAuthenticated && accessToken) {
       fetchUserProfile();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, accessToken]);
 
   // 모임 데이터 가져오기
   useEffect(() => {
@@ -98,10 +107,11 @@ const MyPage = () => {
       }
     };
 
-    if (isAuthenticated) {
+    // accessToken이 있을 때만 API 호출
+    if (isAuthenticated && accessToken) {
       fetchMoims();
     }
-  }, [tab, page, isAuthenticated]);
+  }, [tab, page, isAuthenticated, accessToken]);
 
   // 탭 변경 시 페이지 초기화
   useEffect(() => {
@@ -301,12 +311,19 @@ const MyPage = () => {
           </LoadingContainer>
         )}
 
+        {/* 토큰 복원 중일 때 로딩 표시 */}
+        {isTokenRestoring && (
+          <LoadingContainer>
+            <LoadingText theme={theme}>로그인 정보를 확인하는 중...</LoadingText>
+          </LoadingContainer>
+        )}
+
         {/* 더 이상 데이터가 없을 때 */}
         {!isLoading && !hasMore && transformedMoims.length > 0 && (
           <EndMessage theme={theme}>모든 모임을 불러왔습니다.</EndMessage>
         )}
 
-        {transformedMoims.length === 0 && !isLoading && (
+        {transformedMoims.length === 0 && !isLoading && !isTokenRestoring && (
           <EmptyState>
             <EmptyIcon>🤝</EmptyIcon>
             <EmptyTitle theme={theme}>

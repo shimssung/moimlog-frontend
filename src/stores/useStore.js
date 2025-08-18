@@ -161,12 +161,15 @@ export const useStore = create(
           // 로딩 상태 먼저 해제
           set({ isLoading: false });
 
-          // 상태 업데이트 - 토큰을 먼저 저장
-          set({
-            accessToken: accessToken,
-            user: userData,
-            isAuthenticated: true,
-          });
+                     // 상태 업데이트 - 토큰을 먼저 저장
+           set({
+             accessToken: accessToken,
+             user: userData,
+             isAuthenticated: true,
+           });
+
+           // 유효한 세션 플래그 설정
+           localStorage.setItem('hasValidSession', 'true');
 
           return {
             success: true,
@@ -290,30 +293,36 @@ export const useStore = create(
             document.cookie = `refreshToken=; path=/; domain=${currentDomain}; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
           }
 
-          // 상태 초기화
-          set({
-            user: defaultUser,
-            isAuthenticated: false,
-            accessToken: null,
-          });
-        } catch (error) {
-          console.error("로그아웃 API 호출 실패:", error);
-          // API 호출 실패 시에도 로컬 상태는 초기화
-          if (typeof window !== "undefined") {
-            // 강제 쿠키 삭제 시도
-            document.cookie =
-              "refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-            document.cookie =
-              "refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-            document.cookie =
-              "refreshToken=; path=/; domain=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-          }
+                     // 상태 초기화
+           set({
+             user: defaultUser,
+             isAuthenticated: false,
+             accessToken: null,
+           });
 
-          set({
-            user: defaultUser,
-            isAuthenticated: false,
-            accessToken: null,
-          });
+           // 세션 플래그 제거
+           localStorage.removeItem('hasValidSession');
+         } catch (error) {
+           console.error("로그아웃 API 호출 실패:", error);
+           // API 호출 실패 시에도 로컬 상태는 초기화
+           if (typeof window !== "undefined") {
+             // 강제 쿠키 삭제 시도
+             document.cookie =
+               "refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+             document.cookie =
+               "refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+             document.cookie =
+               "refreshToken=; path=/; domain=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+           }
+
+           set({
+             user: defaultUser,
+             isAuthenticated: false,
+             accessToken: null,
+           });
+
+           // 세션 플래그 제거
+           localStorage.removeItem('hasValidSession');
         }
       },
 
@@ -331,6 +340,9 @@ export const useStore = create(
           isAuthenticated: false,
           accessToken: null,
         });
+
+        // 세션 플래그 제거
+        localStorage.removeItem('hasValidSession');
 
         // 로그인 페이지가 아닌 경우에만 리다이렉트
         if (
@@ -360,39 +372,54 @@ export const useStore = create(
         set({ accessToken: null });
       },
 
-      // 앱 시작 시 토큰 복원 (메모리 기반)
-      restoreToken: async () => {
-        try {
-          // 메모리에 토큰이 있으면 사용
-          let token = get().accessToken;
-          if (token) return token;
+             // 앱 시작 시 토큰 복원 (메모리 기반)
+       restoreToken: async () => {
+         try {
+           // 메모리에 토큰이 있으면 사용
+           let token = get().accessToken;
+           if (token) return token;
 
-          console.log("메모리에 토큰 없음 - 리프레시 토큰으로 복원 시도");
+           console.log("메모리에 토큰 없음 - 리프레시 토큰으로 복원 시도");
 
-          // 현재 쿠키 상태 확인
-          if (typeof window !== "undefined") {
-            console.log("현재 쿠키:", document.cookie);
-          }
+           // 로컬스토리지에 유효한 세션이 있는지 확인
+           const hasValidSession = localStorage.getItem('hasValidSession') === 'true';
+           console.log("로컬스토리지 세션 플래그:", hasValidSession);
+           console.log("로컬스토리지 전체 내용:", localStorage.getItem('hasValidSession'));
+           console.log("로컬스토리지 키들:", Object.keys(localStorage));
 
-          // 리프레시 토큰으로 새로운 액세스 토큰 발급 시도
-          const response = await authAPI.refreshToken();
+           // 세션이 없으면 토큰 복원 시도하지 않음
+           if (!hasValidSession) {
+             console.log("유효한 세션 플래그 없음 - 하지만 HttpOnly 쿠키가 있을 수 있으므로 토큰 복원 시도");
+             // 세션 플래그가 없어도 HttpOnly 쿠키가 있을 수 있으므로 시도
+           }
 
-          if (response.accessToken) {
-            console.log("토큰 복원 성공");
-            set({ accessToken: response.accessToken });
-            return response.accessToken;
-          } else {
-            console.log("리프레시 토큰으로 액세스 토큰 발급 실패");
-            // refreshToken도 만료된 경우 조용한 로그아웃
-            get().logoutSilently();
-          }
-        } catch (error) {
-          console.error("토큰 복원 중 오류:", error);
-          // 오류 발생 시에도 조용한 로그아웃
-          get().logoutSilently();
-        }
-        return null;
-      },
+           // HttpOnly 쿠키는 JavaScript에서 접근할 수 없으므로
+           // 백엔드 API 호출로 refreshToken 유효성 확인
+           console.log("백엔드에 refreshToken 요청 시도");
+           const response = await authAPI.refreshToken();
+
+           if (response.accessToken) {
+             console.log("토큰 복원 성공");
+             set({ accessToken: response.accessToken });
+             
+             // 토큰 복원 성공 시 세션 플래그 설정
+             localStorage.setItem('hasValidSession', 'true');
+             console.log("세션 플래그 설정됨: hasValidSession = true");
+             
+             return response.accessToken;
+           } else {
+             console.log("리프레시 토큰으로 액세스 토큰 발급 실패");
+             // 세션 플래그 제거
+             localStorage.removeItem('hasValidSession');
+             return null;
+           }
+         } catch (error) {
+           console.error("토큰 복원 중 오류:", error);
+           // 오류 발생 시 세션 플래그 제거
+           localStorage.removeItem('hasValidSession');
+           return null;
+         }
+       },
 
       // 토큰 유효성 확인
       isTokenValid: () => {
@@ -423,8 +450,7 @@ export const useStore = create(
       checkAuth: () => {
         const token = get().accessToken;
         if (!token) {
-          // 토큰이 없으면 인증되지 않은 상태로 처리
-          get().logoutSilently();
+          // 토큰이 없으면 인증되지 않은 상태로 처리 (로그아웃하지 않음)
           return false;
         }
 
@@ -442,8 +468,7 @@ export const useStore = create(
 
         // 토큰이 없으면 인증되지 않은 상태
         if (!state.accessToken) {
-          console.log("액세스 토큰 없음 - 조용한 로그아웃 처리");
-          state.logoutSilently();
+          console.log("액세스 토큰 없음 - 인증되지 않은 상태로 유지");
           return false;
         }
 

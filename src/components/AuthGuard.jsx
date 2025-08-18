@@ -4,7 +4,7 @@ import { useStore } from "../stores/useStore";
 import { isPublicPath } from "../utils/constants";
 
 const AuthGuard = ({ children }) => {
-  const { user, isAuthenticated, restoreToken } = useStore();
+  const { user, isAuthenticated, restoreToken, syncUserInfo } = useStore();
   const router = useRouter();
   const [isInitializing, setIsInitializing] = useState(true);
 
@@ -12,6 +12,7 @@ const AuthGuard = ({ children }) => {
     const initializeAuth = async () => {
       // 중앙 집중식 설정 사용
       if (isPublicPath(router.pathname)) {
+        console.log("AuthGuard: 공개 페이지 - 인증 확인 건너뛰기");
         setIsInitializing(false);
         return;
       }
@@ -37,32 +38,30 @@ const AuthGuard = ({ children }) => {
         return;
       }
 
-      // _app.jsx의 토큰 복원이 완료될 때까지 대기
-      let retryCount = 0;
-      const maxRetries = 20; // 최대 20번 시도 (10초)
+      // 보호된 페이지에서만 인증 확인 수행
+      console.log("AuthGuard: 보호된 페이지 - 인증 확인 시작");
       
-      while (!isAuthenticated && retryCount < maxRetries) {
-        console.log(`AuthGuard: 토큰 복원 대기 중... (${retryCount + 1}/${maxRetries})`);
-        await new Promise(resolve => setTimeout(resolve, 500)); // 500ms 대기
-        retryCount++;
+      // 이미 인증된 상태라면 건너뛰기
+      if (isAuthenticated) {
+        console.log("AuthGuard: 이미 인증된 상태 - 인증 확인 건너뛰기");
+        setIsInitializing(false);
+        return;
       }
 
-      if (!isAuthenticated) {
-        console.log("AuthGuard: 토큰 복원 대기 시간 초과, 직접 복원 시도...");
-        try {
-          const token = await restoreToken();
-          if (token) {
-            console.log("AuthGuard: 토큰 복원 성공");
-            // 토큰 복원 후 사용자 정보 동기화 시도
-            try {
-              await store.syncUserInfo();
-            } catch (error) {
-              console.error("AuthGuard: 사용자 정보 동기화 실패:", error);
-            }
+      // 토큰 복원 시도
+      try {
+        const token = await restoreToken();
+        if (token) {
+          console.log("AuthGuard: 토큰 복원 성공");
+          // 토큰 복원 후 사용자 정보 동기화 시도
+          try {
+            await syncUserInfo();
+          } catch (error) {
+            console.error("AuthGuard: 사용자 정보 동기화 실패:", error);
           }
-        } catch (error) {
-          console.error("AuthGuard: 토큰 복원 실패:", error);
         }
+      } catch (error) {
+        console.error("AuthGuard: 토큰 복원 실패:", error);
       }
 
       // 토큰 복원이 완료되었으므로 초기화 완료
