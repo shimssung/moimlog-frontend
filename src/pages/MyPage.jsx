@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import styled from "styled-components";
+import styled, { createGlobalStyle } from "styled-components";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Button from "../components/Button";
@@ -16,17 +16,35 @@ const TABS = [
   { key: "joined", label: "참여한 모임" },
 ];
 
+// 스켈레톤 애니메이션
+const shimmerKeyframes = `
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+`;
+
+// 전역 스타일로 애니메이션 추가
+const GlobalStyle = createGlobalStyle`
+  ${shimmerKeyframes}
+`;
+
 const MyPage = () => {
   const { theme } = useTheme();
   const router = useRouter();
-  const { isAuthenticated, accessToken } = useStore();
+  const { isAuthenticated, accessToken, user, updateUser } = useStore();
   const [tab, setTab] = useState("all");
   const [myMoims, setMyMoims] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
   const [userProfile, setUserProfile] = useState(null);
-  const [isTokenRestoring, setIsTokenRestoring] = useState(true); // 토큰 복원 상태 추가
+  const [isTokenRestoring, setIsTokenRestoring] = useState(true);
+  const [isPageReady, setIsPageReady] = useState(false); // 페이지 준비 상태 추가
 
   // 무한스크롤을 위한 observer ref
   const observer = useRef();
@@ -51,28 +69,65 @@ const MyPage = () => {
     }
   }, [accessToken]);
 
-  // 사용자 프로필 가져오기
+  // 사용자 프로필과 모임 데이터를 동시에 가져오기
   useEffect(() => {
-    const fetchUserProfile = async () => {
+    const fetchAllData = async () => {
+      if (!isAuthenticated || !accessToken) return;
+
       try {
-        const response = await authAPI.getProfile();
-        setUserProfile(response.data);
+        setIsLoading(true);
+        console.log("🚀 모든 데이터 동시 로딩 시작...");
+
+        // 프로필과 모임 데이터를 동시에 가져오기
+        const [profileResponse, moimsResponse] = await Promise.all([
+          authAPI.getProfile(),
+          moimAPI.getMyJoinedMoims(),
+        ]);
+
+        console.log("✅ 프로필 데이터:", profileResponse.data);
+        console.log("✅ 모임 데이터:", moimsResponse.data);
+
+        // 프로필 정보 설정
+        setUserProfile(profileResponse.data);
+
+        // 모임 데이터 설정
+        const newMoims = moimsResponse.data.moims || [];
+        setMyMoims(newMoims);
+        setHasMore(newMoims.length === 20);
+
+        // 스토어 동기화 (변경사항이 있을 때만)
+        if (JSON.stringify(user) !== JSON.stringify(profileResponse.data)) {
+          console.log("🔄 스토어 정보 업데이트");
+          updateUser(profileResponse.data);
+        }
+
+        // 페이지 준비 완료
+        setIsPageReady(true);
+        console.log("💾 모든 데이터 로딩 완료!");
       } catch (error) {
-        console.error("사용자 프로필 가져오기 실패:", error);
-        toast.error("사용자 정보를 가져오는데 실패했습니다.");
+        console.error("❌ 데이터 로딩 실패:", error);
+
+        // 에러가 발생해도 기존 스토어 정보는 유지
+        if (user && user.id) {
+          setUserProfile(user);
+          setIsPageReady(true);
+        }
+
+        toast.error("데이터를 가져오는데 실패했습니다.");
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    // accessToken이 있을 때만 API 호출
     if (isAuthenticated && accessToken) {
-      fetchUserProfile();
+      fetchAllData();
     }
-  }, [isAuthenticated, accessToken]);
+  }, [isAuthenticated, accessToken]); // user, updateUser 제거
 
-  // 모임 데이터 가져오기
+  // 탭 변경 시 모임 데이터만 다시 가져오기
   useEffect(() => {
-    const fetchMoims = async () => {
-      if (isLoading) return;
+    const fetchMoimsByTab = async () => {
+      if (!isPageReady || !isAuthenticated || !accessToken) return;
 
       try {
         setIsLoading(true);
@@ -86,19 +141,12 @@ const MyPage = () => {
             response = await moimAPI.getMyJoinedMoims();
             break;
           default:
-            response = await moimAPI.getMyJoinedMoims(); // 전체 모임
+            response = await moimAPI.getMyJoinedMoims();
         }
 
         const newMoims = response.data.moims || [];
-
-        if (page === 1) {
-          setMyMoims(newMoims);
-        } else {
-          setMyMoims((prev) => [...prev, ...newMoims]);
-        }
-
-        // 더 불러올 데이터가 있는지 확인
-        setHasMore(newMoims.length === 20); // 페이지 크기가 20개
+        setMyMoims(newMoims);
+        setHasMore(newMoims.length === 20);
       } catch (error) {
         console.error("모임 데이터 가져오기 실패:", error);
         toast.error("모임 정보를 가져오는데 실패했습니다.");
@@ -107,18 +155,48 @@ const MyPage = () => {
       }
     };
 
-    // accessToken이 있을 때만 API 호출
-    if (isAuthenticated && accessToken) {
-      fetchMoims();
+    if (isPageReady) {
+      setPage(1);
+      fetchMoimsByTab();
     }
-  }, [tab, page, isAuthenticated, accessToken]);
+  }, [tab, isPageReady]); // isAuthenticated, accessToken 제거
 
-  // 탭 변경 시 페이지 초기화
+  // 페이지 변경 시 추가 데이터 로딩
   useEffect(() => {
-    setPage(1);
-    setMyMoims([]);
-    setHasMore(true);
-  }, [tab]);
+    const fetchMoreMoims = async () => {
+      if (!isPageReady || page === 1 || !isAuthenticated || !accessToken)
+        return;
+
+      try {
+        setIsLoading(true);
+        let response;
+
+        switch (tab) {
+          case "created":
+            response = await moimAPI.getMyCreatedMoims(page);
+            break;
+          case "joined":
+            response = await moimAPI.getMyJoinedMoims(page);
+            break;
+          default:
+            response = await moimAPI.getMyJoinedMoims(page);
+        }
+
+        const newMoims = response.data.moims || [];
+        setMyMoims((prev) => [...prev, ...newMoims]);
+        setHasMore(newMoims.length === 20);
+      } catch (error) {
+        console.error("추가 모임 데이터 가져오기 실패:", error);
+        toast.error("추가 모임 정보를 가져오는데 실패했습니다.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (isPageReady && page > 1) {
+      fetchMoreMoims();
+    }
+  }, [page, tab, isPageReady]); // isAuthenticated, accessToken 제거
 
   const handleSettingsClick = () => {
     router.push("/settings");
@@ -167,145 +245,307 @@ const MyPage = () => {
   return (
     <>
       <Header />
+      <GlobalStyle />
       <PageContainer theme={theme}>
-        <ProfileSection>
-          <ProfileLeft>
-            <Avatar
-              style={{
-                backgroundImage: `url(${
-                  userProfile?.profile_image || "/img1.jpg"
-                })`,
-              }}
-              theme={theme}
-            />
-            <ProfileInfo>
-              <ProfileName theme={theme}>
-                {userProfile?.name || "사용자"}
-              </ProfileName>
-              <ProfileEmail theme={theme}>
-                {userProfile?.email || "email@example.com"}
-              </ProfileEmail>
-              <ProfileJoined theme={theme}>
-                Joined on{" "}
-                {userProfile?.created_at
-                  ? new Date(userProfile.created_at).toLocaleDateString()
-                  : "날짜 없음"}
-              </ProfileJoined>
-            </ProfileInfo>
-          </ProfileLeft>
-          <SettingsButton onClick={handleSettingsClick} theme={theme}>
-            <SettingsIcon theme={theme} />
-          </SettingsButton>
-        </ProfileSection>
+        {/* 페이지가 준비되지 않았을 때는 전체 스켈레톤 표시 */}
+        {!isPageReady ? (
+          <>
+            {/* 프로필 섹션 스켈레톤 */}
+            <ProfileSection>
+              <ProfileLeft>
+                <SkeletonAvatar theme={theme} />
+                <ProfileInfo>
+                  <SkeletonText width="120px" height="24px" theme={theme} />
+                  <SkeletonText width="180px" height="16px" theme={theme} />
+                  <SkeletonText width="100px" height="14px" theme={theme} />
+                </ProfileInfo>
+              </ProfileLeft>
+              <SettingsButton onClick={handleSettingsClick} theme={theme}>
+                <SettingsIcon theme={theme} />
+              </SettingsButton>
+            </ProfileSection>
 
-        <AboutSection>
-          <AboutTitle theme={theme}>About Me</AboutTitle>
-          <AboutDesc theme={theme}>
-            {userProfile?.bio || "자기소개가 없습니다."}
-          </AboutDesc>
-        </AboutSection>
+            {/* About Me 섹션 스켈레톤 */}
+            <AboutSection>
+              <AboutTitle theme={theme}>About Me</AboutTitle>
+              <SkeletonText width="100%" height="15px" theme={theme} />
+            </AboutSection>
 
-        <TabBar theme={theme}>
-          {TABS.map((t) => (
-            <TabItem
-              key={t.key}
-              $active={tab === t.key}
-              onClick={() => setTab(t.key)}
-              theme={theme}
-            >
-              {t.label}
-            </TabItem>
-          ))}
-        </TabBar>
+            {/* 탭 바 */}
+            <TabBar theme={theme}>
+              {TABS.map((t) => (
+                <TabItem
+                  key={t.key}
+                  $active={tab === t.key}
+                  onClick={() => setTab(t.key)}
+                  theme={theme}
+                >
+                  {t.label}
+                </TabItem>
+              ))}
+            </TabBar>
 
-        <MoimGrid>
-          {transformedMoims.map((moim, index) => (
-            <MoimCard
-              key={moim.id}
-              ref={
-                index === transformedMoims.length - 1
-                  ? lastMoimElementRef
-                  : null
-              }
-              onClick={() => handleCardClick(moim.id)}
-              theme={theme}
-            >
-              <CardImage src={moim.image} alt={moim.title} />
-              <CardContent>
-                <CardHeader>
-                  <CardTitle theme={theme}>{moim.title}</CardTitle>
-                  <CategoryTag theme={theme}>{moim.category}</CategoryTag>
-                </CardHeader>
-
-                <CardInfo>
-                  <InfoItem>
-                    <InfoIcon>👥</InfoIcon>
-                    <InfoText theme={theme}>
-                      {moim.members}/{moim.maxMembers}명
-                    </InfoText>
-                  </InfoItem>
-                  <InfoItem>
-                    <InfoIcon>🏷️</InfoIcon>
-                    <OnlineStatusBadge
-                      onlineType={moim.onlineType}
-                      theme={theme}
+            {/* 모임 그리드 스켈레톤 */}
+            <MoimGrid>
+              {[...Array(6)].map((_, index) => (
+                <SkeletonMoimCard key={`skeleton-${index}`} theme={theme}>
+                  <SkeletonCardImage />
+                  <SkeletonCardContent>
+                    {/* 제목과 카테고리 - CardHeader와 완벽 동일 */}
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        marginBottom: "10px",
+                      }}
                     >
-                      {moim.onlineType === "online" ? "온라인" : "오프라인"}
-                    </OnlineStatusBadge>
-                  </InfoItem>
-                </CardInfo>
+                      <SkeletonText width="60%" height="16px" theme={theme} />
+                      <SkeletonText
+                        width="60px"
+                        height="20px"
+                        theme={theme}
+                        style={{
+                          padding: "3px 6px",
+                          borderRadius: "8px",
+                          background: theme.surfaceSecondary,
+                        }}
+                      />
+                    </div>
 
-                {moim.onlineType === "offline" && moim.location && (
-                  <LocationInfo>
-                    <LocationIcon>📍</LocationIcon>
-                    <LocationText theme={theme}>{moim.location}</LocationText>
-                  </LocationInfo>
-                )}
+                    {/* 인원수와 온/오프라인 - CardInfo와 완벽 동일 */}
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "12px",
+                        marginBottom: "10px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "3px",
+                        }}
+                      >
+                        <SkeletonText
+                          width="12px"
+                          height="12px"
+                          theme={theme}
+                        />
+                        <SkeletonText
+                          width="40px"
+                          height="12px"
+                          theme={theme}
+                        />
+                      </div>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "3px",
+                        }}
+                      >
+                        <SkeletonText
+                          width="12px"
+                          height="12px"
+                          theme={theme}
+                        />
+                        <SkeletonText
+                          width="50px"
+                          height="12px"
+                          theme={theme}
+                          style={{
+                            padding: "2px 5px",
+                            borderRadius: "6px",
+                            background: theme.surfaceSecondary,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </SkeletonCardContent>
+                </SkeletonMoimCard>
+              ))}
+            </MoimGrid>
+          </>
+        ) : (
+          <>
+            {/* 프로필 섹션 - 실제 데이터 */}
+            <ProfileSection>
+              <ProfileLeft>
+                <Avatar
+                  style={{
+                    backgroundImage: `url(${
+                      userProfile?.profileImage || "/img1.jpg"
+                    })`,
+                  }}
+                  theme={theme}
+                />
+                <ProfileInfo>
+                  <ProfileName theme={theme}>
+                    {userProfile?.nickname || "사용자"}
+                  </ProfileName>
+                  <ProfileEmail theme={theme}>
+                    {userProfile?.email || "email@example.com"}
+                  </ProfileEmail>
+                  <ProfileJoined theme={theme}>
+                    가입일:{" "}
+                    {userProfile?.createdAt
+                      ? new Date(userProfile.createdAt).toLocaleDateString(
+                          "ko-KR",
+                          {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          }
+                        )
+                      : "날짜 없음"}
+                  </ProfileJoined>
+                </ProfileInfo>
+              </ProfileLeft>
+              <SettingsButton onClick={handleSettingsClick} theme={theme}>
+                <SettingsIcon theme={theme} />
+              </SettingsButton>
+            </ProfileSection>
 
-                {moim.nextEvent && (
-                  <NextEvent theme={theme}>
-                    <EventIcon>📅</EventIcon>
-                    <EventInfo>
-                      <EventTitle theme={theme}>
-                        {moim.nextEvent.title}
-                      </EventTitle>
-                      <EventDate>{formatDate(moim.nextEvent.date)}</EventDate>
-                      <EventLocation theme={theme}>
-                        {moim.nextEvent.location}
-                      </EventLocation>
-                    </EventInfo>
-                  </NextEvent>
-                )}
+            {/* About Me 섹션 - 실제 데이터 */}
+            <AboutSection>
+              <AboutTitle theme={theme}>About Me</AboutTitle>
+              <AboutDesc theme={theme}>
+                {userProfile?.bio || "자기소개가 없습니다."}
+              </AboutDesc>
+            </AboutSection>
 
-                <ActivityInfo>
-                  {(moim.newMessages > 0 || moim.newPosts > 0) && (
-                    <>
-                      {moim.newMessages > 0 && (
-                        <ActivityItem>
-                          <ActivityIcon>💬</ActivityIcon>
-                          <ActivityText>
-                            새 메시지 {moim.newMessages}개
-                          </ActivityText>
-                        </ActivityItem>
+            {/* 탭 바 */}
+            <TabBar theme={theme}>
+              {TABS.map((t) => (
+                <TabItem
+                  key={t.key}
+                  $active={tab === t.key}
+                  onClick={() => setTab(t.key)}
+                  theme={theme}
+                >
+                  {t.label}
+                </TabItem>
+              ))}
+            </TabBar>
+
+            {/* 모임 그리드 - 실제 데이터 */}
+            <MoimGrid>
+              {transformedMoims.map((moim, index) => (
+                <MoimCard
+                  key={moim.id}
+                  ref={
+                    index === transformedMoims.length - 1
+                      ? lastMoimElementRef
+                      : null
+                  }
+                  onClick={() => handleCardClick(moim.id)}
+                  theme={theme}
+                >
+                  <CardImage src={moim.image} alt={moim.title} />
+                  <CardContent>
+                    <CardHeader>
+                      <CardTitle theme={theme}>{moim.title}</CardTitle>
+                      <CategoryTag theme={theme}>{moim.category}</CategoryTag>
+                    </CardHeader>
+
+                    <CardInfo>
+                      <InfoItem>
+                        <InfoIcon>👥</InfoIcon>
+                        <InfoText theme={theme}>
+                          {moim.members}/{moim.maxMembers}명
+                        </InfoText>
+                      </InfoItem>
+                      <InfoItem>
+                        <InfoIcon>🏷️</InfoIcon>
+                        <OnlineStatusBadge
+                          onlineType={moim.onlineType}
+                          theme={theme}
+                        >
+                          {moim.onlineType === "online" ? "온라인" : "오프라인"}
+                        </OnlineStatusBadge>
+                      </InfoItem>
+                    </CardInfo>
+
+                    {moim.onlineType === "offline" && moim.location && (
+                      <LocationInfo>
+                        <LocationIcon>📍</LocationIcon>
+                        <LocationText theme={theme}>
+                          {moim.location}
+                        </LocationText>
+                      </LocationInfo>
+                    )}
+
+                    {moim.nextEvent && (
+                      <NextEvent theme={theme}>
+                        <EventIcon>📅</EventIcon>
+                        <EventInfo>
+                          <EventTitle theme={theme}>
+                            {moim.nextEvent.title}
+                          </EventTitle>
+                          <EventDate>
+                            {formatDate(moim.nextEvent.date)}
+                          </EventDate>
+                          <EventLocation theme={theme}>
+                            {moim.nextEvent.location}
+                          </EventLocation>
+                        </EventInfo>
+                      </NextEvent>
+                    )}
+
+                    <ActivityInfo>
+                      {(moim.newMessages > 0 || moim.newPosts > 0) && (
+                        <>
+                          {moim.newMessages > 0 && (
+                            <ActivityItem>
+                              <ActivityIcon>💬</ActivityIcon>
+                              <ActivityText>
+                                새 메시지 {moim.newMessages}개
+                              </ActivityText>
+                            </ActivityItem>
+                          )}
+                          {moim.newPosts > 0 && (
+                            <ActivityItem>
+                              <ActivityIcon>📝</ActivityIcon>
+                              <ActivityText>
+                                새 게시글 {moim.newPosts}개
+                              </ActivityText>
+                            </ActivityItem>
+                          )}
+                        </>
                       )}
-                      {moim.newPosts > 0 && (
-                        <ActivityItem>
-                          <ActivityIcon>📝</ActivityIcon>
-                          <ActivityText>
-                            새 게시글 {moim.newPosts}개
-                          </ActivityText>
-                        </ActivityItem>
-                      )}
-                    </>
-                  )}
-                </ActivityInfo>
-              </CardContent>
-            </MoimCard>
-          ))}
-        </MoimGrid>
+                    </ActivityInfo>
+                  </CardContent>
+                </MoimCard>
+              ))}
+            </MoimGrid>
 
-        {/* 로딩 상태 표시 */}
-        {isLoading && (
+            {/* 더 이상 데이터가 없을 때 */}
+            {!hasMore && transformedMoims.length > 0 && (
+              <EndMessage theme={theme}>모든 모임을 불러왔습니다.</EndMessage>
+            )}
+
+            {/* 모임이 없을 때 */}
+            {transformedMoims.length === 0 && (
+              <EmptyState>
+                <EmptyIcon>🤝</EmptyIcon>
+                <EmptyTitle theme={theme}>
+                  {tab === "all" && "아직 참여한 모임이 없어요"}
+                  {tab === "created" && "아직 만든 모임이 없어요"}
+                  {tab === "joined" && "아직 참여한 모임이 없어요"}
+                </EmptyTitle>
+                <EmptyText theme={theme}>새로운 모임에 참여해보세요!</EmptyText>
+                <Button href="/moim-list" variant="primary">
+                  모임 찾아보기
+                </Button>
+              </EmptyState>
+            )}
+          </>
+        )}
+
+        {/* 로딩 상태 표시 (페이지 준비 중일 때만) */}
+        {isLoading && isPageReady && (
           <LoadingContainer>
             <LoadingText theme={theme}>모임을 불러오는 중...</LoadingText>
           </LoadingContainer>
@@ -314,28 +554,10 @@ const MyPage = () => {
         {/* 토큰 복원 중일 때 로딩 표시 */}
         {isTokenRestoring && (
           <LoadingContainer>
-            <LoadingText theme={theme}>로그인 정보를 확인하는 중...</LoadingText>
+            <LoadingText theme={theme}>
+              로그인 정보를 확인하는 중...
+            </LoadingText>
           </LoadingContainer>
-        )}
-
-        {/* 더 이상 데이터가 없을 때 */}
-        {!isLoading && !hasMore && transformedMoims.length > 0 && (
-          <EndMessage theme={theme}>모든 모임을 불러왔습니다.</EndMessage>
-        )}
-
-        {transformedMoims.length === 0 && !isLoading && !isTokenRestoring && (
-          <EmptyState>
-            <EmptyIcon>🤝</EmptyIcon>
-            <EmptyTitle theme={theme}>
-              {tab === "all" && "아직 참여한 모임이 없어요"}
-              {tab === "created" && "아직 만든 모임이 없어요"}
-              {tab === "joined" && "아직 참여한 모임이 없어요"}
-            </EmptyTitle>
-            <EmptyText theme={theme}>새로운 모임에 참여해보세요!</EmptyText>
-            <Button href="/moim-list" variant="primary">
-              모임 찾아보기
-            </Button>
-          </EmptyState>
         )}
       </PageContainer>
       <Footer />
@@ -362,14 +584,14 @@ const ProfileSection = styled.section`
   align-items: center;
   width: 100%;
   max-width: 960px;
-  padding: 40px 0 0 0;
+  padding: 40px 20px 0 20px;
   gap: 32px;
 `;
 
 const ProfileLeft = styled.div`
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 32px;
 `;
 
 const Avatar = styled.div`
@@ -386,11 +608,11 @@ const Avatar = styled.div`
 const ProfileInfo = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
 `;
 
 const ProfileName = styled.p`
-  font-size: 22px;
+  font-size: 24px;
   font-weight: bold;
   color: ${(props) => props.theme.textPrimary};
   margin: 0;
@@ -406,7 +628,7 @@ const ProfileEmail = styled.p`
 
 const ProfileJoined = styled.p`
   color: ${(props) => props.theme.textSecondary};
-  font-size: 16px;
+  font-size: 14px;
   margin: 0;
   transition: color 0.3s ease;
 `;
@@ -448,14 +670,14 @@ const SettingsIcon = ({ theme }) => (
 const AboutSection = styled.section`
   width: 100%;
   max-width: 960px;
-  padding: 0 0 0 0;
+  padding: 0 20px;
 `;
 
 const AboutTitle = styled.h2`
-  font-size: 22px;
+  font-size: 20px;
   font-weight: bold;
   color: ${(props) => props.theme.textPrimary};
-  margin: 32px 0 0 0;
+  margin: 32px 0 16px 0;
   padding: 0 0 8px 0;
   transition: color 0.3s ease;
 `;
@@ -463,7 +685,8 @@ const AboutTitle = styled.h2`
 const AboutDesc = styled.p`
   color: ${(props) => props.theme.textSecondary};
   font-size: 15px;
-  margin: 0 0 16px 0;
+  line-height: 1.6;
+  margin: 0 0 24px 0;
   transition: color 0.3s ease;
 `;
 
@@ -473,7 +696,7 @@ const TabBar = styled.div`
   border-bottom: 1px solid ${(props) => props.theme.borderLight};
   width: 100%;
   max-width: 960px;
-  margin: 0 0 16px 0;
+  margin: 0 20px 16px 20px;
   transition: border-color 0.3s ease;
 `;
 
@@ -497,7 +720,7 @@ const MoimGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 16px;
-  margin-bottom: 32px;
+  margin: 0 20px 32px 20px;
 `;
 
 const MoimCard = styled.div`
@@ -656,6 +879,7 @@ const EmptyState = styled.div`
   padding: 60px 20px;
   width: 100%;
   max-width: 960px;
+  margin: 0 20px;
 `;
 
 const EmptyIcon = styled.div`
@@ -681,6 +905,7 @@ const LoadingContainer = styled.div`
   padding: 20px;
   width: 100%;
   max-width: 960px;
+  margin: 0 20px;
 `;
 
 const LoadingText = styled.p`
@@ -693,6 +918,86 @@ const EndMessage = styled.p`
   padding: 20px;
   width: 100%;
   max-width: 960px;
+  margin: 0 20px;
   font-size: 16px;
   color: ${(props) => props.theme.textSecondary};
+`;
+
+// 스켈레톤 로딩 컴포넌트들
+const SkeletonAvatar = styled.div`
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+  background: linear-gradient(
+    90deg,
+    ${(props) => props.theme.surfaceSecondary} 0%,
+    ${(props) => props.theme.borderLight} 25%,
+    ${(props) => props.theme.surfaceSecondary} 50%,
+    ${(props) => props.theme.borderLight} 75%,
+    ${(props) => props.theme.surfaceSecondary} 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s ease-in-out infinite;
+`;
+
+const SkeletonText = styled.div`
+  width: ${(props) => props.width || "100%"};
+  height: ${(props) => props.height || "16px"};
+  background: linear-gradient(
+    90deg,
+    ${(props) => props.theme.surfaceSecondary} 0%,
+    ${(props) => props.theme.border} 25%,
+    ${(props) => props.theme.surfaceSecondary} 50%,
+    ${(props) => props.theme.border} 75%,
+    ${(props) => props.theme.surfaceSecondary} 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 4px;
+  line-height: 1;
+  margin: 0;
+`;
+
+const SkeletonMoimCard = styled.div`
+  background: ${(props) => props.theme.surface};
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: ${(props) => props.theme.cardShadow};
+  border: 1px solid ${(props) => props.theme.borderLight};
+  transition: all 0.3s ease;
+  cursor: pointer;
+  width: 100%;
+  max-width: 280px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  }
+`;
+
+const SkeletonCardImage = styled.div`
+  width: 100%;
+  height: 140px;
+  flex-shrink: 0;
+  background: linear-gradient(
+    90deg,
+    ${(props) => props.theme.surfaceSecondary} 0%,
+    ${(props) => props.theme.border} 25%,
+    ${(props) => props.theme.surfaceSecondary} 50%,
+    ${(props) => props.theme.border} 75%,
+    ${(props) => props.theme.surfaceSecondary} 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+`;
+
+const SkeletonCardContent = styled.div`
+  padding: 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 `;

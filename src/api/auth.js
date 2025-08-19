@@ -160,9 +160,22 @@ export const authAPI = {
   // 내 프로필 조회
   getProfile: async () => {
     try {
+      console.log("🔍 authAPI.getProfile() 호출 시작");
+      console.log("🌐 요청 URL: /auth/me");
+      
       const response = await axios.get("/auth/me");
-      return response.data;
+      console.log("✅ getProfile API 응답 성공:", response);
+      console.log("📊 응답 데이터:", response.data);
+      
+      return response;
     } catch (error) {
+      console.error("❌ getProfile API 실패:", error);
+      console.error("🚨 에러 상세:", {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data,
+        config: error.config
+      });
       throw error.response?.data || error.message;
     }
   },

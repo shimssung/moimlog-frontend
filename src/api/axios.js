@@ -25,20 +25,38 @@ export const setStoreRef = (store) => {
 // 요청 인터셉터 - 토큰 자동 추가
 instance.interceptors.request.use(
   (config) => {
+    console.log("🚀 Axios 요청 인터셉터:", {
+      url: config.url,
+      method: config.method,
+      isPublic: isPublicApi(config.url)
+    });
+    
     // 중앙 집중식 설정 사용
     if (!isPublicApi(config.url) && typeof window !== "undefined") {
       // Zustand 스토어에서 토큰 가져오기
       if (storeRef && typeof storeRef.getToken === "function") {
         const token = storeRef.getToken();
+        console.log("🔑 토큰 정보:", token ? `Bearer ${token.substring(0, 20)}...` : "토큰 없음");
+        
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
+          console.log("✅ Authorization 헤더 설정 완료");
+        } else {
+          console.log("⚠️ 토큰이 없어서 Authorization 헤더 설정 안됨");
         }
         // 토큰이 없어도 에러를 발생시키지 않음 - 각 API에서 필요에 따라 처리
+      } else {
+        console.log("⚠️ storeRef가 없거나 getToken 함수가 없음");
       }
+    } else {
+      console.log("ℹ️ 공개 API이므로 토큰 불필요");
     }
+    
+    console.log("📤 최종 요청 헤더:", config.headers);
     return config;
   },
   (error) => {
+    console.error("❌ 요청 인터셉터 에러:", error);
     return Promise.reject(error);
   }
 );
