@@ -33,52 +33,32 @@ export default function App({ Component, pageProps }) {
 
     initialized.current = true;
 
-    // 공개 페이지라도 조건부로 토큰 복원 시도
-    const initializeAuth = async () => {
-      try {
-        // 공개 페이지라도 리프레시 토큰이 있으면 토큰 복원 시도
-        if (isPublicPath(router.pathname)) {
-          console.log("공개 페이지 - 조건부 토큰 복원 시도");
-          
-          // 이미 인증된 상태라면 건너뛰기
-          if (store.isAuthenticated) {
-            console.log("이미 인증된 상태 - 토큰 복원 건너뛰기");
-            return;
-          }
-          
-          // 리프레시 토큰이 있는지 확인
-          const hasRefreshToken = typeof window !== "undefined" && 
-                                 document.cookie.includes('refreshToken=');
-          
-          if (!hasRefreshToken) {
-            console.log("리프레시 토큰 없음1 - 토큰 복원 건너뛰기");
-            return;
-          }
-          
-          console.log("리프레시 토큰 있음 - 토큰 복원 시도");
-        }
-
-        console.log("토큰 복원 시도...");
-        const token = await store.restoreToken();
-
-        if (token) {
-          console.log("토큰 복원 성공, 사용자 정보 동기화...");
-          // 토큰이 복원되면 사용자 정보 동기화
+            // 앱 시작 시 인증 상태 확인
+        const initializeAuth = async () => {
           try {
-            await store.syncUserInfo();
-            console.log("사용자 정보 동기화 완료");
+            // 현재 경로가 설정되지 않은 경우만 건너뛰기
+            if (!router.pathname) {
+              console.log("경로 미설정 - 인증 상태 확인 건너뛰기");
+              return;
+            }
+
+            // 모든 페이지에서 토큰 복원 시도 (공개 페이지라도 토큰이 있으면 인증 상태 확인)
+            console.log("백엔드 연결 상태 확인 중...");
+            
+            // 토큰 복원 시도
+            const token = await store.restoreToken();
+
+            if (token) {
+              console.log("토큰 복원 성공 - 백엔드 연결됨");
+              // 토큰이 복원되면 인증 상태는 자동으로 true로 설정됨 (restoreToken에서 처리)
+            } else {
+              console.log("토큰 복원 실패 - 인증되지 않은 상태로 유지");
+            }
           } catch (error) {
-            console.error("사용자 정보 동기화 실패:", error);
-            // 사용자 정보 동기화 실패 시에도 토큰은 유지
+            console.error("인증 초기화 중 오류:", error);
+            console.log("인증 초기화 오류로 인증되지 않은 상태로 유지");
           }
-        } else {
-          console.log("토큰 복원 실패 - 인증되지 않은 상태로 유지");
-        }
-      } catch (error) {
-        console.error("인증 초기화 중 오류:", error);
-        console.log("인증 초기화 오류로 인증되지 않은 상태로 유지");
-      }
-    };
+        };
 
     initializeAuth();
   }, []);

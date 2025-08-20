@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useStore } from "../stores/useStore";
 
 const Header = () => {
-  const { theme, isDarkMode, toggleTheme, mounted, isAuthenticated, user } =
+  const { theme, isDarkMode, toggleTheme, mounted, isAuthenticated, user, isAuthInitializing } =
     useStore();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const userMenuRef = useRef(null);
@@ -73,64 +73,92 @@ const Header = () => {
               </Button>
             )}
 
-            {/* 로그인된 경우 알림 버튼과 사용자 메뉴 표시 */}
-            {isAuthenticated ? (
-              <>
-                {/* 관리자가 아닌 경우에만 알림 버튼 표시 */}
-                {user.role !== "admin" && (
-                  <NotificationButton href="/notification" theme={theme}>
-                    <BellIcon theme={theme} />
-                    <NotificationBadge theme={theme}>3</NotificationBadge>
-                  </NotificationButton>
-                )}
-
-                {/* 관리자 버튼 */}
-                {user.role === "admin" && (
-                  <AdminButton href="/admin/dashboard" theme={theme}>
-                    관리
-                  </AdminButton>
-                )}
-
-                <UserMenu ref={userMenuRef}>
-                  <UserButton onClick={toggleUserMenu} theme={theme}>
-                    <UserAvatar theme={theme}>
-                      {user.profileImage ? (
-                        <img src={user.profileImage} alt={user.nickname || user.name} />
-                      ) : (
-                        <UserInitial>
-                          {(user.nickname || user.name) ? (user.nickname || user.name).charAt(0) : "U"}
-                        </UserInitial>
-                      )}
-                    </UserAvatar>
-                    <UserName theme={theme}>{user.nickname || user.name || "사용자"}</UserName>
-                    <ChevronDownIcon theme={theme} isOpen={isUserMenuOpen} />
-                  </UserButton>
-                  {isUserMenuOpen && (
-                    <UserDropdown theme={theme}>
-                      {/* 관리자가 아닌 경우에만 마이페이지 표시 */}
-                      {user.role !== "admin" && (
-                        <UserDropdownItem href="/MyPage" theme={theme}>
-                          마이페이지
-                        </UserDropdownItem>
-                      )}
-                      <UserDropdownItem href="/settings" theme={theme}>
-                        설정
-                      </UserDropdownItem>
-                      <UserDropdownDivider theme={theme} />
-                      <UserDropdownItem
-                        onClick={() => useStore.getState().logout()}
-                        theme={theme}
-                      >
-                        로그아웃
-                      </UserDropdownItem>
-                    </UserDropdown>
-                  )}
-                </UserMenu>
-              </>
+            {/* 인증 초기화 중일 때 스켈레톤 표시 */}
+            {isAuthInitializing ? (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px'
+              }}>
+                                 <div style={{
+                   width: '20px',
+                   height: '20px',
+                   background: `linear-gradient(90deg, ${theme.surfaceSecondary} 0%, ${theme.borderLight} 25%, ${theme.surfaceSecondary} 50%, ${theme.borderLight} 75%, ${theme.surfaceSecondary} 100%)`,
+                   backgroundSize: '200% 100%',
+                   animation: 'shimmer 1.5s infinite',
+                   borderRadius: '50%'
+                 }} />
+                 <div style={{
+                   width: '60px',
+                   height: '20px',
+                   background: `linear-gradient(90deg, ${theme.surfaceSecondary} 0%, ${theme.border} 25%, ${theme.surfaceSecondary} 50%, ${theme.border} 75%, ${theme.surfaceSecondary} 100%)`,
+                   backgroundSize: '200% 100%',
+                   animation: 'shimmer 1.5s infinite',
+                   borderRadius: '4px'
+                 }} />
+              </div>
             ) : (
-              <Button href="/login" variant="light" size="small">
-                로그인 <UserIcon theme={theme} />
-              </Button>
+              <>
+                {/* 로그인된 경우 알림 버튼과 사용자 메뉴 표시 */}
+                {isAuthenticated ? (
+                  <>
+                    {/* 관리자가 아닌 경우에만 알림 버튼 표시 */}
+                    {user.role !== "admin" && (
+                      <NotificationButton href="/notification" theme={theme}>
+                        <BellIcon theme={theme} />
+                        <NotificationBadge theme={theme}>3</NotificationBadge>
+                      </NotificationButton>
+                    )}
+
+                    {/* 관리자 버튼 */}
+                    {user.role === "admin" && (
+                      <AdminButton href="/admin/dashboard" theme={theme}>
+                        관리
+                      </AdminButton>
+                    )}
+
+                    <UserMenu ref={userMenuRef}>
+                      <UserButton onClick={toggleUserMenu} theme={theme}>
+                        <UserAvatar theme={theme}>
+                          {user.profileImage ? (
+                            <img src={user.profileImage} alt={user.nickname || user.name} />
+                          ) : (
+                            <UserInitial>
+                              {(user.nickname || user.name) ? (user.nickname || user.name).charAt(0) : "U"}
+                            </UserInitial>
+                          )}
+                        </UserAvatar>
+                        <UserName theme={theme}>{user.nickname || user.name || "사용자"}</UserName>
+                        <ChevronDownIcon theme={theme} isOpen={isUserMenuOpen} />
+                      </UserButton>
+                      {isUserMenuOpen && (
+                        <UserDropdown theme={theme}>
+                          {/* 관리자가 아닌 경우에만 마이페이지 표시 */}
+                          {user.role !== "admin" && (
+                            <UserDropdownItem href="/MyPage" theme={theme}>
+                              마이페이지
+                            </UserDropdownItem>
+                          )}
+                          <UserDropdownItem href="/settings" theme={theme}>
+                            설정
+                          </UserDropdownItem>
+                          <UserDropdownDivider theme={theme} />
+                          <UserDropdownItem
+                            onClick={() => useStore.getState().logout()}
+                            theme={theme}
+                          >
+                            로그아웃
+                          </UserDropdownItem>
+                        </UserDropdown>
+                      )}
+                    </UserMenu>
+                  </>
+                ) : (
+                  <Button href="/login" variant="light" size="small">
+                    로그인 <UserIcon theme={theme} />
+                  </Button>
+                )}
+              </>
             )}
           </ButtonGroup>
         </Nav>

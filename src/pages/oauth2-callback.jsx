@@ -10,7 +10,7 @@ const OAuth2CallbackPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isProcessed, setIsProcessed] = useState(false);
-  const { setToken, syncUserInfo } = useStore();
+  const { setToken, updateUser } = useStore();
 
   useEffect(() => {
     if (isProcessed) return;
@@ -40,18 +40,31 @@ const OAuth2CallbackPage = () => {
               return;
             }
 
-            // 토큰이 복원된 후 사용자 정보 동기화
-            await syncUserInfo();
-
-            // 디버깅: 사용자 정보 확인
-            const currentUser = useStore.getState().user;
-            console.log("소셜 로그인 후 사용자 정보:", currentUser);
-            console.log("온보딩 완료 상태:", currentUser.onboardingCompleted);
+            // 토큰 복원 후 사용자 정보 가져오기
+            let userData;
+            try {
+              const profileResponse = await authAPI.getProfile();
+              userData = profileResponse.data;
+              
+              // 사용자 정보를 스토어에 설정하고 인증 상태도 설정
+              updateUser({
+                ...userData,
+                // 온보딩 완료 상태가 없으면 기본적으로 true로 설정 (기존 사용자 호환성)
+                onboardingCompleted: userData.onboardingCompleted !== undefined ? userData.onboardingCompleted : true
+              });
+              
+              console.log("소셜 로그인 후 사용자 정보:", userData);
+              console.log("온보딩 완료 상태:", userData.onboardingCompleted);
+            } catch (profileError) {
+              console.error("사용자 정보 가져오기 실패:", profileError);
+              setError("사용자 정보를 가져오는데 실패했습니다.");
+              return;
+            }
 
             toast.success("소셜 로그인 성공!");
 
             // 온보딩 상태에 따라 리다이렉트
-            if (currentUser.onboardingCompleted === false) {
+            if (userData.onboardingCompleted === false) {
               console.log("온보딩 미완료 - 온보딩 페이지로 이동");
               router.push("/onboarding");
             } else {
@@ -74,7 +87,7 @@ const OAuth2CallbackPage = () => {
     };
 
     handleCallback();
-  }, [router, setToken, syncUserInfo, isProcessed]);
+  }, [router, setToken, isProcessed]);
 
   if (isLoading) {
     return (

@@ -10,7 +10,7 @@ import { useStore } from "../stores/useStore";
 import { mockMoims } from "../utils/mockData";
 
 const MoimMainPage = () => {
-  const { theme, isAuthenticated } = useStore();
+  const { theme, isAuthenticated, isAuthInitializing } = useStore();
   const [selectedMoim, setSelectedMoim] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -26,6 +26,113 @@ const MoimMainPage = () => {
     setIsModalOpen(false);
     setSelectedMoim(null);
   };
+
+  // 인증 초기화 중일 때 스켈레톤 표시
+  if (isAuthInitializing) {
+    return (
+      <StyledMoimMainPage theme={theme}>
+        <Header />
+        <MainContent theme={theme}>
+          <HeroSection theme={theme}>
+            <HeroContent>
+              <HeroText>
+                                 <div style={{
+                   width: '300px',
+                   height: '40px',
+                   background: `linear-gradient(90deg, ${theme.surfaceSecondary} 0%, ${theme.borderLight} 25%, ${theme.surfaceSecondary} 50%, ${theme.borderLight} 75%, ${theme.surfaceSecondary} 100%)`,
+                   backgroundSize: '200% 100%',
+                   animation: 'shimmer 1.5s infinite',
+                   borderRadius: '8px',
+                   marginBottom: '20px'
+                 }} />
+                 <div style={{
+                   width: '200px',
+                   height: '60px',
+                   background: `linear-gradient(90deg, ${theme.surfaceSecondary} 0%, ${theme.borderLight} 25%, ${theme.surfaceSecondary} 50%, ${theme.borderLight} 75%, ${theme.surfaceSecondary} 100%)`,
+                   backgroundSize: '200% 100%',
+                   animation: 'shimmer 1.5s infinite',
+                   borderRadius: '8px',
+                   marginBottom: '20px'
+                 }} />
+                 <div style={{
+                   width: '400px',
+                   height: '24px',
+                   background: `linear-gradient(90deg, ${theme.surfaceSecondary} 0%, ${theme.border} 25%, ${theme.surfaceSecondary} 50%, ${theme.border} 75%, ${theme.surfaceSecondary} 100%)`,
+                   backgroundSize: '200% 100%',
+                   animation: 'shimmer 1.5s infinite',
+                   borderRadius: '8px',
+                   marginBottom: '30px'
+                 }} />
+                 <ButtonGroup>
+                   <div style={{
+                     width: '120px',
+                     height: '44px',
+                     background: `linear-gradient(90deg, ${theme.surfaceSecondary} 0%, ${theme.border} 25%, ${theme.surfaceSecondary} 50%, ${theme.border} 75%, ${theme.surfaceSecondary} 100%)`,
+                     backgroundSize: '200% 100%',
+                     animation: 'shimmer 1.5s infinite',
+                     borderRadius: '8px'
+                   }} />
+                   <div style={{
+                     width: '120px',
+                     height: '44px',
+                     background: `linear-gradient(90deg, ${theme.surfaceSecondary} 0%, ${theme.border} 25%, ${theme.surfaceSecondary} 50%, ${theme.border} 75%, ${theme.surfaceSecondary} 100%)`,
+                     backgroundSize: '200% 100%',
+                     animation: 'shimmer 1.5s infinite',
+                     borderRadius: '8px'
+                   }} />
+                 </ButtonGroup>
+              </HeroText>
+                             <HeroImage>
+                 <div style={{
+                   width: '100%',
+                   height: '400px',
+                   background: `linear-gradient(90deg, ${theme.surfaceSecondary} 0%, ${theme.border} 25%, ${theme.surfaceSecondary} 50%, ${theme.border} 75%, ${theme.surfaceSecondary} 100%)`,
+                   backgroundSize: '200% 100%',
+                   animation: 'shimmer 1.5s infinite',
+                   borderRadius: '12px'
+                 }} />
+               </HeroImage>
+            </HeroContent>
+          </HeroSection>
+          <ContentSection>
+            <SectionContent>
+                             <SectionHeader>
+                 <div style={{
+                   width: '150px',
+                   height: '32px',
+                   background: `linear-gradient(90deg, ${theme.surfaceSecondary} 0%, ${theme.border} 25%, ${theme.surfaceSecondary} 50%, ${theme.border} 75%, ${theme.surfaceSecondary} 100%)`,
+                   backgroundSize: '200% 100%',
+                   animation: 'shimmer 1.5s infinite',
+                   borderRadius: '8px'
+                 }} />
+               </SectionHeader>
+               <MoimGrid>
+                 {[...Array(8)].map((_, index) => (
+                   <CardWrapper key={index}>
+                     <div style={{
+                       width: '100%',
+                       height: '200px',
+                       background: `linear-gradient(90deg, ${theme.surfaceSecondary} 0%, ${theme.border} 25%, ${theme.surfaceSecondary} 50%, ${theme.border} 75%, ${theme.surfaceSecondary} 100%)`,
+                       backgroundSize: '200% 100%',
+                       animation: 'shimmer 1.5s infinite',
+                       borderRadius: '12px'
+                     }} />
+                   </CardWrapper>
+                 ))}
+               </MoimGrid>
+            </SectionContent>
+          </ContentSection>
+        </MainContent>
+        <Footer />
+                 <style jsx>{`
+           @keyframes shimmer {
+             0% { background-position: -200% 0; }
+             100% { background-position: 200% 0; }
+           }
+         `}</style>
+      </StyledMoimMainPage>
+    );
+  }
 
   return (
     <StyledMoimMainPage theme={theme}>

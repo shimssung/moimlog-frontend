@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { authAPI } from "../api/auth";
+import { isPublicPath } from "../utils/constants";
 
 // 테마 색상 정의
 export const lightTheme = {
@@ -88,7 +89,7 @@ const defaultUser = {
   name: "",
   profileImage: "",
   role: "user",
-  onboardingCompleted: false, // 온보딩 상태 추가
+  onboardingCompleted: true, // 기본적으로 온보딩 완료 상태로 설정 (기존 사용자 호환성)
 };
 
 // Zustand 스토어 생성 - 액세스 토큰은 메모리에서만 관리
@@ -133,6 +134,13 @@ export const useStore = create(
       isAuthenticated: false,
       isLoading: false,
       // accessToken은 메모리에서만 관리 (persist에서 제외됨)
+      
+      // 앱 시작 시 인증 상태 초기화 (백엔드 연결 상태 확인 후 결정)
+      initializeAuthState: () => {
+        // 앱 시작 시 인증 상태를 false로 초기화
+        // 실제 인증 상태는 백엔드 연결 확인 후 결정됨
+        set({ isAuthenticated: false });
+      },
 
       // 로그인 함수 수정 - 온보딩 상태 체크 추가
       login: async (email, password) => {
@@ -149,7 +157,8 @@ export const useStore = create(
             name: data.name,
             nickname: data.nickname,
             role: data.user?.role || "user",
-            onboardingCompleted: data.isOnboardingCompleted || false,
+            // 백엔드에서 onboardingCompleted (소문자)로 전송됨
+            onboardingCompleted: data.onboardingCompleted || false,
           };
 
           // 토큰 저장
@@ -173,9 +182,9 @@ export const useStore = create(
 
           return {
             success: true,
-            isOnboardingCompleted: data.isOnboardingCompleted || false,
-            // 온보딩이 완료되지 않은 경우 리다이렉트 정보 포함
-            shouldRedirectToOnboarding: !(data.isOnboardingCompleted || false),
+            isOnboardingCompleted: data.onboardingCompleted || false,
+            // 온보딩이 완료되지 않은 경우에만 온보딩 페이지로 리다이렉트
+            shouldRedirectToOnboarding: !(data.onboardingCompleted || false),
           };
         } catch (error) {
           set({ isLoading: false });
@@ -211,8 +220,8 @@ export const useStore = create(
             user: {
               ...state.user,
               ...userData,
-              // 백엔드에서 onboardingCompleted로 전송됨
-              onboardingCompleted: userData.onboardingCompleted || false,
+              // 백엔드에서 onboardingCompleted가 없으면 기존 상태 유지
+              onboardingCompleted: userData.onboardingCompleted !== undefined ? userData.onboardingCompleted : state.user.onboardingCompleted,
             },
             isAuthenticated: true,
           }));
@@ -228,6 +237,8 @@ export const useStore = create(
           return true;
         } catch (error) {
           console.error("사용자 정보 동기화 실패:", error);
+          // 백엔드 연결 실패 시 인증 상태를 false로 설정
+          set({ isAuthenticated: false });
           return false;
         }
       },
@@ -344,10 +355,10 @@ export const useStore = create(
         // 세션 플래그 제거
         localStorage.removeItem('hasValidSession');
 
-        // 로그인 페이지가 아닌 경우에만 리다이렉트
+        // 공개 페이지가 아닌 경우에만 로그인 페이지로 리다이렉트
         if (
           typeof window !== "undefined" &&
-          window.location.pathname !== "/login"
+          !isPublicPath(window.location.pathname)
         ) {
           window.localStorage.setItem(
             "logoutReason",
@@ -372,12 +383,32 @@ export const useStore = create(
         set({ accessToken: null });
       },
 
-             // 앱 시작 시 토큰 복원 (메모리 기반)
-       restoreToken: async () => {
-         try {
-           // 메모리에 토큰이 있으면 사용
-           let token = get().accessToken;
-           if (token) return token;
+                     // 앱 시작 시 토큰 복원 (메모리 기반)
+        restoreToken: async () => {
+          try {
+            // 인증 초기화 시작
+            set({ isAuthInitializing: true });
+            
+            // 메모리에 토큰이 있으면 유효성 확인 후 사용
+            let token = get().accessToken;
+            if (token) {
+              // 토큰이 있으면 유효성 확인
+              if (get().isTokenValid()) {
+                console.log("메모리에 유효한 토큰 있음 - 인증 상태 설정");
+                set({ 
+                  isAuthenticated: true,
+                  isAuthInitializing: false
+                });
+                return token;
+              } else {
+                console.log("메모리에 있는 토큰이 만료됨 - 제거");
+                set({ 
+                  accessToken: null,
+                  isAuthenticated: false,
+                  isAuthInitializing: false
+                });
+              }
+            }
 
            console.log("메모리에 토큰 없음 - 리프레시 토큰으로 복원 시도");
 
@@ -398,27 +429,42 @@ export const useStore = create(
            console.log("백엔드에 refreshToken 요청 시도");
            const response = await authAPI.refreshToken();
 
-           if (response.accessToken) {
-             console.log("토큰 복원 성공");
-             set({ accessToken: response.accessToken });
-             
-             // 토큰 복원 성공 시 세션 플래그 설정
-             localStorage.setItem('hasValidSession', 'true');
-             console.log("세션 플래그 설정됨: hasValidSession = true");
-             
-             return response.accessToken;
-           } else {
-             console.log("리프레시 토큰으로 액세스 토큰 발급 실패");
-             // 세션 플래그 제거
-             localStorage.removeItem('hasValidSession');
-             return null;
-           }
-         } catch (error) {
-           console.error("토큰 복원 중 오류:", error);
-           // 오류 발생 시 세션 플래그 제거
-           localStorage.removeItem('hasValidSession');
-           return null;
-         }
+                       if (response.accessToken) {
+              console.log("토큰 복원 성공");
+              set({ 
+                accessToken: response.accessToken,
+                // 토큰 복원 성공 시 인증 상태도 true로 설정
+                isAuthenticated: true,
+                isAuthInitializing: false
+              });
+              
+              // 토큰 복원 성공 시 세션 플래그 설정
+              localStorage.setItem('hasValidSession', 'true');
+              console.log("세션 플래그 설정됨: hasValidSession = true");
+              
+              return response.accessToken;
+            } else {
+              console.log("리프레시 토큰으로 액세스 토큰 발급 실패");
+              // 세션 플래그 제거
+              localStorage.removeItem('hasValidSession');
+              // 인증 상태도 false로 설정
+              set({ 
+                isAuthenticated: false,
+                isAuthInitializing: false
+              });
+              return null;
+            }
+                   } catch (error) {
+            console.error("토큰 복원 중 오류:", error);
+            // 오류 발생 시 세션 플래그 제거 및 인증 상태 초기화
+            localStorage.removeItem('hasValidSession');
+            set({ 
+              isAuthenticated: false,
+              accessToken: null,
+              isAuthInitializing: false
+            });
+            return null;
+          }
        },
 
       // 토큰 유효성 확인
@@ -486,6 +532,8 @@ export const useStore = create(
       updateUser: (newUserData) => {
         set((state) => ({
           user: { ...state.user, ...newUserData },
+          // 사용자 정보가 업데이트되면 인증된 상태로 설정
+          isAuthenticated: true,
         }));
       },
 
@@ -522,10 +570,10 @@ export const useStore = create(
     {
       name: "moimlog-storage", // 로컬스토리지 키 이름
       partialize: (state) => ({
-        // 저장할 상태만 선택 (액세스 토큰 제외)
+        // 저장할 상태만 선택 (액세스 토큰과 인증 상태 제외)
         isDarkMode: state.isDarkMode,
         user: state.user,
-        isAuthenticated: state.isAuthenticated,
+        // isAuthenticated는 로컬스토리지에 저장하지 않음 (백엔드 연결 상태에 따라 결정)
         // accessToken은 메모리에서만 관리 (보안상 로컬스토리지에 저장하지 않음)
       }),
     }

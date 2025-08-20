@@ -4,15 +4,15 @@ import { useStore } from "../stores/useStore";
 import { isPublicPath } from "../utils/constants";
 
 const AuthGuard = ({ children }) => {
-  const { user, isAuthenticated, restoreToken, syncUserInfo } = useStore();
+  const { user, isAuthenticated, restoreToken } = useStore();
   const router = useRouter();
   const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {
     const initializeAuth = async () => {
-      // 중앙 집중식 설정 사용
+      // 공개 페이지는 즉시 렌더링 (로딩 없음)
       if (isPublicPath(router.pathname)) {
-        console.log("AuthGuard: 공개 페이지 - 인증 확인 건너뛰기");
+        console.log("AuthGuard: 공개 페이지 - 즉시 렌더링");
         setIsInitializing(false);
         return;
       }
@@ -53,12 +53,8 @@ const AuthGuard = ({ children }) => {
         const token = await restoreToken();
         if (token) {
           console.log("AuthGuard: 토큰 복원 성공");
-          // 토큰 복원 후 사용자 정보 동기화 시도
-          try {
-            await syncUserInfo();
-          } catch (error) {
-            console.error("AuthGuard: 사용자 정보 동기화 실패:", error);
-          }
+          // 토큰 복원이 성공하면 인증 상태는 이미 설정됨
+          // 사용자 정보는 로그인 시 받았으므로 추가 동기화 불필요
         }
       } catch (error) {
         console.error("AuthGuard: 토큰 복원 실패:", error);
