@@ -162,11 +162,11 @@ export const authAPI = {
     try {
       console.log("🔍 authAPI.getProfile() 호출 시작");
       console.log("🌐 요청 URL: /auth/me");
-      
+
       const response = await axios.get("/auth/me");
       console.log("✅ getProfile API 응답 성공:", response);
       console.log("📊 응답 데이터:", response.data);
-      
+
       return response;
     } catch (error) {
       console.error("❌ getProfile API 실패:", error);
@@ -174,7 +174,7 @@ export const authAPI = {
         message: error.message,
         status: error.response?.status,
         data: error.response?.data,
-        config: error.config
+        config: error.config,
       });
       throw error.response?.data || error.message;
     }
@@ -184,6 +184,60 @@ export const authAPI = {
   updateProfile: async (profileData) => {
     try {
       const response = await axios.put("/auth/profile", profileData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // 비밀번호 변경
+  changePassword: async (passwordData) => {
+    try {
+      const response = await axios.put("/auth/change-password", passwordData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // 알림 설정 업데이트
+  updateNotificationSettings: async (notificationData) => {
+    try {
+      const response = await axios.put(
+        "/auth/notification-settings",
+        notificationData
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // 개인정보 설정 업데이트
+  updatePrivacySettings: async (privacyData) => {
+    try {
+      const response = await axios.put("/auth/privacy-settings", privacyData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // 프로필 이미지 업로드 (백엔드 명세에 맞춰 file 파라미터명 변경)
+  uploadProfileImage: async (imageFile) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", imageFile); // 'profileImage'에서 'file'로 변경
+
+      const response = await axios.post(
+        "/auth/upload-profile-image",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;

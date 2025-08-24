@@ -182,6 +182,21 @@ export const PUBLIC_APIS = [
   "/oauth2-callback", // 소셜 로그인 콜백
 ];
 
+// 인증이 필요한 API 엔드포인트들 (프로필 관련)
+export const PROTECTED_APIS = [
+  "/auth/profile", // 프로필 수정
+  "/auth/change-password", // 비밀번호 변경
+  "/auth/notification-settings", // 알림 설정
+  "/auth/privacy-settings", // 개인정보 설정
+  "/auth/upload-profile-image", // 프로필 이미지 업로드
+  "/auth/profile-image", // 프로필 이미지 조회
+  "/auth/me", // 내 프로필 조회
+  "/auth/onboarding", // 온보딩 완료
+  "/auth/onboarding/status", // 온보딩 상태 확인
+  "/auth/refresh", // 토큰 갱신
+  "/auth/logout", // 로그아웃
+];
+
 // 경로가 public인지 확인하는 유틸리티 함수
 export const isPublicPath = (pathname) => {
   return PUBLIC_PATHS.includes(pathname);

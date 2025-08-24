@@ -1,37 +1,67 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import Header from "../components/Header";
 import Button from "../components/Button";
 import toast from "react-hot-toast";
 import { useTheme } from "../utils/ThemeContext";
+import { useStore } from "../stores/useStore";
+import { authAPI } from "../api/auth";
+import { sanitizeFormData } from "../utils/sanitize";
 
 const SETTINGS_SECTIONS = [
   { key: "profile", label: "프로필 설정", icon: "👤" },
-  { key: "account", label: "계정 설정", icon: "🔐" },
   { key: "notifications", label: "알림 설정", icon: "🔔" },
-  { key: "privacy", label: "개인정보", icon: "🔒" },
   { key: "danger", label: "위험 영역", icon: "⚠️" },
 ];
 
 const Settings = () => {
   const { theme } = useTheme();
+  const { user, updateUser } = useStore();
   const [activeSection, setActiveSection] = useState("profile");
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    name: "테스트 사용자",
-    email: "user@example.com",
-    bio: "안녕하세요! 모임을 통해 새로운 경험을 만들어가고 있습니다.",
-    profileImage:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuDYhudJVFm4j1jvaC3VWtkGNFmVFgvExkuGOiCq6wb6n7E4J9xxEqElvphiAZC0gj5eBA_7iZgjBRvQo-9Gxw8JoY_kWlISZJ50bITlmXdYj57pGxsbk6KKMfELeMhLrns-rtFui-xzTQShRZX3NVMfl7dfHr6tUYvsvy_alUFaMe6a3euW23fOmmrjFpi3shfKFXu-nkXQNxR7dsB2s_X6eCXyewLkF_HPECgXPDn2yaaxF-BZRZzDxExVJeWp_v0pylmwt9R_2g",
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
+    name: "",
+    email: "",
+    nickname: "",
+    bio: "",
+    profileImage: "",
+    phone: "",
+    birthDate: "",
+    gender: "",
     notificationEmail: true,
     notificationPush: true,
     notificationSchedule: true,
     notificationComment: true,
-    profileVisibility: "public",
-    emailVisibility: "private",
   });
+
+  // 사용자 정보로 폼 데이터 초기화
+  useEffect(() => {
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        name: user.name || "",
+        email: user.email || "",
+        nickname: user.nickname || "",
+        bio: user.bio || "",
+        profileImage: user.profileImage || "",
+        phone: user.phone || "",
+        birthDate: user.birthDate || "",
+        gender: user.gender || "",
+        notificationEmail:
+          user.notificationEmail !== undefined ? user.notificationEmail : true,
+        notificationPush:
+          user.notificationPush !== undefined ? user.notificationPush : true,
+        notificationSchedule:
+          user.notificationSchedule !== undefined
+            ? user.notificationSchedule
+            : true,
+        notificationComment:
+          user.notificationComment !== undefined
+            ? user.notificationComment
+            : true,
+      }));
+    }
+  }, [user]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -41,7 +71,7 @@ const Settings = () => {
     }));
   };
 
-  const handleImageUpload = (e) => {
+  const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (file) {
       // 파일 크기 체크 (5MB 제한)
@@ -56,21 +86,132 @@ const Settings = () => {
         return;
       }
 
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setFormData((prev) => ({
-          ...prev,
-          profileImage: event.target.result,
-        }));
-        toast.success("프로필 이미지가 업로드되었습니다.");
-      };
-      reader.readAsDataURL(file);
+      setIsLoading(true);
+
+      try {
+        // 백엔드 API로 이미지 업로드
+        const response = await authAPI.uploadProfileImage(file);
+
+        if (response.success) {
+          // S3 URL을 프록시 URL로 변환
+          const imageUrl = response.imageUrl;
+
+          // 폼 데이터 업데이트
+          setFormData((prev) => ({
+            ...prev,
+            profileImage: imageUrl,
+          }));
+
+          toast.success("프로필 이미지가 업로드되었습니다.");
+        } else {
+          toast.error("이미지 업로드에 실패했습니다.");
+        }
+      } catch (error) {
+        console.error("이미지 업로드 에러:", error);
+        toast.error("이미지 업로드 중 오류가 발생했습니다.");
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
-  const handleSubmit = (e) => {
+  // 이미지 URL을 프록시 URL로 변환하는 함수
+  const getProfileImageUrl = (imageUrl) => {
+    if (!imageUrl) return "/blank-profile.png";
+
+    // S3 URL인 경우 프록시 URL로 변환
+    if (
+      imageUrl.includes("s3.amazonaws.com") ||
+      imageUrl.includes("moimlog-bucket")
+    ) {
+      const fileName = imageUrl.split("/").pop();
+      return `http://localhost:8080/moimlog/auth/profile-image/${fileName}`;
+    }
+
+    return imageUrl;
+  };
+
+  // 프로필 수정 제출
+  const handleProfileSubmit = async (e) => {
     e.preventDefault();
-    toast.success("설정이 저장되었습니다!");
+    setIsLoading(true);
+
+    try {
+      // 입력 데이터 정제 및 빈 값 처리
+      const sanitizedData = sanitizeFormData({
+        name: formData.name,
+        nickname: formData.nickname,
+        bio: formData.bio,
+        profileImage: formData.profileImage,
+        phone: formData.phone,
+        birthDate: formData.birthDate,
+        gender: formData.gender || null, // 빈 문자열을 null로 처리
+      });
+
+      // 빈 값 제거 (null, undefined, 빈 문자열)
+      const cleanData = Object.fromEntries(
+        Object.entries(sanitizedData).filter(
+          ([, value]) => value !== null && value !== undefined && value !== ""
+        )
+      );
+
+      // API 호출
+      await authAPI.updateProfile(cleanData);
+
+      // 백엔드 API는 직접 데이터를 반환하므로 success 체크 불필요
+      // 로컬 상태 업데이트
+      updateUser({
+        name: sanitizedData.name,
+        nickname: sanitizedData.nickname,
+        bio: sanitizedData.bio,
+        profileImage: sanitizedData.profileImage,
+        phone: sanitizedData.phone,
+        birthDate: sanitizedData.birthDate,
+        gender: formData.gender || null,
+      });
+
+      toast.success("프로필이 성공적으로 수정되었습니다!");
+    } catch (error) {
+      console.error("프로필 수정 에러:", error);
+      toast.error(error.message || "프로필 수정 중 오류가 발생했습니다.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 알림 설정 제출
+  const handleNotificationSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      const response = await authAPI.updateNotificationSettings({
+        notificationEmail: formData.notificationEmail,
+        notificationPush: formData.notificationPush,
+        notificationSchedule: formData.notificationSchedule,
+        notificationComment: formData.notificationComment,
+      });
+
+      // 백엔드 API는 success, message, data 구조로 응답
+      if (response.success) {
+        // 로컬 상태 업데이트
+        updateUser({
+          notificationEmail: formData.notificationEmail,
+          notificationPush: formData.notificationPush,
+          notificationSchedule: formData.notificationSchedule,
+          notificationComment: formData.notificationComment,
+        });
+
+        toast.success(response.message || "알림 설정이 저장되었습니다!");
+      } else {
+        toast.error(response.message || "알림 설정 저장에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("알림 설정 에러:", error);
+      toast.error(error.message || "알림 설정 저장 중 오류가 발생했습니다.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const renderProfileSection = () => (
@@ -80,131 +221,150 @@ const Settings = () => {
         프로필 정보를 수정하여 다른 사용자들에게 보여질 정보를 관리하세요.
       </SectionDescription>
 
-      <ProfileImageSection>
-        <ProfileImageContainer>
-          <ProfileImage
-            src={formData.profileImage}
-            alt="프로필 이미지"
+      <form onSubmit={handleProfileSubmit}>
+        <ProfileImageSection>
+          <ProfileImageContainer>
+            <ProfileImage
+              src={getProfileImageUrl(formData.profileImage)}
+              alt="프로필 이미지"
+              theme={theme}
+            />
+            <ImageOverlay>
+              <ImageUploadLabel htmlFor="profileImageUpload" theme={theme}>
+                <CameraIcon />
+                <span>이미지 변경</span>
+              </ImageUploadLabel>
+            </ImageOverlay>
+          </ProfileImageContainer>
+          <ImageUploadInput
+            type="file"
+            id="profileImageUpload"
+            accept="image/*"
+            onChange={handleImageUpload}
+          />
+          <ImageHelpText theme={theme}>
+            JPG, PNG, GIF 파일만 업로드 가능합니다. (최대 5MB)
+          </ImageHelpText>
+        </ProfileImageSection>
+
+        <FormGroup>
+          <Label htmlFor="name" theme={theme}>
+            이름 *
+          </Label>
+          <Input
+            type="text"
+            id="name"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            theme={theme}
+            required
+            minLength={2}
+            maxLength={100}
+          />
+        </FormGroup>
+
+        <FormGroup>
+          <Label htmlFor="nickname" theme={theme}>
+            닉네임
+          </Label>
+          <Input
+            type="text"
+            id="nickname"
+            name="nickname"
+            value={formData.nickname}
+            onChange={handleChange}
+            theme={theme}
+            maxLength={50}
+            placeholder="닉네임을 입력하세요 (최대 50자)"
+          />
+        </FormGroup>
+
+        <FormGroup>
+          <Label htmlFor="email" theme={theme}>
+            이메일
+          </Label>
+          <Input
+            type="email"
+            id="email"
+            name="email"
+            value={formData.email}
+            disabled
             theme={theme}
           />
-          <ImageOverlay>
-            <ImageUploadLabel htmlFor="profileImageUpload" theme={theme}>
-              <CameraIcon />
-              <span>이미지 변경</span>
-            </ImageUploadLabel>
-          </ImageOverlay>
-        </ProfileImageContainer>
-        <ImageUploadInput
-          type="file"
-          id="profileImageUpload"
-          accept="image/*"
-          onChange={handleImageUpload}
-        />
-        <ImageHelpText theme={theme}>
-          JPG, PNG, GIF 파일만 업로드 가능합니다. (최대 5MB)
-        </ImageHelpText>
-      </ProfileImageSection>
+          <HelpText theme={theme}>
+            이메일은 보안상 직접 수정할 수 없습니다. 계정 설정에서 변경하세요.
+          </HelpText>
+        </FormGroup>
 
-      <FormGroup>
-        <Label htmlFor="name" theme={theme}>
-          이름
-        </Label>
-        <Input
-          type="text"
-          id="name"
-          name="name"
-          value={formData.name}
-          onChange={handleChange}
-          theme={theme}
-        />
-      </FormGroup>
+        <FormGroup>
+          <Label htmlFor="phone" theme={theme}>
+            전화번호
+          </Label>
+          <Input
+            type="tel"
+            id="phone"
+            name="phone"
+            value={formData.phone}
+            onChange={handleChange}
+            theme={theme}
+            maxLength={20}
+            placeholder="010-1234-5678"
+          />
+        </FormGroup>
 
-      <FormGroup>
-        <Label htmlFor="email" theme={theme}>
-          이메일
-        </Label>
-        <Input
-          type="email"
-          id="email"
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
-          theme={theme}
-        />
-      </FormGroup>
+        <FormGroup>
+          <Label htmlFor="birthDate" theme={theme}>
+            생년월일
+          </Label>
+          <Input
+            type="date"
+            id="birthDate"
+            name="birthDate"
+            value={formData.birthDate}
+            onChange={handleChange}
+            theme={theme}
+          />
+        </FormGroup>
 
-      <FormGroup>
-        <Label htmlFor="bio" theme={theme}>
-          자기소개
-        </Label>
-        <Textarea
-          id="bio"
-          name="bio"
-          value={formData.bio}
-          onChange={handleChange}
-          rows={4}
-          theme={theme}
-        />
-      </FormGroup>
+        <FormGroup>
+          <Label htmlFor="gender" theme={theme}>
+            성별
+          </Label>
+          <Select
+            id="gender"
+            name="gender"
+            value={formData.gender}
+            onChange={handleChange}
+            theme={theme}
+          >
+            <option value="">선택하세요</option>
+            <option value="MALE">남성</option>
+            <option value="FEMALE">여성</option>
+          </Select>
+        </FormGroup>
 
-      <Button variant="primary" onClick={handleSubmit}>
-        프로필 저장
-      </Button>
-    </SectionContent>
-  );
+        <FormGroup>
+          <Label htmlFor="bio" theme={theme}>
+            자기소개
+          </Label>
+          <Textarea
+            id="bio"
+            name="bio"
+            value={formData.bio}
+            onChange={handleChange}
+            rows={4}
+            theme={theme}
+            maxLength={1000}
+            placeholder="자기소개를 입력하세요 (최대 1000자)"
+          />
+          <CharCount theme={theme}>{formData.bio.length}/1000</CharCount>
+        </FormGroup>
 
-  const renderAccountSection = () => (
-    <SectionContent>
-      <SectionTitle theme={theme}>계정 설정</SectionTitle>
-      <SectionDescription theme={theme}>
-        계정 보안을 위해 비밀번호를 변경하세요.
-      </SectionDescription>
-
-      <FormGroup>
-        <Label htmlFor="currentPassword" theme={theme}>
-          현재 비밀번호
-        </Label>
-        <Input
-          type="password"
-          id="currentPassword"
-          name="currentPassword"
-          value={formData.currentPassword}
-          onChange={handleChange}
-          theme={theme}
-        />
-      </FormGroup>
-
-      <FormGroup>
-        <Label htmlFor="newPassword" theme={theme}>
-          새 비밀번호
-        </Label>
-        <Input
-          type="password"
-          id="newPassword"
-          name="newPassword"
-          value={formData.newPassword}
-          onChange={handleChange}
-          theme={theme}
-        />
-      </FormGroup>
-
-      <FormGroup>
-        <Label htmlFor="confirmPassword" theme={theme}>
-          새 비밀번호 확인
-        </Label>
-        <Input
-          type="password"
-          id="confirmPassword"
-          name="confirmPassword"
-          value={formData.confirmPassword}
-          onChange={handleChange}
-          theme={theme}
-        />
-      </FormGroup>
-
-      <Button variant="primary" onClick={handleSubmit}>
-        비밀번호 변경
-      </Button>
+        <Button type="submit" variant="primary" disabled={isLoading}>
+          {isLoading ? "저장 중..." : "프로필 저장"}
+        </Button>
+      </form>
     </SectionContent>
   );
 
@@ -215,114 +375,69 @@ const Settings = () => {
         받고 싶은 알림 유형을 선택하세요.
       </SectionDescription>
 
-      <CheckboxGroup>
-        <CheckboxItem>
-          <Checkbox
-            type="checkbox"
-            id="notificationEmail"
-            name="notificationEmail"
-            checked={formData.notificationEmail}
-            onChange={handleChange}
-            theme={theme}
-          />
-          <CheckboxLabel htmlFor="notificationEmail" theme={theme}>
-            이메일 알림
-          </CheckboxLabel>
-        </CheckboxItem>
+      <form onSubmit={handleNotificationSubmit}>
+        <CheckboxGroup>
+          <CheckboxItem>
+            <Checkbox
+              type="checkbox"
+              id="notificationEmail"
+              name="notificationEmail"
+              checked={formData.notificationEmail}
+              onChange={handleChange}
+              theme={theme}
+            />
+            <CheckboxLabel htmlFor="notificationEmail" theme={theme}>
+              이메일 알림
+            </CheckboxLabel>
+          </CheckboxItem>
 
-        <CheckboxItem>
-          <Checkbox
-            type="checkbox"
-            id="notificationPush"
-            name="notificationPush"
-            checked={formData.notificationPush}
-            onChange={handleChange}
-            theme={theme}
-          />
-          <CheckboxLabel htmlFor="notificationPush" theme={theme}>
-            푸시 알림
-          </CheckboxLabel>
-        </CheckboxItem>
+          <CheckboxItem>
+            <Checkbox
+              type="checkbox"
+              id="notificationPush"
+              name="notificationPush"
+              checked={formData.notificationPush}
+              onChange={handleChange}
+              theme={theme}
+            />
+            <CheckboxLabel htmlFor="notificationPush" theme={theme}>
+              푸시 알림
+            </CheckboxLabel>
+          </CheckboxItem>
 
-        <CheckboxItem>
-          <Checkbox
-            type="checkbox"
-            id="notificationSchedule"
-            name="notificationSchedule"
-            checked={formData.notificationSchedule}
-            onChange={handleChange}
-            theme={theme}
-          />
-          <CheckboxLabel htmlFor="notificationSchedule" theme={theme}>
-            일정 알림
-          </CheckboxLabel>
-        </CheckboxItem>
+          <CheckboxItem>
+            <Checkbox
+              type="checkbox"
+              id="notificationSchedule"
+              name="notificationSchedule"
+              checked={formData.notificationSchedule}
+              onChange={handleChange}
+              theme={theme}
+            />
+            <CheckboxLabel htmlFor="notificationSchedule" theme={theme}>
+              일정 알림
+            </CheckboxLabel>
+          </CheckboxItem>
 
-        <CheckboxItem>
-          <Checkbox
-            type="checkbox"
-            id="notificationComment"
-            name="notificationComment"
-            checked={formData.notificationComment}
-            onChange={handleChange}
-            theme={theme}
-          />
-          <CheckboxLabel htmlFor="notificationComment" theme={theme}>
-            댓글 알림
-          </CheckboxLabel>
-        </CheckboxItem>
-      </CheckboxGroup>
+          <CheckboxItem>
+            <Checkbox
+              type="checkbox"
+              id="notificationComment"
+              name="notificationComment"
+              checked={formData.notificationComment}
+              onChange={handleChange}
+              theme={theme}
+            />
+            <CheckboxLabel htmlFor="notificationComment" theme={theme}>
+              댓글 알림
+            </CheckboxLabel>
+          </CheckboxItem>
+        </CheckboxGroup>
 
-      <Button variant="primary" onClick={handleSubmit}>
-        알림 설정 저장
-      </Button>
-    </SectionContent>
-  );
-
-  const renderPrivacySection = () => (
-    <SectionContent>
-      <SectionTitle theme={theme}>개인정보</SectionTitle>
-      <SectionDescription theme={theme}>
-        프로필과 이메일의 공개 범위를 설정하세요.
-      </SectionDescription>
-
-      <FormGroup>
-        <Label htmlFor="profileVisibility" theme={theme}>
-          프로필 공개 범위
-        </Label>
-        <Select
-          id="profileVisibility"
-          name="profileVisibility"
-          value={formData.profileVisibility}
-          onChange={handleChange}
-          theme={theme}
-        >
-          <option value="public">전체 공개</option>
-          <option value="friends">친구만</option>
-          <option value="private">비공개</option>
-        </Select>
-      </FormGroup>
-
-      <FormGroup>
-        <Label htmlFor="emailVisibility" theme={theme}>
-          이메일 공개 범위
-        </Label>
-        <Select
-          id="emailVisibility"
-          name="emailVisibility"
-          value={formData.emailVisibility}
-          onChange={handleChange}
-          theme={theme}
-        >
-          <option value="private">비공개</option>
-          <option value="friends">친구만</option>
-          <option value="public">전체 공개</option>
-        </Select>
-      </FormGroup>
-
-      <Button variant="primary" onClick={handleSubmit}>
-        개인정보 설정 저장
-      </Button>
+        <Button type="submit" variant="primary" disabled={isLoading}>
+          {isLoading ? "저장 중..." : "알림 설정 저장"}
+        </Button>
+      </form>
     </SectionContent>
   );
 
@@ -352,12 +467,8 @@ const Settings = () => {
     switch (activeSection) {
       case "profile":
         return renderProfileSection();
-      case "account":
-        return renderAccountSection();
       case "notifications":
         return renderNotificationsSection();
-      case "privacy":
-        return renderPrivacySection();
       case "danger":
         return renderDangerSection();
       default:
@@ -672,6 +783,20 @@ const ImageHelpText = styled.p`
   font-size: 0.75rem;
   color: ${(props) => props.theme.textTertiary};
   margin: 0;
+  transition: color 0.3s ease;
+`;
+
+const HelpText = styled.p`
+  font-size: 0.75rem;
+  color: ${(props) => props.theme.textSecondary};
+  margin-top: 8px;
+  transition: color 0.3s ease;
+`;
+
+const CharCount = styled.span`
+  font-size: 0.75rem;
+  color: ${(props) => props.theme.textTertiary};
+  margin-top: 8px;
   transition: color 0.3s ease;
 `;
 
