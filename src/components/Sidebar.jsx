@@ -8,6 +8,7 @@ const Sidebar = ({ moimId, moimRole = "멤버", activeMenu = "chat" }) => {
   const router = useRouter();
 
   const menuItems = [
+    { id: "overview", label: "개요", icon: "🏠", path: `/moim/${moimId}` },
     { id: "chat", label: "채팅", icon: "💬", path: `/moim/${moimId}/chat` },
     {
       id: "schedule",
@@ -22,6 +23,13 @@ const Sidebar = ({ moimId, moimRole = "멤버", activeMenu = "chat" }) => {
       icon: "👥",
       path: `/moim/${moimId}/members`,
     },
+    // 운영자만 참여신청 관리 메뉴 표시
+    ...(moimRole === "운영자" || moimRole === "ADMIN" || moimRole === "MODERATOR" ? [{
+      id: "join-requests",
+      label: "참여신청",
+      icon: "📋",
+      path: `/moim/${moimId}/join-requests`,
+    }] : []),
     {
       id: "settings",
       label: "설정",
@@ -32,7 +40,7 @@ const Sidebar = ({ moimId, moimRole = "멤버", activeMenu = "chat" }) => {
 
   // 멤버 권한에 따라 메뉴 필터링
   const filteredMenuItems =
-    moimRole === "운영자"
+    moimRole === "운영자" || moimRole === "ADMIN" || moimRole === "MODERATOR"
       ? menuItems
       : menuItems.filter((item) => item.id !== "settings");
 

@@ -21,7 +21,7 @@ const MoimMembersPage = () => {
         id: moimId,
         title: "북클럽: 시크릿 가든",
         image: "/img4.jpg",
-        role: "운영자",
+        userRole: "ADMIN", // Changed from role to userRole
       });
 
       setMembers([
@@ -193,7 +193,11 @@ const MoimMembersPage = () => {
     <PageContainer theme={theme}>
       <Header />
       <ContentContainer>
-        <Sidebar moimId={moimId} moimRole={moimInfo?.role} activeMenu="members" />
+        <Sidebar 
+          moimId={moimId} 
+          moimRole={moimInfo.userRole === "ADMIN" || moimInfo.userRole === "MODERATOR" ? "운영자" : "멤버"} 
+          activeMenu="members" 
+        />
 
         <MainContent>
         <PageHeader>

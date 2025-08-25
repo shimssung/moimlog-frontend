@@ -36,7 +36,7 @@ const MoimSettingsPage = () => {
           newEvent: true,
           memberJoin: false,
         },
-        role: "운영자",
+        userRole: "ADMIN", // 더미 데이터에 사용자 역할 추가
       });
     }
   }, [moimId]);
@@ -65,10 +65,10 @@ const MoimSettingsPage = () => {
     <PageContainer theme={theme}>
       <Header />
       <ContentContainer>
-        <Sidebar
-          moimId={moimId}
-          moimRole={moimInfo?.role}
-          activeMenu="settings"
+        <Sidebar 
+          moimId={moimId} 
+          moimRole={moimInfo.userRole === "ADMIN" || moimInfo.userRole === "MODERATOR" ? "운영자" : "멤버"} 
+          activeMenu="settings" 
         />
 
         <MainContent theme={theme}>

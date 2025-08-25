@@ -21,7 +21,7 @@ const MoimChatPage = () => {
         id: moimId,
         title: "북클럽: 시크릿 가든",
         image: "/img4.jpg",
-        role: "운영자",
+        userRole: "ADMIN", // 더미 데이터에 사용자 역할 추가
       });
 
       // 더미 메시지 데이터
@@ -90,7 +90,11 @@ const MoimChatPage = () => {
     <PageContainer theme={theme}>
       <Header />
       <ContentContainer>
-        <Sidebar moimId={moimId} moimRole={moimInfo.role} activeMenu="chat" />
+        <Sidebar 
+          moimId={moimId} 
+          moimRole={moimInfo.userRole === "ADMIN" || moimInfo.userRole === "MODERATOR" ? "운영자" : "멤버"} 
+          activeMenu="chat" 
+        />
 
         <MainContent theme={theme}>
         <ChatHeader theme={theme}>
@@ -98,7 +102,10 @@ const MoimChatPage = () => {
             <MoimImage src={moimInfo.image} alt={moimInfo.title} />
             <MoimDetails>
               <MoimTitle theme={theme}>{moimInfo.title}</MoimTitle>
-              <MoimRole theme={theme}>{moimInfo.role}</MoimRole>
+              <MoimRole theme={theme}>
+                {moimInfo.userRole === "ADMIN" ? "운영자" : 
+                 moimInfo.userRole === "MODERATOR" ? "모더레이터" : "멤버"}
+              </MoimRole>
             </MoimDetails>
           </MoimInfo>
           <OnlineIndicator>
