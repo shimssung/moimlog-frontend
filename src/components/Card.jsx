@@ -7,9 +7,10 @@ const Card = ({ moim }) => {
   const { theme } = useStore();
   // 새로운 카테고리 구조에 맞춰 카테고리 라벨 가져오기
   const categoryLabel = CATEGORY_LABELS[moim.categoryId] || moim.category || "기타";
+  // 설명을 1줄로 제한 (약 50자)
   const truncatedDescription =
-    moim.description.length > 60
-      ? moim.description.substring(0, 60) + "..."
+    moim.description.length > 50
+      ? moim.description.substring(0, 50) + "..."
       : moim.description;
   const displayTags = moim.tags.slice(0, 3);
 
@@ -135,6 +136,12 @@ const CardDescription = styled.p`
   font-size: 14px;
   color: ${(props) => props.theme.textSecondary};
   margin: 0;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-break: keep-all;
+  height: 1.4em; /* 1줄 높이 고정 */
 `;
 
 const CardTags = styled.div`

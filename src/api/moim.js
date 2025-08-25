@@ -103,4 +103,120 @@ export const moimAPI = {
       throw error.response?.data || error.message;
     }
   },
+
+  // 모임 목록 조회 (페이지네이션, 필터링 지원)
+  getMoimList: async (params = {}) => {
+    try {
+      const response = await axios.get("/moims", { params });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // 인기 모임 목록
+  getPopularMoims: async (limit = 6) => {
+    try {
+      const response = await axios.get("/moims/popular", { params: { limit } });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // 최신 모임 목록
+  getLatestMoims: async (limit = 6) => {
+    try {
+      const response = await axios.get("/moims/latest", { params: { limit } });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // 모임 상세 정보 조회 (1단계)
+  getMoimDetail: async (moimId) => {
+    try {
+      const response = await axios.get(`/moims/${moimId}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // 모임 참여 (1단계)
+  joinMoim: async (moimId, message = "") => {
+    try {
+      const response = await axios.post(`/moims/${moimId}/join`, { message });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // 모임 탈퇴 (1단계)
+  leaveMoim: async (moimId) => {
+    try {
+      const response = await axios.delete(`/moims/${moimId}/join`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // 참여신청 목록 조회 (승인/거절 기능)
+  getJoinRequests: async (moimId, status = 'ALL', page = 1, limit = 20) => {
+    try {
+      const response = await axios.get(`/moims/${moimId}/join-requests`, {
+        params: { status, page, limit }
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // 참여신청 상세 조회
+  getJoinRequestDetail: async (moimId, requestId) => {
+    try {
+      const response = await axios.get(`/moims/${moimId}/join-requests/${requestId}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // 참여신청 승인
+  approveJoinRequest: async (moimId, requestId, message = '') => {
+    try {
+      const response = await axios.post(`/moims/${moimId}/join-requests/${requestId}/approve`, {
+        message
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // 참여신청 거절
+  rejectJoinRequest: async (moimId, requestId, reason) => {
+    try {
+      const response = await axios.post(`/moims/${moimId}/join-requests/${requestId}/reject`, {
+        reason
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // 참여신청 통계
+  getJoinRequestStats: async (moimId) => {
+    try {
+      const response = await axios.get(`/moims/${moimId}/join-requests/stats`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
 };
