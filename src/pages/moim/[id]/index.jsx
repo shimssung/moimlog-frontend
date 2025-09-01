@@ -14,7 +14,7 @@ const MoimDetailPage = () => {
   const router = useRouter();
   const { id: moimId } = router.query;
   const { isAuthenticated, accessToken } = useStore();
-  
+
   const [moimInfo, setMoimInfo] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isJoining, setIsJoining] = useState(false);
@@ -33,68 +33,78 @@ const MoimDetailPage = () => {
   useEffect(() => {
     const fetchMoimDetail = async () => {
       if (!moimId || !isAuthenticated) return;
-      
+
       try {
         setIsLoading(true);
         const response = await moimAPI.getMoimDetail(moimId);
-        
+
         if (response.success) {
-          setMoimInfo(response.data);
+          const moimData = response.data;
+
+          // 참여하지 않은 사용자인 경우 모임 목록으로 리다이렉트
+          if (!moimData.isMember) {
+            toast.error("모임에 참여해야 접근할 수 있습니다.");
+            router.push("/moim-list");
+            return;
+          }
+
+          setMoimInfo(moimData);
         } else {
           toast.error("모임 정보를 불러올 수 없습니다.");
         }
       } catch (error) {
         console.error("모임 상세 정보 조회 실패:", error);
         toast.error(error.message || "모임 정보를 불러올 수 없습니다.");
-        
-                 // 에러 발생 시 기본 데이터로 폴백 (개발용)
-         setMoimInfo({
-           id: moimId,
-           title: "북클럽: 시크릿 가든",
-           description: "함께 읽고 토론하는 독서 모임입니다. 매월 한 권의 책을 선정하여 깊이 있는 독서와 의미 있는 대화를 나눕니다.",
-           categoryId: 3,
-           categoryName: "독서/스터디",
-           categoryLabel: "독서/스터디",
-           categoryColor: "#3b82f6",
-           tags: ["독서", "토론", "문학", "성장"], // 배열로 확실히 설정
-           thumbnail: "/img4.jpg",
-           maxMembers: 20,
-           currentMembers: 15,
-           isPrivate: false,
-           isActive: true,
-           onlineType: "OFFLINE",
-           location: "서울시 강남구",
-           locationDetail: "중앙 도서관 3층 세미나실",
-           createdBy: 123,
-           creatorName: "소피아",
-           creatorProfileImage: "/img1.jpg",
-           createdAt: "2024-01-15T10:00:00Z",
-           updatedAt: "2024-01-15T10:00:00Z",
-           isMember: true,
-           userRole: "MEMBER"
-         });
+
+        // 에러 발생 시 기본 데이터로 폴백 (개발용)
+        setMoimInfo({
+          id: moimId,
+          title: "북클럽: 시크릿 가든",
+          description:
+            "함께 읽고 토론하는 독서 모임입니다. 매월 한 권의 책을 선정하여 깊이 있는 독서와 의미 있는 대화를 나눕니다.",
+          categoryId: 3,
+          categoryName: "독서/스터디",
+          categoryLabel: "독서/스터디",
+          categoryColor: "#3b82f6",
+          tags: ["독서", "토론", "문학", "성장"], // 배열로 확실히 설정
+          thumbnail: "/img4.jpg",
+          maxMembers: 20,
+          currentMembers: 15,
+          isPrivate: false,
+          isActive: true,
+          onlineType: "OFFLINE",
+          location: "서울시 강남구",
+          locationDetail: "중앙 도서관 3층 세미나실",
+          createdBy: 123,
+          creatorName: "소피아",
+          creatorProfileImage: "/img1.jpg",
+          createdAt: "2024-01-15T10:00:00Z",
+          updatedAt: "2024-01-15T10:00:00Z",
+          isMember: true,
+          userRole: "MEMBER",
+        });
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchMoimDetail();
-  }, [moimId, isAuthenticated]);
+  }, [moimId, isAuthenticated, router]);
 
   // 모임 참여
   const handleJoinMoim = async () => {
     if (!moimInfo) return;
-    
+
     setIsJoining(true);
     try {
       const response = await moimAPI.joinMoim(moimId);
-      
+
       if (response.success) {
-        setMoimInfo(prev => ({
+        setMoimInfo((prev) => ({
           ...prev,
           isMember: true,
           userRole: "MEMBER",
-          currentMembers: prev.currentMembers + 1
+          currentMembers: prev.currentMembers + 1,
         }));
         toast.success("모임에 성공적으로 참여했습니다!");
       } else {
@@ -111,17 +121,17 @@ const MoimDetailPage = () => {
   // 모임 탈퇴
   const handleLeaveMoim = async () => {
     if (!moimInfo) return;
-    
+
     setIsLeaving(true);
     try {
       const response = await moimAPI.leaveMoim(moimId);
-      
+
       if (response.success) {
-        setMoimInfo(prev => ({
+        setMoimInfo((prev) => ({
           ...prev,
           isMember: false,
           userRole: null,
-          currentMembers: prev.currentMembers - 1
+          currentMembers: prev.currentMembers - 1,
         }));
         toast.success("모임에서 탈퇴했습니다.");
       } else {
@@ -166,10 +176,10 @@ const MoimDetailPage = () => {
     <PageContainer theme={theme}>
       <Header />
       <ContentContainer>
-        <Sidebar 
-          moimId={moimId} 
-          moimRole={moimInfo.userRole === "ADMIN" ? "운영자" : "멤버"} 
-          activeMenu="overview" 
+        <Sidebar
+          moimId={moimId}
+          moimRole={moimInfo.userRole === "ADMIN" ? "운영자" : "멤버"}
+          activeMenu="overview"
         />
 
         <MainContent theme={theme}>
@@ -180,14 +190,17 @@ const MoimDetailPage = () => {
               <HeaderInfo>
                 <MoimTitle theme={theme}>{moimInfo.title}</MoimTitle>
                 <MoimMeta theme={theme}>
-                  <CategoryBadge 
+                  <CategoryBadge
                     style={{ backgroundColor: moimInfo.categoryColor }}
                   >
                     {moimInfo.categoryLabel}
                   </CategoryBadge>
                   <OnlineStatus $isOnline={moimInfo.onlineType === "ONLINE"}>
-                    {moimInfo.onlineType === "ONLINE" ? "온라인" : 
-                     moimInfo.onlineType === "HYBRID" ? "하이브리드" : "오프라인"}
+                    {moimInfo.onlineType === "ONLINE"
+                      ? "온라인"
+                      : moimInfo.onlineType === "HYBRID"
+                      ? "하이브리드"
+                      : "오프라인"}
                   </OnlineStatus>
                   <MemberCount theme={theme}>
                     {moimInfo.currentMembers}/{moimInfo.maxMembers}명
@@ -198,16 +211,16 @@ const MoimDetailPage = () => {
 
             <HeaderRight>
               {moimInfo.isMember ? (
-                <Button 
-                  variant="danger" 
+                <Button
+                  variant="danger"
                   onClick={handleLeaveMoim}
                   disabled={isLeaving}
                 >
                   {isLeaving ? "탈퇴 중..." : "모임 탈퇴"}
                 </Button>
               ) : (
-                <Button 
-                  variant="primary" 
+                <Button
+                  variant="primary"
                   onClick={handleJoinMoim}
                   disabled={isJoining}
                 >
@@ -220,7 +233,9 @@ const MoimDetailPage = () => {
           {/* 모임 소개 섹션 */}
           <MoimDescription theme={theme}>
             <DescriptionTitle theme={theme}>모임 소개</DescriptionTitle>
-            <DescriptionText theme={theme}>{moimInfo.description}</DescriptionText>
+            <DescriptionText theme={theme}>
+              {moimInfo.description}
+            </DescriptionText>
           </MoimDescription>
 
           {/* 모임 정보 섹션 */}
@@ -231,12 +246,17 @@ const MoimDetailPage = () => {
                 <InfoLabel theme={theme}>생성자</InfoLabel>
                 <InfoValue theme={theme}>
                   <CreatorInfo>
-                    <CreatorImage src={moimInfo.creatorProfileImage} alt={moimInfo.creatorName} />
-                    <CreatorName theme={theme}>{moimInfo.creatorName}</CreatorName>
+                    <CreatorImage
+                      src={moimInfo.creatorProfileImage}
+                      alt={moimInfo.creatorName}
+                    />
+                    <CreatorName theme={theme}>
+                      {moimInfo.creatorName}
+                    </CreatorName>
                   </CreatorInfo>
                 </InfoValue>
               </InfoItem>
-              
+
               <InfoItem>
                 <InfoLabel theme={theme}>생성일</InfoLabel>
                 <InfoValue theme={theme}>
@@ -250,26 +270,33 @@ const MoimDetailPage = () => {
                   <InfoValue theme={theme}>
                     {moimInfo.location}
                     {moimInfo.locationDetail && (
-                      <LocationDetail theme={theme}>{moimInfo.locationDetail}</LocationDetail>
+                      <LocationDetail theme={theme}>
+                        {moimInfo.locationDetail}
+                      </LocationDetail>
                     )}
                   </InfoValue>
                 </InfoItem>
               )}
 
-                             <InfoItem>
-                 <InfoLabel theme={theme}>태그</InfoLabel>
-                 <InfoValue theme={theme}>
-                   <TagsContainer>
-                     {Array.isArray(moimInfo.tags) && moimInfo.tags.length > 0 ? (
-                       moimInfo.tags.map((tag, index) => (
-                         <Tag key={index} theme={theme}>#{tag}</Tag>
-                       ))
-                     ) : (
-                       <NoTagsMessage theme={theme}>태그가 없습니다</NoTagsMessage>
-                     )}
-                   </TagsContainer>
-                 </InfoValue>
-               </InfoItem>
+              <InfoItem>
+                <InfoLabel theme={theme}>태그</InfoLabel>
+                <InfoValue theme={theme}>
+                  <TagsContainer>
+                    {Array.isArray(moimInfo.tags) &&
+                    moimInfo.tags.length > 0 ? (
+                      moimInfo.tags.map((tag, index) => (
+                        <Tag key={index} theme={theme}>
+                          #{tag}
+                        </Tag>
+                      ))
+                    ) : (
+                      <NoTagsMessage theme={theme}>
+                        태그가 없습니다
+                      </NoTagsMessage>
+                    )}
+                  </TagsContainer>
+                </InfoValue>
+              </InfoItem>
             </InfoGrid>
           </MoimInfoSection>
 
@@ -277,34 +304,35 @@ const MoimDetailPage = () => {
           <QuickActions theme={theme}>
             <ActionTitle theme={theme}>빠른 액션</ActionTitle>
             <ActionButtons>
-              <Button 
-                variant="secondary" 
+              <Button
+                variant="secondary"
                 onClick={() => router.push(`/moim/${moimId}/board`)}
               >
                 📝 게시판 보기
               </Button>
-              <Button 
-                variant="secondary" 
+              <Button
+                variant="secondary"
                 onClick={() => router.push(`/moim/${moimId}/schedule`)}
               >
                 📅 일정 보기
               </Button>
-              <Button 
-                variant="secondary" 
+              <Button
+                variant="secondary"
                 onClick={() => router.push(`/moim/${moimId}/members`)}
               >
                 👥 멤버 보기
               </Button>
-              <Button 
-                variant="secondary" 
+              <Button
+                variant="secondary"
                 onClick={() => router.push(`/moim/${moimId}/chat`)}
               >
                 💬 채팅 참여
               </Button>
               {/* 운영자만 참여신청 관리 표시 */}
-              {(moimInfo.userRole === "ADMIN" || moimInfo.userRole === "MODERATOR") && (
-                <Button 
-                  variant="primary" 
+              {(moimInfo.userRole === "ADMIN" ||
+                moimInfo.userRole === "MODERATOR") && (
+                <Button
+                  variant="primary"
                   onClick={() => router.push(`/moim/${moimId}/join-requests`)}
                 >
                   📋 참여신청 관리

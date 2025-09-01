@@ -1,41 +1,93 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import Button from "./Button";
 import { useStore } from "../stores/useStore";
 import { CATEGORY_LABELS } from "../utils/constants";
+import { moimAPI } from "../api/moim";
 
-const MoimDetailModal = ({ isOpen, onClose, moim }) => {
+const MoimDetailModal = ({ isOpen, onClose, moim, onJoin, isJoining }) => {
   const { theme } = useStore();
+  const [userJoinStatus, setUserJoinStatus] = useState(null);
+  const [isLoadingStatus, setIsLoadingStatus] = useState(false);
+
+  // 모달이 열릴 때 사용자의 참여 상태 확인
+  useEffect(() => {
+    if (isOpen && moim) {
+      checkUserJoinStatus();
+    }
+  }, [isOpen, moim]);
+
+  // 사용자의 모임 참여 상태 확인
+  const checkUserJoinStatus = async () => {
+    if (!moim) return;
+
+    setIsLoadingStatus(true);
+    try {
+      const response = await moimAPI.getMoimDetail(moim.id);
+      if (response.success) {
+        console.log("모임 상세 조회 성공 :", response.data);
+        const moimData = response.data;
+        setUserJoinStatus({
+          isMember: moimData.isMember || false,
+          userRole: moimData.userRole || null,
+          joinStatus: moimData.joinStatus || null, // PENDING, ACTIVE, BANNED
+        });
+      }
+    } catch (error) {
+      console.error("참여 상태 확인 실패:", error);
+      // 에러 시 기본값 설정
+      setUserJoinStatus({
+        isMember: false,
+        userRole: null,
+        joinStatus: null,
+      });
+    } finally {
+      setIsLoadingStatus(false);
+    }
+  };
 
   if (!isOpen || !moim) return null;
 
   // 새로운 카테고리 구조에 맞춰 카테고리 라벨 가져오기
-  const categoryLabel = CATEGORY_LABELS[moim.categoryId] || moim.category || "기타";
+  const categoryLabel =
+    CATEGORY_LABELS[moim.categoryId] || moim.category || "기타";
 
   return (
     <ModalOverlay onClick={onClose}>
       <ModalContent onClick={(e) => e.stopPropagation()} theme={theme}>
-        <ModalHeader theme={theme}>
-          <TitleGroup>
-            <ModalTitle theme={theme}>{moim.title}</ModalTitle>
-            <OnlineStatus $isOnline={moim.onlineType === "online"}>
-              {moim.onlineType === "online" ? "온라인" : 
-               moim.onlineType === "hybrid" ? "하이브리드" : "오프라인"}
-            </OnlineStatus>
-          </TitleGroup>
-          <MemberCount theme={theme}>최대 {moim.maxMembers}명</MemberCount>
-          <CloseButton onClick={onClose} theme={theme}>
-            ✕
-          </CloseButton>
-        </ModalHeader>
+        {/* 모임 썸네일 섹션 */}
+        <ThumbnailSection>
+          <MoimThumbnail src={moim.thumbnail || "/img1.jpg"} alt={moim.title} />
+        </ThumbnailSection>
 
         <ModalBody theme={theme}>
+          {/* 모임 제목 및 기본 정보 */}
+          <TitleSection>
+            <TitleGroup>
+              <ModalTitle theme={theme}>{moim.title}</ModalTitle>
+              <OnlineStatus $isOnline={moim.onlineType === "online"}>
+                {moim.onlineType === "online"
+                  ? "온라인"
+                  : moim.onlineType === "hybrid"
+                  ? "하이브리드"
+                  : "오프라인"}
+              </OnlineStatus>
+            </TitleGroup>
+          </TitleSection>
+
           <CreatorSection>
             <CreatorInfo>
-              <CreatorImage src={moim.creatorImage} alt={moim.creatorName} />
+              <CreatorImage
+                src={moim.creatorProfileImage || "/blank-profile.png"}
+                alt={moim.createdBy}
+              />
               <CreatorDetails>
-                <CreatorName theme={theme}>{moim.creatorName}</CreatorName>
-                <CreatorDate theme={theme}>{moim.createdAt}</CreatorDate>
+                <CreatorName theme={theme}>
+                  {moim.createdBy || "알 수 없음"}
+                </CreatorName>
+                <CreatorDate theme={theme}>
+                  {new Date(moim.createdAt).toLocaleDateString("ko-KR")}
+                </CreatorDate>
               </CreatorDetails>
             </CreatorInfo>
           </CreatorSection>
@@ -48,28 +100,28 @@ const MoimDetailModal = ({ isOpen, onClose, moim }) => {
             <InfoRow>
               <InfoLabel theme={theme}>위치</InfoLabel>
               <InfoValue theme={theme}>
-                {moim.onlineType === "online" ? "온라인" : 
-                 moim.onlineType === "hybrid" ? "하이브리드" : moim.location}
+                {moim.onlineType === "online"
+                  ? "온라인"
+                  : moim.onlineType === "hybrid"
+                  ? "하이브리드"
+                  : moim.location}
               </InfoValue>
             </InfoRow>
             <InfoRow>
-              <InfoLabel theme={theme}>참여자</InfoLabel>
-              <AttendeeBadges>
-                {moim.attendees?.slice(0, 3).map((attendee, index) => (
-                  <AttendeeImg
-                    key={attendee.id}
-                    src={attendee.image}
-                    alt={attendee.name}
-                    style={{ left: `${index * 20}px` }}
-                  />
-                ))}
-                {moim.attendees && moim.attendees.length > 3 && (
-                  <AttendeeCount theme={theme}>
-                    +{moim.attendees.length - 3}
-                  </AttendeeCount>
-                )}
-              </AttendeeBadges>
+              <InfoLabel theme={theme}>현재 인원</InfoLabel>
+              <InfoValue theme={theme}>
+                {moim.currentMembers || 0}/{moim.maxMembers}명
+              </InfoValue>
             </InfoRow>
+            {userJoinStatus?.isMember &&
+              userJoinStatus?.joinStatus === "PENDING" && (
+                <InfoRow>
+                  <InfoLabel theme={theme}>참여 상태</InfoLabel>
+                  <InfoValue theme={theme}>
+                    <StatusBadge $status="pending">승인 대기 중</StatusBadge>
+                  </InfoValue>
+                </InfoRow>
+              )}
           </InfoSection>
 
           <DescriptionSection>
@@ -90,10 +142,38 @@ const MoimDetailModal = ({ isOpen, onClose, moim }) => {
         </ModalBody>
 
         <ModalFooter theme={theme}>
-          <Button variant="light" onClick={onClose}>
-            닫기
-          </Button>
-          <Button variant="primary">참여하기</Button>
+          {isLoadingStatus ? (
+            <Button variant="light" disabled fullWidth>
+              로딩 중...
+            </Button>
+          ) : userJoinStatus?.isMember ? (
+            userJoinStatus?.joinStatus === "PENDING" ? (
+              <Button variant="warning" disabled fullWidth>
+                승인 대기 중
+              </Button>
+            ) : (
+              <Button
+                variant="primary"
+                onClick={() => {
+                  onClose();
+                  // 상세페이지로 이동
+                  window.location.href = `/moim/${moim.id}`;
+                }}
+                fullWidth
+              >
+                모임 입장하기
+              </Button>
+            )
+          ) : (
+            <Button
+              variant="primary"
+              onClick={onJoin}
+              disabled={isJoining}
+              fullWidth
+            >
+              {isJoining ? "참여 중..." : "참여하기"}
+            </Button>
+          )}
         </ModalFooter>
       </ModalContent>
     </ModalOverlay>
@@ -124,7 +204,7 @@ const ModalContent = styled.div`
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
-  padding: 24px;
+  padding: 0;
   border: 1px solid ${(props) => props.theme.borderLight};
 
   /* 스크롤바 스타일링 */
@@ -146,19 +226,8 @@ const ModalContent = styled.div`
   }
 `;
 
-const ModalHeader = styled.div`
-  position: relative;
-  border-radius: 16px 16px 0 0;
-  overflow: hidden;
-  padding: 24px;
-  border-bottom: 1px solid ${(props) => props.theme.borderLight};
-  transition: border-color 0.3s ease;
-`;
-
-const TitleGroup = styled.div`
-  display: flex;
-  align-items: flex-end;
-  margin-right: 16px;
+const TitleSection = styled.div`
+  margin-bottom: 24px;
 `;
 
 const ModalTitle = styled.h1`
@@ -167,6 +236,12 @@ const ModalTitle = styled.h1`
   font-weight: 700;
   margin-right: 16px;
   transition: color 0.3s ease;
+`;
+
+const TitleGroup = styled.div`
+  display: flex;
+  align-items: flex-end;
+  margin-bottom: 8px;
 `;
 
 const OnlineStatus = styled.span`
@@ -178,46 +253,43 @@ const OnlineStatus = styled.span`
   font-weight: 500;
 `;
 
-const MemberCount = styled.span`
-  color: ${(props) => props.theme.textTertiary};
-  font-size: 14px;
-  margin-left: 12px;
-  transition: color 0.3s ease;
-`;
-
-const CloseButton = styled.button`
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  color: ${(props) => props.theme.textSecondary};
-  cursor: pointer;
-  transition: color 0.3s ease;
-
-  &:hover {
-    color: ${(props) => props.theme.textPrimary};
-  }
-`;
-
 const ModalBody = styled.div`
   padding: 24px;
 `;
 
+const ThumbnailSection = styled.div`
+  width: 100%;
+  height: 200px;
+  border-radius: 12px 12px 0 0;
+  overflow: hidden;
+  margin: 0 0 0 0;
+  background-color: ${(props) => props.theme.surface};
+  border-bottom: 1px solid ${(props) => props.theme.borderLight};
+  position: relative;
+`;
+
+const MoimThumbnail = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+`;
+
 const CreatorSection = styled.div`
   margin-bottom: 24px;
+  background: ${(props) => props.theme.surfaceSecondary};
+  border-radius: 12px;
 `;
 
 const CreatorInfo = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 `;
 
 const CreatorImage = styled.img`
-  width: 24px;
-  height: 24px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   object-fit: cover;
 `;
@@ -225,18 +297,19 @@ const CreatorImage = styled.img`
 const CreatorDetails = styled.div`
   display: flex;
   flex-direction: column;
+  gap: 4px;
 `;
 
 const CreatorName = styled.span`
   font-weight: 600;
   color: ${(props) => props.theme.textPrimary};
-  font-size: 14px;
+  font-size: 16px;
   transition: color 0.3s ease;
 `;
 
 const CreatorDate = styled.span`
   color: ${(props) => props.theme.textTertiary};
-  font-size: 12px;
+  font-size: 14px;
   transition: color 0.3s ease;
 `;
 
@@ -262,28 +335,6 @@ const InfoLabel = styled.span`
 const InfoValue = styled.span`
   color: ${(props) => props.theme.textPrimary};
   font-size: 14px;
-  transition: color 0.3s ease;
-`;
-
-const AttendeeBadges = styled.div`
-  position: relative;
-  display: flex;
-  align-items: center;
-`;
-
-const AttendeeImg = styled.img`
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 2px solid ${(props) => props.theme.surface};
-  position: absolute;
-  object-fit: cover;
-`;
-
-const AttendeeCount = styled.span`
-  color: ${(props) => props.theme.textTertiary};
-  font-size: 14px;
-  margin-left: 12px;
   transition: color 0.3s ease;
 `;
 
@@ -336,7 +387,18 @@ const Tag = styled.span`
 
 const ModalFooter = styled.div`
   display: flex;
-  justify-content: flex-end;
+  justify-content: stretch;
   padding: 24px;
   border-top: 1px solid ${(props) => props.theme.borderLight};
+  gap: 0;
+`;
+
+const StatusBadge = styled.span`
+  background: ${({ $status }) =>
+    $status === "pending" ? "#fef3c7" : "#d1fae5"};
+  color: ${({ $status }) => ($status === "pending" ? "#f59e0b" : "#10b981")};
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
 `;

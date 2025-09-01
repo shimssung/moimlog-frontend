@@ -36,6 +36,7 @@ export const moimAPI = {
   getMoimDetail: async (moimId) => {
     try {
       const response = await axios.get(`/moims/${moimId}`);
+      console.log("모임 상세 조회 :", response.data);
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;
@@ -165,10 +166,10 @@ export const moimAPI = {
   },
 
   // 참여신청 목록 조회 (승인/거절 기능)
-  getJoinRequests: async (moimId, status = 'ALL', page = 1, limit = 20) => {
+  getJoinRequests: async (moimId, status = "ALL", page = 1, limit = 20) => {
     try {
       const response = await axios.get(`/moims/${moimId}/join-requests`, {
-        params: { status, page, limit }
+        params: { status, page, limit },
       });
       return response.data;
     } catch (error) {
@@ -179,7 +180,9 @@ export const moimAPI = {
   // 참여신청 상세 조회
   getJoinRequestDetail: async (moimId, requestId) => {
     try {
-      const response = await axios.get(`/moims/${moimId}/join-requests/${requestId}`);
+      const response = await axios.get(
+        `/moims/${moimId}/join-requests/${requestId}`
+      );
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;
@@ -187,11 +190,14 @@ export const moimAPI = {
   },
 
   // 참여신청 승인
-  approveJoinRequest: async (moimId, requestId, message = '') => {
+  approveJoinRequest: async (moimId, requestId, message = "") => {
     try {
-      const response = await axios.post(`/moims/${moimId}/join-requests/${requestId}/approve`, {
-        message
-      });
+      const response = await axios.post(
+        `/moims/${moimId}/join-requests/${requestId}/approve`,
+        {
+          message,
+        }
+      );
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;
@@ -201,9 +207,12 @@ export const moimAPI = {
   // 참여신청 거절
   rejectJoinRequest: async (moimId, requestId, reason) => {
     try {
-      const response = await axios.post(`/moims/${moimId}/join-requests/${requestId}/reject`, {
-        reason
-      });
+      const response = await axios.post(
+        `/moims/${moimId}/join-requests/${requestId}/reject`,
+        {
+          reason,
+        }
+      );
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;

@@ -5,10 +5,14 @@ import Card from "../components/Card";
 import SkeletonCard from "../components/SkeletonCard";
 import Input from "../components/Input";
 import Button from "../components/Button";
+import MoimDetailModal from "../components/MoimDetailModal";
 import { useTheme } from "../utils/ThemeContext";
 import { useCategories } from "../hooks/useCategories";
 import { useRouter } from "next/router";
 import { moimAPI } from "../api/moim";
+import { useMoim } from "../hooks/useMoim";
+import { useStore } from "../stores/useStore";
+import toast from "react-hot-toast";
 
 // 가장 많이 사용되는 isomorphic hook 패턴
 const useIsomorphicLayoutEffect =
@@ -29,6 +33,8 @@ const MoimListPage = () => {
   const { theme } = useTheme();
   const { categories } = useCategories();
   const router = useRouter();
+  const { joinMoim } = useMoim();
+  const { isAuthenticated } = useStore();
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [onlineType, setOnlineType] = useState("all");
@@ -43,6 +49,9 @@ const MoimListPage = () => {
   const [error, setError] = useState(null);
   const [_totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedMoim, setSelectedMoim] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isJoining, setIsJoining] = useState(false);
   const isClient = useClientOnly();
   const loader = useRef();
   const observerRef = useRef();
@@ -52,7 +61,7 @@ const MoimListPage = () => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const params = {
         page: currentPage,
         limit: 20,
@@ -62,16 +71,16 @@ const MoimListPage = () => {
         search: search.trim() || undefined,
         sortBy: sortBy,
         minMembers: memberRange.min > 0 ? memberRange.min : undefined,
-        maxMembers: memberRange.max < 100 ? memberRange.max : undefined
+        maxMembers: memberRange.max < 100 ? memberRange.max : undefined,
       };
 
       const response = await moimAPI.getMoimList(params);
-      
+
       if (response.success) {
         if (currentPage === 1) {
           setMoims(response.data.moims);
         } else {
-          setMoims(prev => [...prev, ...response.data.moims]);
+          setMoims((prev) => [...prev, ...response.data.moims]);
         }
         setTotalCount(response.data.totalCount || 0);
       } else {
@@ -80,7 +89,7 @@ const MoimListPage = () => {
     } catch (error) {
       console.error("모임 목록 조회 실패:", error);
       setError(error.message || "모임 목록을 불러오는데 실패했습니다.");
-      
+
       // 에러 발생 시 테스트 데이터로 폴백 (개발용)
       setMoims([
         {
@@ -99,7 +108,7 @@ const MoimListPage = () => {
           location: "서울시 강남구",
           createdBy: 123,
           creatorName: "소피아",
-          createdAt: "2024-01-15T10:00:00Z"
+          createdAt: "2024-01-15T10:00:00Z",
         },
         {
           id: 2,
@@ -117,8 +126,8 @@ const MoimListPage = () => {
           location: "서울시 서초구",
           createdBy: 456,
           creatorName: "김개발",
-          createdAt: "2024-01-10T14:00:00Z"
-        }
+          createdAt: "2024-01-10T14:00:00Z",
+        },
       ]);
       setTotalCount(2);
     } finally {
@@ -145,7 +154,7 @@ const MoimListPage = () => {
 
   // 더보기 버튼 클릭 시
   const handleLoadMore = () => {
-    setCurrentPage(prev => prev + 1);
+    setCurrentPage((prev) => prev + 1);
   };
 
   // 고급 필터링 로직
@@ -246,6 +255,46 @@ const MoimListPage = () => {
     };
   }, [filteredMoims.length, loading, visibleCount, isClient]);
 
+  // 모임 카드 클릭 핸들러
+  const handleMoimClick = (moim) => {
+    if (!isAuthenticated) {
+      toast.error("로그인이 필요합니다.");
+      router.push("/login");
+      return;
+    }
+    setSelectedMoim(moim);
+    setIsModalOpen(true);
+  };
+
+  // 모달에서 참여하기 버튼 클릭 핸들러
+  const handleJoinMoim = async () => {
+    if (!selectedMoim) return;
+
+    setIsJoining(true);
+    try {
+      const result = await joinMoim(selectedMoim.id);
+
+      if (result.success) {
+        // 참여 성공 시 모달 닫고 상세페이지로 이동
+        setIsModalOpen(false);
+        setSelectedMoim(null);
+        router.push(`/moim/${selectedMoim.id}`);
+        toast.success("모임에 참여했습니다! 모임 상세페이지로 이동합니다.");
+      }
+    } catch (error) {
+      console.error("모임 참여 실패:", error);
+      toast.error("모임 참여에 실패했습니다.");
+    } finally {
+      setIsJoining(false);
+    }
+  };
+
+  // 모달 닫기 핸들러
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedMoim(null);
+  };
+
   // 지역 목록 (실제로는 API에서 가져올 데이터)
   const locations = [
     "서울시 강남구",
@@ -269,7 +318,7 @@ const MoimListPage = () => {
   };
 
   // 카테고리 옵션 (useCategories 훅에서 가져온 데이터 사용)
-  const categoryOptions = ["All", ...categories.map(cat => cat.name)];
+  const categoryOptions = ["All", ...categories.map((cat) => cat.name)];
 
   // 스켈레톤 카드 렌더링
   const renderSkeletonCards = (count = 8) => {
@@ -320,7 +369,7 @@ const MoimListPage = () => {
                   placeholder="모임 검색"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                  onKeyPress={(e) => e.key === "Enter" && handleSearch()}
                   style={{
                     border: "none",
                     background: "transparent",
@@ -330,9 +379,7 @@ const MoimListPage = () => {
                     color: theme.textPrimary,
                   }}
                 />
-                <SearchButton onClick={handleSearch}>
-                  검색
-                </SearchButton>
+                <SearchButton onClick={handleSearch}>검색</SearchButton>
               </SearchInputWrapper>
             </SearchLabel>
           </SearchSection>
@@ -445,26 +492,24 @@ const MoimListPage = () => {
           </SectionTitle>
 
           <MoimGrid>
-            {isLoading && currentPage === 1 ? (
-              // 초기 로딩 시 스켈레톤 표시
-              renderSkeletonCards(8)
-            ) : (
-              // 데이터가 있을 때 실제 카드 표시
-              filteredMoims.slice(0, visibleCount).map((moim) => (
-                <CardWrapper 
-                  key={moim.id} 
-                  onClick={() => router.push(`/moim/${moim.id}`)}
-                >
-                  <Card moim={moim} />
-                </CardWrapper>
-              ))
-            )}
+            {isLoading && currentPage === 1
+              ? // 초기 로딩 시 스켈레톤 표시
+                renderSkeletonCards(8)
+              : // 데이터가 있을 때 실제 카드 표시
+                filteredMoims.slice(0, visibleCount).map((moim) => (
+                  <CardWrapper
+                    key={moim.id}
+                    onClick={() => handleMoimClick(moim)}
+                  >
+                    <Card moim={moim} />
+                  </CardWrapper>
+                ))}
           </MoimGrid>
 
           {visibleCount < filteredMoims.length && (
             <LoadMoreContainer>
-              <Button 
-                variant="secondary" 
+              <Button
+                variant="secondary"
                 onClick={handleLoadMore}
                 disabled={isLoading}
               >
@@ -475,7 +520,7 @@ const MoimListPage = () => {
 
           {/* 더보기 로딩 시 추가 스켈레톤 표시 */}
           {isLoading && currentPage > 1 && (
-            <MoimGrid style={{ marginTop: '24px' }}>
+            <MoimGrid style={{ marginTop: "24px" }}>
               {renderSkeletonCards(4)}
             </MoimGrid>
           )}
@@ -497,6 +542,15 @@ const MoimListPage = () => {
           )}
         </ContentContainer>
       </LayoutContainer>
+
+      {/* 모임 상세 모달 */}
+      <MoimDetailModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        moim={selectedMoim}
+        onJoin={handleJoinMoim}
+        isJoining={isJoining}
+      />
 
       {/* 상단으로 이동 버튼 */}
       <Button

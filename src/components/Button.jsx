@@ -117,6 +117,36 @@ const ButtonBase = styled.button.withConfig({
     `}
 
   ${(props) =>
+    props.variant === "warning" &&
+    css`
+      background-color: #fef3c7;
+      color: #f59e0b;
+      border: 1px solid #fbbf24;
+      &:hover:not(:disabled),
+      &:active:not(:disabled) {
+        background-color: #fde68a;
+        color: #d97706;
+        border: 1px solid #f59e0b;
+        cursor: pointer;
+      }
+    `}
+
+  ${(props) =>
+    props.variant === "danger" &&
+    css`
+      background-color: #fee2e2;
+      color: #dc2626;
+      border: 1px solid #f87171;
+      &:hover:not(:disabled),
+      &:active:not(:disabled) {
+        background-color: #fecaca;
+        color: #b91c1c;
+        border: 1px solid #ef4444;
+        cursor: pointer;
+      }
+    `}
+
+  ${(props) =>
     props.size === "small" &&
     css`
       padding: 0.5rem 0.75rem;
