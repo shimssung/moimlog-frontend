@@ -28,16 +28,19 @@ instance.interceptors.request.use(
     console.log("🚀 Axios 요청 인터셉터:", {
       url: config.url,
       method: config.method,
-      isPublic: isPublicApi(config.url)
+      isPublic: isPublicApi(config.url),
     });
-    
+
     // 중앙 집중식 설정 사용
     if (!isPublicApi(config.url) && typeof window !== "undefined") {
       // Zustand 스토어에서 토큰 가져오기
       if (storeRef && typeof storeRef.getToken === "function") {
         const token = storeRef.getToken();
-        console.log("🔑 토큰 정보:", token ? `Bearer ${token.substring(0, 20)}...` : "토큰 없음");
-        
+        console.log(
+          "🔑 토큰 정보:",
+          token ? `Bearer ${token.substring(0, 20)}...` : "토큰 없음"
+        );
+
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
           console.log("✅ Authorization 헤더 설정 완료");
@@ -51,7 +54,7 @@ instance.interceptors.request.use(
     } else {
       console.log("ℹ️ 공개 API이므로 토큰 불필요");
     }
-    
+
     console.log("📤 최종 요청 헤더:", config.headers);
     return config;
   },
@@ -90,6 +93,16 @@ instance.interceptors.response.use(
       );
     }
 
+    // /auth/refresh 요청의 401 에러는 정상적인 동작 (비로그인 상태)
+    if (
+      originalRequest.url?.includes("/auth/refresh") &&
+      error.response?.status === 401
+    ) {
+      console.log("refresh 토큰 없음 또는 만료 - 정상적인 비로그인 상태");
+      // 에러를 조용히 처리하고 null 응답 반환
+      return Promise.resolve({ data: null });
+    }
+
     // 401 또는 403 에러이고 아직 재시도하지 않은 경우에만 처리
     if (
       (error.response?.status === 401 || error.response?.status === 403) &&
@@ -97,24 +110,11 @@ instance.interceptors.response.use(
     ) {
       originalRequest._retry = true;
 
-      // refresh 토큰 요청 자체가 실패한 경우는 무한 반복 방지
-      if (originalRequest.url?.includes("/auth/refresh")) {
-        console.log("refresh 토큰 요청 실패 - 무한 반복 방지");
-        if (typeof window !== "undefined" && storeRef) {
-          try {
-            storeRef.logoutSilently();
-          } catch {
-            // 스토어 접근 실패 시 조용히 처리
-          }
-        }
-        return Promise.reject(error);
-      }
-
       // 리프레시 토큰으로 새로운 액세스 토큰 요청
       try {
         const response = await instance.post("/auth/refresh", {});
 
-        if (response.data.accessToken) {
+        if (response.data && response.data.accessToken) {
           // 새로운 액세스 토큰을 Zustand 스토어에 저장
           if (typeof window !== "undefined" && storeRef) {
             try {
@@ -128,6 +128,16 @@ instance.interceptors.response.use(
           originalRequest.headers.Authorization = `Bearer ${response.data.accessToken}`;
 
           return instance(originalRequest);
+        } else {
+          // 리프레시 응답이 null인 경우 (비로그인 상태)
+          console.log("리프레시 토큰 없음 - 비로그인 상태 유지");
+          if (typeof window !== "undefined" && storeRef) {
+            try {
+              storeRef.logoutSilently();
+            } catch {
+              // 스토어 접근 실패 시 조용히 처리
+            }
+          }
         }
       } catch (refreshError) {
         console.error("토큰 갱신 실패:", refreshError);
